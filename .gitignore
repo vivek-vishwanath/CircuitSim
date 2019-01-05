@@ -38,6 +38,10 @@ gradle-app.setting
 # Cache of project
 .gradletasknamecache
 
+# Files annoyingly created by vim
+*.swo
+*.swp
+
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
 

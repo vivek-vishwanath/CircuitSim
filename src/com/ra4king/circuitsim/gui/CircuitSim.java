@@ -128,7 +128,6 @@ public class CircuitSim extends Application {
 	public static final String VERSION = "1.8.1";
 	
 	private static boolean mainCalled = false;
-	private static AtomicBoolean versionChecked = new AtomicBoolean(false);
 	
 	public static void main(String[] args) {
 		mainCalled = true;
@@ -1233,112 +1232,6 @@ public class CircuitSim extends Application {
 		}
 	}
 	
-	private static AtomicBoolean checkingForUpdate = new AtomicBoolean(false);
-	
-	private void checkForUpdate(boolean showOk) {
-		if(checkingForUpdate.compareAndSet(false, true)) {
-			Thread versionCheckThread = new Thread(() -> {
-				try {
-					URL url = new URL("https://www.roiatalla.com/public/CircuitSim/version.txt");
-					
-					String remoteVersion;
-					
-					try(BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
-						remoteVersion = reader.readLine();
-					} catch(IOException exc) {
-						System.err.println("Error checking server for version.");
-						exc.printStackTrace();
-						
-						if(showOk) {
-							runFxSync(() -> {
-								Alert alert = new Alert(AlertType.ERROR);
-								alert.initOwner(stage);
-								alert.initModality(Modality.APPLICATION_MODAL);
-								alert.setTitle("Error");
-								alert.setHeaderText("Error checking server");
-								alert.setContentText("Error occurred when checking server for new update.\n" + exc);
-								alert.show();
-							});
-						}
-						
-						return;
-					}
-					
-					boolean updateAvailable = false;
-					{
-						String local = VERSION;
-						
-						int beta = local.indexOf('b');
-						if(beta != -1) {
-							local = local.substring(0, beta);
-						}
-						
-						String[] parts = local.split("\\.");
-						int localMajor = Integer.parseInt(parts[0]);
-						int localMinor = Integer.parseInt(parts[1]);
-						int localBugfix = Integer.parseInt(parts[2]);
-						
-						parts = remoteVersion.split("\\.");
-						int remoteMajor = Integer.parseInt(parts[0]);
-						int remoteMinor = Integer.parseInt(parts[1]);
-						int remoteBugfix = Integer.parseInt(parts[2]);
-						
-						if(remoteMajor > localMajor) {
-							updateAvailable = true;
-						} else if(remoteMajor == localMajor) {
-							
-							if(remoteMinor > localMinor) {
-								updateAvailable = true;
-							} else if(remoteMinor == localMinor) {
-								
-								if(remoteBugfix > localBugfix) {
-									updateAvailable = true;
-								}
-								if(beta != -1 && remoteBugfix == localBugfix) {
-									updateAvailable = true;
-								}
-							}
-						}
-					}
-					
-					if(updateAvailable) {
-						runFxSync(() -> {
-							Alert alert = new Alert(AlertType.INFORMATION);
-							alert.initOwner(stage);
-							alert.initModality(Modality.APPLICATION_MODAL);
-							alert.setTitle("New Version Available");
-							alert.setHeaderText("New version available: CircuitSim v" + remoteVersion);
-							alert.setContentText("Click Update to open a browser to the download location.");
-							alert.getButtonTypes().set(0, new ButtonType("Update", ButtonData.OK_DONE));
-							alert.getButtonTypes().add(ButtonType.CANCEL);
-							Optional<ButtonType> result = alert.showAndWait();
-							if(result.isPresent() && result.get().getButtonData() == ButtonData.OK_DONE) {
-								getHostServices().showDocument("https://www.roiatalla.com/public/CircuitSim/");
-							}
-						});
-					} else if(showOk) {
-						runFxSync(() -> {
-							Alert alert = new Alert(AlertType.INFORMATION);
-							alert.initOwner(stage);
-							alert.initModality(Modality.APPLICATION_MODAL);
-							alert.setTitle("No new updates");
-							alert.setHeaderText("No new updates");
-							alert.setContentText("You have the latest version and are good to go! :)");
-							alert.show();
-						});
-					}
-				} catch(Exception exc) {
-					exc.printStackTrace();
-				} finally {
-					checkingForUpdate.set(false);
-				}
-			});
-			versionCheckThread.setDaemon(true);
-			versionCheckThread.setName("Version Check Thread");
-			versionCheckThread.start();
-		}
-	}
-	
 	private void loadConfFile() {
 		boolean showHelp = true;
 		
@@ -2389,8 +2282,6 @@ public class CircuitSim extends Application {
 			alert.setWidth(600);
 			alert.setHeight(440);
 		});
-		MenuItem checkUpdate = new MenuItem("Check for update");
-		checkUpdate.setOnAction(event -> checkForUpdate(true));
 		MenuItem about = new MenuItem("About");
 		about.setOnAction(event -> {
 			Alert alert = new Alert(AlertType.INFORMATION);
@@ -2401,7 +2292,7 @@ public class CircuitSim extends Application {
 			alert.setContentText("Third party tools:\n• GSON by Google");
 			alert.show();
 		});
-		helpMenu.getItems().addAll(help, checkUpdate, about);
+		helpMenu.getItems().addAll(help, about);
 		
 		MenuBar menuBar = new MenuBar(fileMenu, editMenu, componentsMenu, circuitsMenu, simulationMenu, helpMenu);
 		menuBar.setUseSystemMenuBar(true);
@@ -2520,10 +2411,6 @@ public class CircuitSim extends Application {
 						new CircuitSim(true).loadCircuitsInternal(new File(args.get(i)));
 					}
 				}
-			}
-			
-			if(mainCalled && versionChecked.compareAndSet(false, true)) {
-				checkForUpdate(false);
 			}
 		}
 	}
