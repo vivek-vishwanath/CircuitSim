@@ -125,7 +125,7 @@ import javafx.util.Pair;
  * @author Roi Atalla
  */
 public class CircuitSim extends Application {
-	public static final String VERSION = "1.8.0";
+	public static final String VERSION = "1.8.1";
 	
 	private static boolean mainCalled = false;
 	private static AtomicBoolean versionChecked = new AtomicBoolean(false);
@@ -817,7 +817,7 @@ public class CircuitSim extends Application {
 		if(editHistory.editStackSize() != savedEditStackSize) {
 			name += " *";
 		}
-		stage.setTitle("CircuitSim v" + VERSION + name);
+		stage.setTitle("CircuitSim v" + VERSION + " 2110 edition" + name);
 	}
 	
 	private ComponentCreator<?> getSubcircuitPeerCreator(String name) {
