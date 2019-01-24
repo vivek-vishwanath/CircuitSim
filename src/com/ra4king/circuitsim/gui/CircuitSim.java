@@ -1085,6 +1085,9 @@ public class CircuitSim extends Application {
 	
 	void copySelectedComponents() {
 		CircuitManager manager = getCurrentCircuit();
+        if (this.revisionSignatures == null) {
+            this.revisionSignatures = new LinkedList<String>();
+        }
 		if(manager != null) {
 			Set<GuiElement> selectedElements = manager.getSelectedElements();
 			if(selectedElements.isEmpty()) {
@@ -1173,6 +1176,8 @@ public class CircuitSim extends Application {
                     this.copiedBlocks.add(parsed.revisionSignatures.get((int)(Math.random() * parsed.revisionSignatures.size())));
                     this.copiedBlocks.add(parsed.revisionSignatures.get(parsed.revisionSignatures.size() - 1));
                     this.copiedBlocks.addAll(parsed.getCopiedBlocks());
+                } else if (parsed.revisionSignatures == null) {
+                    throw new NullPointerException("Clipboard data is corrupted");
                 }
 				
 				CircuitManager manager = getCurrentCircuit();
