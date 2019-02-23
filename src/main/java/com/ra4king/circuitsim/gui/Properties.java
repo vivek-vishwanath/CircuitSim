@@ -273,7 +273,7 @@ public class Properties {
 	}
 
 	public enum Base {
-		BINARY, HEXADECIMAL
+		BINARY, HEXADECIMAL, DECIMAL
 	}
 	
 	static {
