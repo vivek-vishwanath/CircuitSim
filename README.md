@@ -1,4 +1,4 @@
-CircuitSim v1.8.0
+CircuitSim v1.8.2
 =================
 
 Site and download links: https://ra4king.github.io/CircuitSim
@@ -19,11 +19,31 @@ Java 8 and Java 9 to build. For example:
     $ export JAVA_8_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
     $ export JAVA_9_HOME=/usr/lib/jvm/java-9-openjdk-amd64/
 	$ ./gradlew jar
+	
+It is recommended to run with JVM option -Xmx250M to limit the heap size to 250MB.
 
 [1]: http://openjdk.java.net/jeps/238
 
 Changelog
 =========
+
+1.8.2
+=====
+- Hotfix for issue with buffer component where setting a label causes a NullPointerException
+- Hotfix for issue with memory editor for both RAM and ROM components where pasting 16 or more values causes it to skip a column every 16th value
+- Improve error message window to include "Save and Exit" 
+
+
+1.8.1
+-----
+- Significant performance and memory usage improvements
+- Holding CTRL will keep a component selected after placing it
+- Circuit file generation is now deterministic
+- Fix subcircuit pin count mismatch errors
+- Fix display of Output pin, where it used to be printed as Input pin
+- Fix saving ROM contents after being broken in 1.8.0
+- (Breaking change) Fix subcircuit pin ordering on the east and west side by sorting by Y instead of X
+
 
 1.8.0
 -----
