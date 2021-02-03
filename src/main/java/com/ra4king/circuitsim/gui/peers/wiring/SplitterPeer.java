@@ -52,8 +52,8 @@ public class SplitterPeer extends ComponentPeer<Splitter> {
 		properties.ensureProperty(Properties.LABEL_LOCATION);
 		properties.ensureProperty(Properties.DIRECTION);
 		properties.ensureProperty(INPUT_LOCATION);
-		properties.ensureProperty(Properties.BITSIZE);
 		properties.ensureProperty(FANOUTS);
+		properties.ensureProperty(Properties.BITSIZE);
 		properties.mergeIfExists(props);
 		
 		int bitSize = properties.getValue(Properties.BITSIZE);
