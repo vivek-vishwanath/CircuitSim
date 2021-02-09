@@ -1,8 +1,6 @@
 CircuitSim v1.8.2
 =================
 
-Site and download links: https://ra4king.github.io/CircuitSim
-
 Basic circuit simulator with many built-in components. Check out `src/com/ra4king/circuitsim/simulator/components`
 for examples of how Components are written. Their GUI counterparts are in `src/com/ra4king/circuitsim/gui/peers`.
 
