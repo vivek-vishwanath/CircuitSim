@@ -1,6 +1,11 @@
 CircuitSim v1.8.2
 =================
 
+NOTE: The CS 2110 fork of CircuitSim is not compatible with upstream CircuitSim
+jars, nor the version used in CS 2200. If you're looking to download CircuitSim,
+either use the version provided by the CS 2110 Docker container or the jar
+downloadable from Canvas.
+
 Basic circuit simulator with many built-in components. Check out `src/com/ra4king/circuitsim/simulator/components`
 for examples of how Components are written. Their GUI counterparts are in `src/com/ra4king/circuitsim/gui/peers`.
 
