@@ -15,14 +15,10 @@ Screenshot
 Building
 ========
 
-The gradle script produces a [multi-release jar][1] to resolve
-incompatibilities between JavaFX 8 and 9, so you need to install both
-Java 8 and Java 9 to build. For example:
+Requires Gradle and JDK 14. Build a jar using:
 
-    $ export JAVA_8_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
-    $ export JAVA_9_HOME=/usr/lib/jvm/java-9-openjdk-amd64/
-	$ ./gradlew jar
-	
+    $ ./gradlew jar
+
 It is recommended to run with JVM option -Xmx250M to limit the heap size to 250MB.
 
 [1]: http://openjdk.java.net/jeps/238
@@ -34,7 +30,7 @@ Changelog
 =====
 - Hotfix for issue with buffer component where setting a label causes a NullPointerException
 - Hotfix for issue with memory editor for both RAM and ROM components where pasting 16 or more values causes it to skip a column every 16th value
-- Improve error message window to include "Save and Exit" 
+- Improve error message window to include "Save and Exit"
 
 
 1.8.1
