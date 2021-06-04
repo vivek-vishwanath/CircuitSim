@@ -11,7 +11,8 @@ group 'CircuitSim'
 version '1.8.2'
 
 ext.moduleName = 'Project.com.ra4king.circuitsim.gui'
-sourceCompatibility = JavaVersion.VERSION_14
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 // In this section you declare where to find the dependencies of your project
 repositories {

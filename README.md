@@ -15,7 +15,7 @@ Screenshot
 Building
 ========
 
-Requires Gradle and JDK 14. Build a jar using:
+Requires Gradle and JDK 11. Build a jar using:
 
     $ ./gradlew jar
 
