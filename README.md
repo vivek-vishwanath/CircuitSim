@@ -1,5 +1,4 @@
-CircuitSim v1.8.2.1
-=================
+CircuitSim v1.8.3
 
 NOTE: The CS 2110 fork of CircuitSim is not compatible with upstream CircuitSim
 jars, nor the version used in CS 2200. If you're looking to download CircuitSim,
@@ -15,30 +14,26 @@ Screenshot
 Building
 ========
 
-Requires Gradle and JDK 11. Build a jar using:
+The provided gradle scripts can be used to easily build a JAR file. Just run `/.gradlew jar` on Linux
+or `/.gradlew.bat jar` on Windows!
 
-    $ ./gradlew jar
-
-It is recommended to run with JVM option -Xmx250M to limit the heap size to 250MB.
-
-[1]: http://openjdk.java.net/jeps/238
+The release directory contains a `build.sh` script that automatically builds the JAR, and generates an executable image
+for Windows, Mac, and Linux.
 
 Changelog
-=========
-
-1.8.2.1
+1.8.3
 =====
-- Note: this does not correspond to an official CircuitSim release, this is basically to shoehorn in some features that haven't officially made it in to CircuitSim yet but are desired for Fall 2022
-- Created new transistor component that checks that p-type and n-type are connected appropriately
-- Renamed level-triggered SR/D Flip-Flop components to SR/D Latch
-
+- RAM now has the option to have separate load/store ports.
+- The transistor has been updated with a more accurate version. This is backwards compatible by deprecating the old
+  transistor and replacing it with a new component.
+- (CS 2110 fork only) rename SR Flip-Flop to SR Latch, rename D Flip-Flop to D Latch
 
 1.8.2
 =====
 - Hotfix for issue with buffer component where setting a label causes a NullPointerException
-- Hotfix for issue with memory editor for both RAM and ROM components where pasting 16 or more values causes it to skip a column every 16th value
+- Hotfix for issue with memory editor for both RAM and ROM components where pasting 16 or more values causes it to skip
+  a column every 16th value
 - Improve error message window to include "Save and Exit"
-
 
 1.8.1
 -----
