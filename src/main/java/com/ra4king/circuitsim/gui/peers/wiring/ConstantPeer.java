@@ -44,12 +44,14 @@ public class ConstantPeer extends ComponentPeer<Constant> {
 		properties.ensureProperty(VALUE);
 		properties.mergeIfExists(props);
 		
-		Constant constant = new Constant(properties.getValue(Properties.LABEL),
-		                                 properties.getValue(Properties.BITSIZE),
-		                                 properties.getValue(VALUE));
+		Constant
+			constant =
+			new Constant(properties.getValue(Properties.LABEL),
+						 properties.getValue(Properties.BITSIZE),
+						 properties.getValue(VALUE));
 
 		int bitSize = constant.getBitSize();
-		switch(properties.getValue(Properties.BASE)) {
+		switch (properties.getValue(Properties.BASE)) {
 			case BINARY:
 				setWidth(Math.max(2, Math.min(8, bitSize)));
 				setHeight((int)Math.round((1 + (bitSize - 1) / 8) * 1.5));

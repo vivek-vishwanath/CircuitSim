@@ -480,8 +480,10 @@ public class CircuitSim extends Application {
 	}
 	
 	public Map<String, CircuitManager> getCircuitManagers() {
-		return circuitManagers.entrySet().stream().collect(Collectors.toMap(Entry::getKey,
-		                                                                    entry -> entry.getValue().getValue()));
+		return circuitManagers
+			.entrySet()
+			.stream()
+			.collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().getValue()));
 	}
 	
 	public CircuitManager getCircuitManager(String name) {
@@ -666,13 +668,13 @@ public class CircuitSim extends Application {
 					                                                     null,
 					                                                     null)));
 					
-					Node node = property.validator.createGui(stage,
-					                                         property.value,
-					                                         newValue -> Platform.runLater(() -> {
-						                                         Properties newProperties = new Properties(properties);
-						                                         newProperties.setValue(property, newValue);
-						                                         updateProperties(newProperties);
-					                                         }));
+					Node
+						node =
+						property.validator.createGui(stage, property.value, newValue -> Platform.runLater(() -> {
+							Properties newProperties = new Properties(properties);
+							newProperties.setValue(property, newValue);
+							updateProperties(newProperties);
+						}));
 					
 					if (node != null) {
 						Pane valuePane = new Pane(node);
@@ -872,8 +874,9 @@ public class CircuitSim extends Application {
 			String oldName = tab.getText();
 			
 			Pair<ComponentLauncherInfo, CircuitManager> removed = circuitManagers.remove(oldName);
-			Pair<ComponentLauncherInfo, CircuitManager> newPair = new Pair<>(createSubcircuitLauncherInfo(newName),
-			                                                                 removed.getValue());
+			Pair<ComponentLauncherInfo, CircuitManager>
+				newPair =
+				new Pair<>(createSubcircuitLauncherInfo(newName), removed.getValue());
 			circuitManagers.put(newName, newPair);
 			
 			circuitManagers.values().forEach(componentPair -> {
@@ -943,31 +946,36 @@ public class CircuitSim extends Application {
 						if (componentPeer.getClass() == SubcircuitPeer.class) {
 							SubcircuitPeer peer = (SubcircuitPeer)componentPeer;
 							if (peer.getComponent().getSubcircuit() == circuit) {
-								CircuitNode node = getSubcircuitStates(peer.getComponent(),
-								                                       componentPair
-									                                       .getValue()
-									                                       .getCircuitBoard()
-									                                       .getCurrentState());
+								CircuitNode
+									node =
+									getSubcircuitStates(peer.getComponent(),
+									                    componentPair.getValue().getCircuitBoard().getCurrentState());
 								
 								componentPair.getValue().getSelectedElements().remove(peer);
 								
 								if (component == null) {
-									componentPair.getValue().mayThrow(() -> componentPair
+									componentPair
 										.getValue()
-										.getCircuitBoard()
-										.removeElements(Collections.singleton(peer)));
+										.mayThrow(() -> componentPair
+											.getValue()
+											.getCircuitBoard()
+											.removeElements(Collections.singleton(peer)));
 									
 									resetSubcircuitStates(node);
 								} else {
-									SubcircuitPeer newSubcircuit = new SubcircuitPeer(componentPeer.getProperties(),
-									                                                  componentPeer.getX(),
-									                                                  componentPeer.getY());
+									SubcircuitPeer
+										newSubcircuit =
+										new SubcircuitPeer(componentPeer.getProperties(),
+										                   componentPeer.getX(),
+										                   componentPeer.getY());
 									
 									editHistory.disable();
-									componentPair.getValue().mayThrow(() -> componentPair
+									componentPair
 										.getValue()
-										.getCircuitBoard()
-										.updateComponent(peer, newSubcircuit));
+										.mayThrow(() -> componentPair
+											.getValue()
+											.getCircuitBoard()
+											.updateComponent(peer, newSubcircuit));
 									editHistory.enable();
 									
 									node.subcircuit = newSubcircuit.getComponent();
@@ -984,8 +992,9 @@ public class CircuitSim extends Application {
 			} else if (component instanceof Subcircuit && !added) {
 				Subcircuit subcircuit = (Subcircuit)component;
 				
-				CircuitNode node = getSubcircuitStates(subcircuit,
-				                                       getCircuitManager(circuit).getCircuitBoard().getCurrentState());
+				CircuitNode
+					node =
+					getSubcircuitStates(subcircuit, getCircuitManager(circuit).getCircuitBoard().getCurrentState());
 				resetSubcircuitStates(node);
 			}
 		});
@@ -1122,9 +1131,12 @@ public class CircuitSim extends Application {
 			
 			List<WireInfo>
 				wires =
-				selectedElements.stream().filter(element -> element instanceof Wire).map(element -> (Wire)element).map(
-					wire -> new WireInfo(wire.getX(), wire.getY(), wire.getLength(), wire.isHorizontal())).collect(
-					Collectors.toList());
+				selectedElements
+					.stream()
+					.filter(element -> element instanceof Wire)
+					.map(element -> (Wire)element)
+					.map(wire -> new WireInfo(wire.getX(), wire.getY(), wire.getLength(), wire.isHorizontal()))
+					.collect(Collectors.toList());
 			
 			try {
                 if (revisionSignatures == null) {
@@ -1133,14 +1145,16 @@ public class CircuitSim extends Application {
                 if (copiedBlocks == null) {
                     copiedBlocks = new LinkedList<String>();
                 }
-				String data = FileFormat.stringify(new CircuitFile(0,
-				                                                   0,
-				                                                   null,
-				                                                   Collections.singletonList(new CircuitInfo("Copy",
-				                                                                                             components,
-				                                                                                             wires)),
-																   revisionSignatures,
-																   copiedBlocks));
+				String
+					data =
+					FileFormat.stringify(new CircuitFile(0,
+														 0,
+														 null,
+														 Collections.singletonList(new CircuitInfo("Copy",
+																								   components,
+																								   wires)),
+														 revisionSignatures,
+														 copiedBlocks));
 				
 				Clipboard clipboard = Clipboard.getSystemClipboard();
 				ClipboardContent content = new ClipboardContent();
@@ -1226,9 +1240,9 @@ public class CircuitSim extends Application {
 										creator = componentManager.get(clazz, properties).creator;
 									}
 									
-									ComponentPeer<?> created = creator.createComponent(properties,
-									                                                   component.x + i,
-									                                                   component.y + i);
+									ComponentPeer<?>
+										created =
+										creator.createComponent(properties, component.x + i, component.y + i);
 									
 									if (!manager.getCircuitBoard().isValidLocation(created)) {
 										elementsCreated.clear();
@@ -1452,8 +1466,9 @@ public class CircuitSim extends Application {
 				FileChooser fileChooser = new FileChooser();
 				fileChooser.setTitle("Choose sim file");
 				fileChooser.setInitialDirectory(initialDirectory);
-				fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Circuit Sim file", "*.sim"),
-				                                         new ExtensionFilter("All files", "*"));
+				fileChooser
+					.getExtensionFilters()
+					.addAll(new ExtensionFilter("Circuit Sim file", "*.sim"), new ExtensionFilter("All files", "*"));
 				f = fileChooser.showOpenDialog(stage);
 			}
 			
@@ -1814,28 +1829,22 @@ public class CircuitSim extends Application {
 							.getCircuitBoard()
 							.getComponents()
 							.stream()
-							.map(component -> new ComponentInfo(component
-								                                    .getClass()
-								                                    .getName(),
+							.map(component -> new ComponentInfo(component.getClass().getName(),
 							                                    component.getX(),
 							                                    component.getY(),
 							                                    component.getProperties()))
 							.sorted(Comparator.comparingInt(Object::hashCode))
 							.collect(Collectors.toList());
-					List<WireInfo> wires = manager
-						.getCircuitBoard()
-						.getLinks()
-						.stream()
-						.flatMap(linkWires -> linkWires
-							.getWires()
-							.stream())
-						.map(wire -> new WireInfo(
-							wire.getX(),
-							wire.getY(),
-							wire.getLength(),
-							wire.isHorizontal()))
-						.sorted(Comparator.comparingInt(Object::hashCode))
-						.collect(Collectors.toList());
+					List<WireInfo>
+						wires =
+						manager
+							.getCircuitBoard()
+							.getLinks()
+							.stream()
+							.flatMap(linkWires -> linkWires.getWires().stream())
+							.map(wire -> new WireInfo(wire.getX(), wire.getY(), wire.getLength(), wire.isHorizontal()))
+							.sorted(Comparator.comparingInt(Object::hashCode))
+							.collect(Collectors.toList());
 					
 					circuits.add(new CircuitInfo(name, components, wires));
 				});
@@ -1924,10 +1933,12 @@ public class CircuitSim extends Application {
 				}
 			});
 			
-			canvasScrollPane.widthProperty().addListener((observable, oldValue, newValue) -> this.updateCanvasSize(
-				circuitManager));
-			canvasScrollPane.heightProperty().addListener((observable, oldValue, newValue) -> this.updateCanvasSize(
-				circuitManager));
+			canvasScrollPane
+				.widthProperty()
+				.addListener((observable, oldValue, newValue) -> this.updateCanvasSize(circuitManager));
+			canvasScrollPane
+				.heightProperty()
+				.addListener((observable, oldValue, newValue) -> this.updateCanvasSize(circuitManager));
 			
 			String originalName = n;
 			for (int count = 0; getCircuitManager(originalName) != null; count++) {
@@ -1952,8 +1963,8 @@ public class CircuitSim extends Application {
 						dialog.setHeaderText("Rename circuit");
 						dialog.setContentText("Enter new name:");
 						Optional<String> value = dialog.showAndWait();
-						if (value.isPresent() && !(lastTyped = value.get().trim()).isEmpty() && !lastTyped.equals(
-							canvasTab.getText())) {
+						if (value.isPresent() && !(lastTyped = value.get().trim()).isEmpty() &&
+						    !lastTyped.equals(canvasTab.getText())) {
 							renameCircuit(canvasTab, lastTyped);
 							clearSelection();
 						}
@@ -2084,12 +2095,14 @@ public class CircuitSim extends Application {
 		canvasTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			CircuitManager
 				oldManager =
-				oldValue == null || !circuitManagers.containsKey(oldValue.getText()) ? null : circuitManagers.get(
-					oldValue.getText()).getValue();
+				oldValue == null || !circuitManagers.containsKey(oldValue.getText()) ?
+				null :
+				circuitManagers.get(oldValue.getText()).getValue();
 			CircuitManager
 				newManager =
-				newValue == null || !circuitManagers.containsKey(newValue.getText()) ? null : circuitManagers.get(
-					newValue.getText()).getValue();
+				newValue == null || !circuitManagers.containsKey(newValue.getText()) ?
+				null :
+				circuitManagers.get(newValue.getText()).getValue();
 			if (oldManager != null && newManager != null) {
 				newManager.setLastMousePosition(oldManager.getLastMousePosition());
 				modifiedSelection(selectedComponent);
@@ -2198,14 +2211,9 @@ public class CircuitSim extends Application {
 		});
 		
 		Menu fileMenu = new Menu("File");
-		fileMenu.getItems().addAll(newInstance,
-		                           clear,
-		                           new SeparatorMenuItem(),
-		                           open,
-		                           save,
-		                           saveAs,
-		                           new SeparatorMenuItem(),
-		                           exit);
+		fileMenu
+			.getItems()
+			.addAll(newInstance, clear, new SeparatorMenuItem(), open, save, saveAs, new SeparatorMenuItem(), exit);
 		
 		// EDIT Menu
 		undo = new MenuItem("Undo");
@@ -2269,14 +2277,9 @@ public class CircuitSim extends Application {
 		});
 		
 		Menu editMenu = new Menu("Edit");
-		editMenu.getItems().addAll(undo,
-		                           redo,
-		                           new SeparatorMenuItem(),
-		                           copy,
-		                           cut,
-		                           paste,
-		                           new SeparatorMenuItem(),
-		                           selectAll);
+		editMenu
+			.getItems()
+			.addAll(undo, redo, new SeparatorMenuItem(), copy, cut, paste, new SeparatorMenuItem(), selectAll);
 		
 		// COMPONENTS Menu
 		MenuItem loadLibrary = new MenuItem("Load library");
@@ -2510,19 +2513,21 @@ public class CircuitSim extends Application {
 		clickMode = new ToggleButton("Click Mode (Shift)");
 		clickMode.setTooltip(new Tooltip("Clicking will sticky this mode"));
 		clickMode.setOnAction(event -> clickedDirectly = clickMode.isSelected());
-		clickMode.selectedProperty().addListener((observable, oldValue, newValue) -> scene.setCursor(newValue ?
-		                                                                                             Cursor.HAND :
-		                                                                                             Cursor.DEFAULT));
+		clickMode
+			.selectedProperty()
+			.addListener((observable, oldValue, newValue) -> scene.setCursor(newValue ? Cursor.HAND : Cursor.DEFAULT));
 		
 		Pane blank = new Pane();
 		HBox.setHgrow(blank, Priority.ALWAYS);
 		
-		toolBar.getItems().addAll(clickMode,
-		                          new Separator(Orientation.VERTICAL),
-		                          inputPinButton,
-		                          outputPinButton,
-		                          andButton,
-		                          orButton,
+		toolBar
+			.getItems()
+			.addAll(clickMode,
+			        new Separator(Orientation.VERTICAL),
+			        inputPinButton,
+			        outputPinButton,
+			        andButton,
+			        orButton,
 		                          notButton,
 		                          xorButton,
 		                          tunnelButton,
