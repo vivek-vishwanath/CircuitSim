@@ -21,6 +21,13 @@ The release directory contains a `build.sh` script that automatically builds the
 for Windows, Mac, and Linux.
 
 Changelog
+=========
+
+1.8.4
+=====
+
+- Fixed an issue that leads to erroneous Short Circuit messages when there are none.
+
 1.8.3
 =====
 - RAM now has the option to have separate load/store ports.
