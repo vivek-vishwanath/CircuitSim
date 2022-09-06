@@ -44,13 +44,12 @@ public class Probe extends ComponentPeer<Component> {
 		
 		int bitSize = properties.getValue(Properties.BITSIZE);
 		
-		Component probe = new Component(properties.getValue(Properties.LABEL),
-		                                new int[] { bitSize }) {
+		Component probe = new Component(properties.getValue(Properties.LABEL), new int[] { bitSize }) {
 			@Override
 			public void valueChanged(CircuitState state, WireValue value, int portIndex) {}
 		};
 
-		switch(properties.getValue(Properties.BASE)) {
+		switch (properties.getValue(Properties.BASE)) {
 			case BINARY:
 				setWidth(Math.max(2, Math.min(8, bitSize)));
 				setHeight((int)Math.round((1 + (bitSize - 1) / 8) * 1.5));
@@ -69,19 +68,11 @@ public class Probe extends ComponentPeer<Component> {
 		}
 		
 		List<PortConnection> connections = new ArrayList<>();
-		switch(properties.getValue(Properties.DIRECTION)) {
-			case EAST:
-				connections.add(new PortConnection(this, probe.getPort(0), getWidth(), getHeight() / 2));
-				break;
-			case WEST:
-				connections.add(new PortConnection(this, probe.getPort(0), 0, getHeight() / 2));
-				break;
-			case NORTH:
-				connections.add(new PortConnection(this, probe.getPort(0), getWidth() / 2, 0));
-				break;
-			case SOUTH:
-				connections.add(new PortConnection(this, probe.getPort(0), getWidth() / 2, getHeight()));
-				break;
+		switch (properties.getValue(Properties.DIRECTION)) {
+			case EAST -> connections.add(new PortConnection(this, probe.getPort(0), getWidth(), getHeight() / 2));
+			case WEST -> connections.add(new PortConnection(this, probe.getPort(0), 0, getHeight() / 2));
+			case NORTH -> connections.add(new PortConnection(this, probe.getPort(0), getWidth() / 2, 0));
+			case SOUTH -> connections.add(new PortConnection(this, probe.getPort(0), getWidth() / 2, getHeight()));
 		}
 		
 		init(probe, properties, connections);
@@ -96,7 +87,7 @@ public class Probe extends ComponentPeer<Component> {
 
 		WireValue value = circuitState.getLastReceived(port);
 		String valStr = "";
-		switch(getProperties().getValue(Properties.BASE)) {
+		switch (getProperties().getValue(Properties.BASE)) {
 			case BINARY:
 				valStr = value.toString();
 				break;
@@ -108,7 +99,7 @@ public class Probe extends ComponentPeer<Component> {
 				break;
 		}
 
-		if(circuitState.isShortCircuited(port.getLink())) {
+		if (circuitState.isShortCircuited(port.getLink())) {
 			graphics.setFill(Color.RED);
 		} else {
 			graphics.setFill(Color.LIGHTGRAY);
