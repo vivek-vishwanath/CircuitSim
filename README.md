@@ -1,4 +1,5 @@
-CircuitSim v1.8.3
+CircuitSim v1.8.4
+=================
 
 NOTE: The CS 2110 fork of CircuitSim is not compatible with upstream CircuitSim
 jars, nor the version used in CS 2200. If you're looking to download CircuitSim,
