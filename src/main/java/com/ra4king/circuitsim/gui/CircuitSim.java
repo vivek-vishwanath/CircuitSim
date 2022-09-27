@@ -1501,19 +1501,6 @@ public class CircuitSim extends Application {
 						
 						clearCircuits();
 						
-						if (circuitFile.libraryPaths != null) {
-							for (String libraryPath : circuitFile.libraryPaths) {
-								File libraryFile = new File(libraryPath);
-								if (libraryFile.isFile()) {
-									Platform.runLater(() -> dialog.setContentText(
-										"Loading library " + libraryFile.getName()));
-									runFxSync(() -> loadLibrary(libraryFile));
-								} else {
-									throw new IllegalArgumentException("Library does not exist: " + libraryPath);
-								}
-							}
-						}
-						
 						Platform.runLater(() -> {
 							bar.setProgress(0.1);
 							dialog.setContentText("Creating circuits...");
@@ -1701,65 +1688,6 @@ public class CircuitSim extends Application {
 		}
 	}
 	
-	private void loadLibrary(File file) {
-		try (JarFile jarFile = new JarFile(file)) {
-			Enumeration<JarEntry> e = jarFile.entries();
-			
-			URLClassLoader cl = URLClassLoader.newInstance(new URL[] { file.toURI().toURL() });
-			
-			while (e.hasMoreElements()) {
-				JarEntry je = e.nextElement();
-				if (je.isDirectory() || !je.getName().endsWith(".class")) {
-					continue;
-				}
-				
-				try {
-					String className = je.getName().substring(0, je.getName().length() - 6);
-					className = className.replace('/', '.');
-					Class<?> c = cl.loadClass(className);
-					
-					if (ComponentPeer.class.isAssignableFrom(c)) {
-						@SuppressWarnings("unchecked")
-						Class<? extends ComponentPeer<?>> cc = (Class<? extends ComponentPeer<?>>)c;
-						componentManager.register(cc);
-					}
-				} catch (Throwable t) {
-					t.printStackTrace();
-					
-					Alert alert = new Alert(AlertType.ERROR);
-					alert.initOwner(stage);
-					alert.initModality(Modality.WINDOW_MODAL);
-					alert.setTitle("Error loading class");
-					alert.setHeaderText("Error loading class");
-					alert.setContentText("Error when loading class: " + t.getMessage());
-					alert.getButtonTypes().add(ButtonType.CANCEL);
-					Optional<ButtonType> buttonType = alert.showAndWait();
-					if (buttonType.isPresent() && buttonType.get() == ButtonType.CANCEL) {
-						break;
-					}
-				}
-			}
-			
-			if (libraryPaths == null) {
-				libraryPaths = new LinkedHashSet<>();
-			}
-			
-			Path libraryPath = file.toPath().toAbsolutePath();
-			libraryPaths.add(libraryPath.toString());
-			
-			refreshComponentsTabs.run();
-		} catch (Exception exc) {
-			exc.printStackTrace();
-			
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.initOwner(stage);
-			alert.initModality(Modality.WINDOW_MODAL);
-			alert.setTitle("Error opening library");
-			alert.setHeaderText("Error opening library");
-			alert.setContentText("Error when opening library: " + exc.getMessage());
-			alert.showAndWait();
-		}
-	}
 	
 	/**
 	 * Get the last saved file.
@@ -2281,22 +2209,6 @@ public class CircuitSim extends Application {
 			.getItems()
 			.addAll(undo, redo, new SeparatorMenuItem(), copy, cut, paste, new SeparatorMenuItem(), selectAll);
 		
-		// COMPONENTS Menu
-		MenuItem loadLibrary = new MenuItem("Load library");
-		loadLibrary.setOnAction(event -> {
-			FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Choose library file");
-			fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
-			fileChooser.getExtensionFilters().add(new ExtensionFilter("Java Archive", "*.jar"));
-			File file = fileChooser.showOpenDialog(stage);
-			if (file != null) {
-				loadLibrary(file);
-			}
-		});
-		
-		Menu componentsMenu = new Menu("Components");
-		componentsMenu.getItems().addAll(loadLibrary);
-		
 		// CIRCUITS Menu
 		MenuItem newCircuit = new MenuItem("New circuit");
 		newCircuit.setAccelerator(new KeyCodeCombination(KeyCode.T, KeyCombination.SHORTCUT_DOWN));
@@ -2433,7 +2345,7 @@ public class CircuitSim extends Application {
 		});
 		helpMenu.getItems().addAll(help, about);
 		
-		MenuBar menuBar = new MenuBar(fileMenu, editMenu, componentsMenu, circuitsMenu, simulationMenu, helpMenu);
+		MenuBar menuBar = new MenuBar(fileMenu, editMenu, circuitsMenu, simulationMenu, helpMenu);
 		menuBar.setUseSystemMenuBar(true);
 		
 		ScrollPane propertiesScrollPane = new ScrollPane(propertiesTable);
