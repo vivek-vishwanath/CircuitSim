@@ -1,11 +1,9 @@
 package com.ra4king.circuitsim.gui;
 
 import java.awt.image.RenderedImage;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -137,7 +135,7 @@ import javafx.util.Pair;
  * @author Roi Atalla
  */
 public class CircuitSim extends Application {
-	public static final String VERSION = "1.8.5 2110 version";
+	public static final String VERSION = CircuitSimVersion.VERSION.getVersion(); // for backwards compatibility
 	public static final String VERSION_TAG_LINE = "CircuitSim v" + VERSION + ", created by Roi Atalla © 2022";
 	
 	private static boolean mainCalled = false;
@@ -230,7 +228,7 @@ public class CircuitSim extends Application {
 		return openWindow;
 	}
 	
-	private void runFxSync(Runnable runnable) {
+	void runFxSync(Runnable runnable) {
 		if (Platform.isFxApplicationThread()) {
 			runnable.run();
 		} else {
@@ -1242,7 +1240,7 @@ public class CircuitSim extends Application {
 										clazz =
 										(Class<? extends ComponentPeer<?>>)Class.forName(component.name);
 									
-									Properties properties = new Properties();
+									Properties properties = new Properties(new CircuitSimVersion(parsed.version));
 									component.properties.forEach((key, value) -> properties.setProperty(new Property<>(key,
 									                                                                                   null,
 									                                                                                   value)));
@@ -1560,7 +1558,7 @@ public class CircuitSim extends Application {
 										clazz =
 										(Class<? extends ComponentPeer<?>>)Class.forName(component.name);
 									
-									Properties properties = new Properties();
+									Properties properties = new Properties(new CircuitSimVersion(circuitFile.version));
 									if (component.properties != null) {
 										component.properties.forEach((key, value) -> properties.setProperty(new Property<>(key,
 										                                                                                   null,
