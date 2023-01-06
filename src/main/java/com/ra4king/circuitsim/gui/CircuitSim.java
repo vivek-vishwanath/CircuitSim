@@ -667,6 +667,10 @@ public class CircuitSim extends Application {
 			
 			// This is an interesting trick to force all usage of "property" to work on the same type.
 			private <T> void acceptProperty(Property<T> property) {
+				if (property.hidden) {
+					return;
+				}
+				
 				int size = propertiesTable.getChildren().size();
 				
 				Label name = new Label(property.display);
@@ -888,8 +892,7 @@ public class CircuitSim extends Application {
 			String oldName = tab.getText();
 			
 			Pair<ComponentLauncherInfo, CircuitManager> removed = circuitManagers.remove(oldName);
-			Pair<ComponentLauncherInfo, CircuitManager>
-				newPair =
+			Pair<ComponentLauncherInfo, CircuitManager> newPair =
 				new Pair<>(createSubcircuitLauncherInfo(newName), removed.getValue());
 			circuitManagers.put(newName, newPair);
 			
@@ -960,10 +963,11 @@ public class CircuitSim extends Application {
 						if (componentPeer.getClass() == SubcircuitPeer.class) {
 							SubcircuitPeer peer = (SubcircuitPeer)componentPeer;
 							if (peer.getComponent().getSubcircuit() == circuit) {
-								CircuitNode
-									node =
-									getSubcircuitStates(peer.getComponent(),
-									                    componentPair.getValue().getCircuitBoard().getCurrentState());
+								CircuitNode node = getSubcircuitStates(peer.getComponent(),
+								                                       componentPair
+									                                       .getValue()
+									                                       .getCircuitBoard()
+									                                       .getCurrentState());
 								
 								componentPair.getValue().getSelectedElements().remove(peer);
 								
@@ -977,11 +981,9 @@ public class CircuitSim extends Application {
 									
 									resetSubcircuitStates(node);
 								} else {
-									SubcircuitPeer
-										newSubcircuit =
-										new SubcircuitPeer(componentPeer.getProperties(),
-										                   componentPeer.getX(),
-										                   componentPeer.getY());
+									SubcircuitPeer newSubcircuit = new SubcircuitPeer(componentPeer.getProperties(),
+									                                                  componentPeer.getX(),
+									                                                  componentPeer.getY());
 									
 									editHistory.disable();
 									componentPair
@@ -1006,8 +1008,7 @@ public class CircuitSim extends Application {
 			} else if (component instanceof Subcircuit && !added) {
 				Subcircuit subcircuit = (Subcircuit)component;
 				
-				CircuitNode
-					node =
+				CircuitNode node =
 					getSubcircuitStates(subcircuit, getCircuitManager(circuit).getCircuitBoard().getCurrentState());
 				resetSubcircuitStates(node);
 			}
@@ -1131,26 +1132,22 @@ public class CircuitSim extends Application {
 				return;
 			}
 			
-			List<ComponentInfo>
-				components =
-				selectedElements
-					.stream()
-					.filter(element -> element instanceof ComponentPeer<?>)
-					.map(element -> (ComponentPeer<?>)element)
-					.map(component -> new ComponentInfo(component.getClass().getName(),
-					                                    component.getX(),
-					                                    component.getY(),
-					                                    component.getProperties()))
-					.collect(Collectors.toList());
+			List<ComponentInfo> components = selectedElements
+				.stream()
+				.filter(element -> element instanceof ComponentPeer<?>)
+				.map(element -> (ComponentPeer<?>)element)
+				.map(component -> new ComponentInfo(component.getClass().getName(),
+				                                    component.getX(),
+				                                    component.getY(),
+				                                    component.getProperties()))
+				.collect(Collectors.toList());
 			
-			List<WireInfo>
-				wires =
-				selectedElements
-					.stream()
-					.filter(element -> element instanceof Wire)
-					.map(element -> (Wire)element)
-					.map(wire -> new WireInfo(wire.getX(), wire.getY(), wire.getLength(), wire.isHorizontal()))
-					.collect(Collectors.toList());
+			List<WireInfo> wires = selectedElements
+				.stream()
+				.filter(element -> element instanceof Wire)
+				.map(element -> (Wire)element)
+				.map(wire -> new WireInfo(wire.getX(), wire.getY(), wire.getLength(), wire.isHorizontal()))
+				.collect(Collectors.toList());
 			
 			try {
                 if (revisionSignatures == null) {
@@ -1159,16 +1156,14 @@ public class CircuitSim extends Application {
                 if (copiedBlocks == null) {
                     copiedBlocks = new LinkedList<String>();
                 }
-				String
-					data =
-					FileFormat.stringify(new CircuitFile(0,
-														 0,
-														 null,
-														 Collections.singletonList(new CircuitInfo("Copy",
-																								   components,
-																								   wires)),
-														 revisionSignatures,
-														 copiedBlocks));
+				String data = FileFormat.stringify(new CircuitFile(0,
+														 		   0,
+														 		   null,
+														 		   Collections.singletonList(new CircuitInfo("Copy",
+																								   		     components,
+																								   			 wires)),
+														 		   revisionSignatures,
+														 		   copiedBlocks));
 				
 				Clipboard clipboard = Clipboard.getSystemClipboard();
 				ClipboardContent content = new ClipboardContent();
@@ -1236,8 +1231,7 @@ public class CircuitSim extends Application {
 							for (ComponentInfo component : circuit.components) {
 								try {
 									@SuppressWarnings("unchecked")
-									Class<? extends ComponentPeer<?>>
-										clazz =
+									Class<? extends ComponentPeer<?>> clazz =
 										(Class<? extends ComponentPeer<?>>)Class.forName(component.name);
 									
 									Properties properties = new Properties(new CircuitSimVersion(parsed.version));
@@ -1254,8 +1248,7 @@ public class CircuitSim extends Application {
 										creator = componentManager.get(clazz, properties).creator;
 									}
 									
-									ComponentPeer<?>
-										created =
+									ComponentPeer<?> created =
 										creator.createComponent(properties, component.x + i, component.y + i);
 									
 									if (!manager.getCircuitBoard().isValidLocation(created)) {
@@ -1470,12 +1463,10 @@ public class CircuitSim extends Application {
 			File f = file;
 			
 			if (f == null) {
-				File
-					initialDirectory =
-					lastSaveFile == null || lastSaveFile.getParentFile() == null ||
-					!lastSaveFile.getParentFile().isDirectory() ?
-					new File(System.getProperty("user.dir")) :
-					lastSaveFile.getParentFile();
+				File initialDirectory = lastSaveFile == null || lastSaveFile.getParentFile() == null ||
+				                        !lastSaveFile.getParentFile().isDirectory() ?
+				                        new File(System.getProperty("user.dir")) :
+				                        lastSaveFile.getParentFile();
 				
 				FileChooser fileChooser = new FileChooser();
 				fileChooser.setTitle("Choose sim file");
@@ -1554,8 +1545,7 @@ public class CircuitSim extends Application {
 							for (ComponentInfo component : circuit.components) {
 								try {
 									@SuppressWarnings("unchecked")
-									Class<? extends ComponentPeer<?>>
-										clazz =
+									Class<? extends ComponentPeer<?>> clazz =
 										(Class<? extends ComponentPeer<?>>)Class.forName(component.name);
 									
 									Properties properties = new Properties(new CircuitSimVersion(circuitFile.version));
@@ -1768,28 +1758,24 @@ public class CircuitSim extends Application {
 					
 					CircuitManager manager = circuitManagers.get(name).getValue();
 					
-					List<ComponentInfo>
-						components =
-						manager
-							.getCircuitBoard()
-							.getComponents()
-							.stream()
-							.map(component -> new ComponentInfo(component.getClass().getName(),
-							                                    component.getX(),
-							                                    component.getY(),
-							                                    component.getProperties()))
-							.sorted(Comparator.comparingInt(Object::hashCode))
-							.collect(Collectors.toList());
-					List<WireInfo>
-						wires =
-						manager
-							.getCircuitBoard()
-							.getLinks()
-							.stream()
-							.flatMap(linkWires -> linkWires.getWires().stream())
-							.map(wire -> new WireInfo(wire.getX(), wire.getY(), wire.getLength(), wire.isHorizontal()))
-							.sorted(Comparator.comparingInt(Object::hashCode))
-							.collect(Collectors.toList());
+					List<ComponentInfo> components = manager
+						.getCircuitBoard()
+						.getComponents()
+						.stream()
+						.map(component -> new ComponentInfo(component.getClass().getName(),
+						                                    component.getX(),
+						                                    component.getY(),
+						                                    component.getProperties()))
+						.sorted(Comparator.comparingInt(Object::hashCode))
+						.collect(Collectors.toList());
+					List<WireInfo> wires = manager
+						.getCircuitBoard()
+						.getLinks()
+						.stream()
+						.flatMap(linkWires -> linkWires.getWires().stream())
+						.map(wire -> new WireInfo(wire.getX(), wire.getY(), wire.getLength(), wire.isHorizontal()))
+						.sorted(Comparator.comparingInt(Object::hashCode))
+						.collect(Collectors.toList());
 					
 					circuits.add(new CircuitInfo(name, components, wires));
 				});
@@ -2038,16 +2024,12 @@ public class CircuitSim extends Application {
 		canvasTabPane.widthProperty().addListener((observable, oldValue, newValue) -> needsRepaint = true);
 		canvasTabPane.heightProperty().addListener((observable, oldValue, newValue) -> needsRepaint = true);
 		canvasTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			CircuitManager
-				oldManager =
-				oldValue == null || !circuitManagers.containsKey(oldValue.getText()) ?
-				null :
-				circuitManagers.get(oldValue.getText()).getValue();
-			CircuitManager
-				newManager =
-				newValue == null || !circuitManagers.containsKey(newValue.getText()) ?
-				null :
-				circuitManagers.get(newValue.getText()).getValue();
+			CircuitManager oldManager = oldValue == null || !circuitManagers.containsKey(oldValue.getText()) ?
+			                            null :
+			                            circuitManagers.get(oldValue.getText()).getValue();
+			CircuitManager newManager = newValue == null || !circuitManagers.containsKey(newValue.getText()) ?
+			                            null :
+			                            circuitManagers.get(newValue.getText()).getValue();
 			if (oldManager != null && newManager != null) {
 				newManager.setLastMousePosition(oldManager.getLastMousePosition());
 				modifiedSelection(selectedComponent);
@@ -2198,8 +2180,7 @@ public class CircuitSim extends Application {
 						String fileName = String.format("%02d-%s.png", counter.getAndIncrement(), name);
 						File file = new File(outputDirectory, fileName);
 						if (file.exists()) {
-							AtomicReference<Optional<ButtonType>>
-								alreadyExistsDecision =
+							AtomicReference<Optional<ButtonType>> alreadyExistsDecision =
 								new AtomicReference<>(Optional.empty());
 							CountDownLatch latch = new CountDownLatch(1);
 							
@@ -2448,12 +2429,10 @@ public class CircuitSim extends Application {
 			msg += "- Double clicking on a subcircuit will automatically go to its circuit tab as a child state.\n\n";
 			msg += "- Holding Shift will enable Click Mode which will click through to components.\n\n";
 			msg += "- Holding Shift after dragging a new wire will delete existing wires.\n\n";
-			msg +=
-				"- Holding Ctrl while dragging a new wire allows release of the mouse, and continuing the wire " +
-				"on" + " " + "click.\n\n";
-			msg +=
-				"- Holding Ctrl while selecting components and wires will include them in the selection group" +
-				".\n\n";
+			msg += "- Holding Ctrl while dragging a new wire allows release of the mouse, and continuing the wire " +
+			       "on" + " " + "click.\n\n";
+			msg += "- Holding Ctrl while selecting components and wires will include them in the selection group" +
+			       ".\n\n";
 			msg += "- Holding Ctrl while dragging components will disable preserving connections.\n\n";
 			msg += "- Holding Ctrl while placing a new component will keep the component selected.\n\n";
 			
