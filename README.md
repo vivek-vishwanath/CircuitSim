@@ -1,4 +1,4 @@
-CircuitSim v1.8.5
+CircuitSim v1.9.0
 =================
 
 NOTE: The CS 2110 fork of CircuitSim is not compatible with upstream CircuitSim
