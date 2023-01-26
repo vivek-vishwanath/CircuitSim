@@ -1,4 +1,4 @@
-CircuitSim v1.9.0
+CircuitSim v1.9.1
 =================
 
 NOTE: The CS 2110 fork of CircuitSim is not compatible with upstream CircuitSim
@@ -23,6 +23,11 @@ for Windows, Mac, and Linux.
 
 Changelog
 =========
+
+1.9.1
+=====
+
+- Hotfix for ROM component not saving its contents to disk.
 
 1.9.0
 =====
