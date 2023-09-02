@@ -288,9 +288,9 @@ public class FileFormat {
 		return GSON.toJson(circuitFile);
 	}
 	
-	public static CircuitFile load(File file) throws IOException {
+	public static CircuitFile load(File file, boolean taDebugMode) throws IOException {
 		CircuitFile savedFile = parse(readFile(file));
-		if (!savedFile.revisionSignaturesAreValid()) {
+		if (!taDebugMode && !savedFile.revisionSignaturesAreValid()) {
 			throw new NullPointerException("File is corrupted. Contact Course Staff for Assistance.");
 		}
 		return savedFile;
