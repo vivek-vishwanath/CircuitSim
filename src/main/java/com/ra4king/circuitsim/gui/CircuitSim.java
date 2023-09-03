@@ -153,6 +153,7 @@ public class CircuitSim extends Application {
 	private Stage stage;
 	private Scene scene;
 	private boolean openWindow = true;
+	private boolean taDebugMode = false;
 	
 	private Simulator simulator;
 	private CheckMenuItem simulationEnabled;
@@ -1225,7 +1226,7 @@ public class CircuitSim extends Application {
                     this.copiedBlocks.add(parsed.revisionSignatures.get((int)(Math.random() * parsed.revisionSignatures.size())));
                     this.copiedBlocks.add(parsed.revisionSignatures.get(parsed.revisionSignatures.size() - 1));
                     this.copiedBlocks.addAll(parsed.getCopiedBlocks());
-                } else if (parsed.revisionSignatures == null) {
+                } else if (parsed.revisionSignatures == null && !taDebugMode) {
                     throw new NullPointerException("Clipboard data is corrupted");
                 }
 				
@@ -1504,7 +1505,7 @@ public class CircuitSim extends Application {
 						
 						editHistory.disable();
 						
-						CircuitFile circuitFile = FileFormat.load(lastSaveFile);
+						CircuitFile circuitFile = FileFormat.load(lastSaveFile, taDebugMode);
 
                         this.revisionSignatures = circuitFile.revisionSignatures;
 						
@@ -2601,13 +2602,21 @@ public class CircuitSim extends Application {
 			saveConfFile();
 			
 			Parameters parameters = getParameters();
-			if (parameters != null && !parameters.getRaw().isEmpty()) {
+			if (parameters != null) {
 				List<String> args = parameters.getRaw();
-				loadCircuitsInternal(new File(args.get(0)));
-				
-				if (args.size() > 1) {
-					for (int i = 1; i < args.size(); i++) {
-						new CircuitSim(true).loadCircuitsInternal(new File(args.get(i)));
+
+				if (!args.isEmpty() && args.get(0).equals("--ta-debug")) {
+					taDebugMode = true;
+					args = args.stream().skip(1).collect(Collectors.toList());
+				}
+
+				if (!args.isEmpty()) {
+					loadCircuitsInternal(new File(args.get(0)));
+
+					if (args.size() > 1) {
+						for (int i = 1; i < args.size(); i++) {
+							new CircuitSim(true).loadCircuitsInternal(new File(args.get(i)));
+						}
 					}
 				}
 			}
