@@ -1,5 +1,5 @@
-CircuitSim v1.9.1
-=================
+CircuitSim v1.9.2b
+==================
 
 NOTE: The CS 2110 fork of CircuitSim is not compatible with upstream CircuitSim
 jars, nor the version used in CS 2200. If you're looking to download CircuitSim,
@@ -15,14 +15,21 @@ Screenshot
 Building
 ========
 
-The provided gradle scripts can be used to easily build a JAR file. Just run `/.gradlew jar` on Linux
-or `/.gradlew.bat jar` on Windows!
+The provided gradle scripts can be used to easily build a JAR file. Just run `./gradlew jar` on Linux
+or `.\gradlew.bat jar` on Windows!
 
 The release directory contains a `build.sh` script that automatically builds the JAR, and generates an executable image
 for Windows, Mac, and Linux.
 
 Changelog
 =========
+
+1.9.2b
+======
+CS 2110–specific release
+
+- Support both aarch64 and x86\_64 on both Linux and macOS
+- Removed Herobrine
 
 1.9.1
 =====
