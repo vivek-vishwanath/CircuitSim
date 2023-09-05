@@ -26,7 +26,12 @@ public class SRFlipFlopPeer extends ComponentPeer<SRFlipFlop> {
 		manager.addComponent(
 			new Pair<>("Memory", "SR Flip-Flop"),
 			new Image(SRFlipFlopPeer.class.getResourceAsStream("/images/SRFlipFlop.png")),
-			new Properties());
+			new Properties(),
+			// Confusing to 2110 students since it contradicts the
+			// level-triggered RS Latch shown in class. We have also never used
+			// this component in an assignment and never will, to my knowledge.
+			// So hide it from the list of components.
+			false);
 	}
 	
 	private final PortConnection clockConnection;

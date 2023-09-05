@@ -26,7 +26,13 @@ public class DFlipFlopPeer extends ComponentPeer<DFlipFlop> {
 		manager.addComponent(
 			new Pair<>("Memory", "D Flip-Flop"),
 			new Image(DFlipFlopPeer.class.getResourceAsStream("/images/DFlipFlop.png")),
-			new Properties());
+			new Properties(),
+			// Confusing to 2110 students since it has both an enable pin and a
+			// clock pin. Also, it outputs the new value half a cycle sooner than
+			// the design shown in class. We have also never used this
+			// component in an assignment and never will, to my knowledge. So
+			// hide it from the list of components.
+			false);
 	}
 	
 	private final PortConnection clockConnection;
