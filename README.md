@@ -1,10 +1,9 @@
 CircuitSim v1.9.2b
 ==================
 
-NOTE: The CS 2110 fork of CircuitSim is not compatible with upstream CircuitSim
-jars, nor the version used in CS 2200. If you're looking to download CircuitSim,
-either use the version provided by the CS 2110 Docker container or the jar
-downloadable from Canvas.
+NOTE: The CS 2110 fork of CircuitSim is not compatible with [upstream CircuitSim][1]
+jars, nor the version used in CS 2200. If you're a CS 2110 student looking to
+download CircuitSim, use the jar provided on Canvas.
 
 Basic circuit simulator with many built-in components. Check out `src/com/ra4king/circuitsim/simulator/components`
 for examples of how Components are written. Their GUI counterparts are in `src/com/ra4king/circuitsim/gui/peers`.
@@ -29,6 +28,8 @@ Changelog
 CS 2110–specific release
 
 - Support both aarch64 and x86\_64 on both Linux and macOS
+- Display high-impedance/floating state as "z", not "x"
+- Hide SR/D Flip-Flops because they will confuse students
 - Removed Herobrine
 
 1.9.1
@@ -177,3 +178,5 @@ CS 2110–specific release
 - Fixed file load issue where an error was thrown if the folder doesn't exist anymore
 - Fixed issues with dragging + keyboard shortcuts
 - Fixed an undo bug when updating components
+
+[1]: https://github.com/ra4king/CircuitSim
