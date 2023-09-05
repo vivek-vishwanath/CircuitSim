@@ -9,7 +9,6 @@ import com.ra4king.circuitsim.gui.Connection.PortConnection;
 import com.ra4king.circuitsim.gui.GuiUtils;
 import com.ra4king.circuitsim.gui.Properties;
 import com.ra4king.circuitsim.gui.Properties.Direction;
-import com.ra4king.circuitsim.gui.Properties.Base;
 import com.ra4king.circuitsim.gui.Properties.Property;
 import com.ra4king.circuitsim.simulator.CircuitState;
 import com.ra4king.circuitsim.simulator.Component;
@@ -49,7 +48,7 @@ public class Probe extends ComponentPeer<Component> {
 			@Override
 			public void valueChanged(CircuitState state, WireValue value, int portIndex) {}
 		};
-
+		
 		switch (properties.getValue(Properties.BASE)) {
 			case BINARY -> {
 				setWidth(Math.max(2, Math.min(8, bitSize)));
@@ -61,7 +60,7 @@ public class Probe extends ComponentPeer<Component> {
 			}
 			case DECIMAL -> {
 				// 3.322 ~ log_2(10)
-				int width = Math.max(2, (int) Math.ceil(bitSize / 3.322));
+				int width = Math.max(2, (int)Math.ceil(bitSize / 3.322));
 				width += bitSize == 32 ? 1 : 0;
 				setWidth(width);
 				setHeight(2);
@@ -85,21 +84,14 @@ public class Probe extends ComponentPeer<Component> {
 		
 		graphics.setFont(GuiUtils.getFont(16));
 		Port port = getComponent().getPort(0);
-
+		
 		WireValue value = circuitState.getLastReceived(port);
-		String valStr = "";
-		switch (getProperties().getValue(Properties.BASE)) {
-			case BINARY:
-				valStr = value.toString();
-				break;
-			case HEXADECIMAL:
-				valStr = value.toHexString();
-				break;
-			case DECIMAL:
-				valStr = value.toDecString();
-				break;
-		}
-
+		String valStr = switch (getProperties().getValue(Properties.BASE)) {
+			case BINARY -> value.toString();
+			case HEXADECIMAL -> value.toHexString();
+			case DECIMAL -> value.toDecString();
+		};
+		
 		if (circuitState.isShortCircuited(port.getLink())) {
 			graphics.setFill(Color.RED);
 		} else {

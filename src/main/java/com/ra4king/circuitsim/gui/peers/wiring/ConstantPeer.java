@@ -49,21 +49,21 @@ public class ConstantPeer extends ComponentPeer<Constant> {
 		
 		int bitSize = constant.getBitSize();
 		switch (properties.getValue(Properties.BASE)) {
-			case BINARY:
+			case BINARY -> {
 				setWidth(Math.max(2, Math.min(8, bitSize)));
 				setHeight((int)Math.round((1 + (bitSize - 1) / 8) * 1.5));
-				break;
-			case HEXADECIMAL:
+			}
+			case HEXADECIMAL -> {
 				setWidth(Math.max(2, 1 + (bitSize - 1) / 4));
 				setHeight(2);
-				break;
-			case DECIMAL:
+			}
+			case DECIMAL -> {
 				// 3.322 ~ log_2(10)
-				int width = Math.max(2, (int) Math.ceil(bitSize / 3.322));
+				int width = Math.max(2, (int)Math.ceil(bitSize / 3.322));
 				width += bitSize == 32 ? 1 : 0;
 				setWidth(width);
 				setHeight(2);
-				break;
+			}
 		}
 		
 		value = WireValue.of(constant.getValue(), bitSize);
@@ -89,26 +89,19 @@ public class ConstantPeer extends ComponentPeer<Constant> {
 		
 		graphics.fillRoundRect(getScreenX(), getScreenY(), getScreenWidth(), getScreenHeight(), 10, 10);
 		graphics.strokeRoundRect(getScreenX(), getScreenY(), getScreenWidth(), getScreenHeight(), 10, 10);
-
-		String valStr = "";
-		switch(getProperties().getValue(Properties.BASE)) {
-			case BINARY:
-				valStr = value.toString();
-				break;
-			case HEXADECIMAL:
-				valStr = value.toHexString();
-				break;
-			case DECIMAL:
-				valStr = value.toDecString();
-				break;
-		}
+		
+		String valStr = switch (getProperties().getValue(Properties.BASE)) {
+			case BINARY -> value.toString();
+			case HEXADECIMAL -> value.toHexString();
+			case DECIMAL -> value.toDecString();
+		};
 		
 		if (value.getBitSize() > 1) {
 			graphics.setFill(Color.BLACK);
 		} else {
 			GuiUtils.setBitColor(graphics, value.getBit(0));
 		}
-
+		
 		if (getProperties().getValue(Properties.BASE) == Properties.Base.DECIMAL) {
 			GuiUtils.drawValueOneLine(graphics, valStr, getScreenX(), getScreenY(), getScreenWidth());
 		} else {

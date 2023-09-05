@@ -2484,7 +2484,8 @@ public class CircuitSim extends Application {
 		});
 		helpMenu.getItems().addAll(help, about);
 		
-		MenuBar menuBar = new MenuBar(fileMenu, editMenu, viewMenu, circuitsMenu, simulationMenu, helpMenu);
+		MenuBar menuBar =
+			new MenuBar(fileMenu, editMenu, viewMenu, circuitsMenu, simulationMenu, helpMenu);
 		menuBar.setUseSystemMenuBar(true);
 		
 		ScrollPane propertiesScrollPane = new ScrollPane(propertiesTable);
