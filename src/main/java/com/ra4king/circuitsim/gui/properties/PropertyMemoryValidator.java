@@ -208,7 +208,7 @@ public class PropertyMemoryValidator implements PropertyValidator<List<MemoryLin
 		TableView<MemoryLine> tableView = new TableView<>();
 		tableView.getSelectionModel().setCellSelectionEnabled(true);
 		tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		tableView.setEditable(true);
 		
 		TableColumn<MemoryLine, String> address = new TableColumn<>("Address");
