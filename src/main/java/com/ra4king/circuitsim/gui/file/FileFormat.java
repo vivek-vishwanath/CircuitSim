@@ -290,6 +290,9 @@ public class FileFormat {
 	
 	public static CircuitFile load(File file, boolean taDebugMode) throws IOException {
 		CircuitFile savedFile = parse(readFile(file));
+		if (savedFile == null) {
+			throw new NullPointerException("File is empty!");
+		}
 		if (!taDebugMode && !savedFile.revisionSignaturesAreValid()) {
 			throw new NullPointerException("File is corrupted. Contact Course Staff for Assistance.");
 		}
