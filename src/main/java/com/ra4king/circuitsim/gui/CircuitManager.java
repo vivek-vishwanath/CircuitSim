@@ -625,6 +625,10 @@ public class CircuitManager {
 		
 		setNeedsRepaint();
 		
+		if (e.isShortcutDown()) {
+			isCtrlDown = true;
+		}
+
 		switch (e.getCode()) {
 			case RIGHT: {
 				e.consume();
@@ -646,9 +650,6 @@ public class CircuitManager {
 				handleArrowPressed(Direction.SOUTH);
 				break;
 			}
-			case CONTROL:
-				isCtrlDown = true;
-				break;
 			case SHIFT:
 				if (currentState != SelectingState.CONNECTION_SELECTED &&
 				    currentState != SelectingState.CONNECTION_DRAGGED) {
@@ -675,7 +676,7 @@ public class CircuitManager {
 	}
 	
 	public void keyTyped(KeyEvent e) {
-		if (selectedElements.size() == 1) {
+		if (selectedElements.size() == 1 && !e.isShortcutDown()) {
 			GuiElement element = selectedElements.iterator().next();
 			element.keyTyped(this, circuitBoard.getCurrentState(), e.getCharacter());
 			setNeedsRepaint();
@@ -683,15 +684,15 @@ public class CircuitManager {
 	}
 	
 	public void keyReleased(KeyEvent e) {
-		switch (e.getCode()) {
-			case CONTROL -> {
+		if (e.getCode().isModifierKey()) {
+			if (!e.isShortcutDown()) {
 				isCtrlDown = false;
 				setNeedsRepaint();
 			}
-			case SHIFT -> {
+			if (!e.isShiftDown()) {
 				simulatorWindow.setClickMode(false);
-				isShiftDown = false;
-				setNeedsRepaint();
+					isShiftDown = false;
+					setNeedsRepaint();
 			}
 		}
 		
@@ -897,7 +898,14 @@ public class CircuitManager {
 							                             lastMousePosition.getY() - selectedElement.getScreenY());
 						} else if (isCtrlDown) {
 							Set<GuiElement> elements = new HashSet<>(getSelectedElements());
-							elements.add(selectedElement);
+
+							// toggle selected element
+							if (elements.contains(selectedElement)) {
+								elements.remove(selectedElement);
+							} else {
+								elements.add(selectedElement);
+							}
+
 							setSelectedElements(elements);
 						} else if (!getSelectedElements().contains(selectedElement)) {
 							setSelectedElements(Collections.singleton(selectedElement));
@@ -976,14 +984,19 @@ public class CircuitManager {
 				break;
 			
 			case CONNECTION_SELECTED: {
-				Set<Connection>
-					connections =
-					circuitBoard.getConnections(startConnection.getX(), startConnection.getY());
+				Set<GuiElement> selectedEls = new HashSet<>(isCtrlDown ? getSelectedElements() : Set.of());
+
+				for (Connection c : circuitBoard.getConnections(startConnection.getX(), startConnection.getY())) {
+					GuiElement el = c.getParent();
+					// toggle wire
+					if (selectedEls.contains(el)) {
+						selectedEls.remove(el);
+					} else {
+						selectedEls.add(el);
+					}
+				}
 				
-				setSelectedElements(Stream
-					                    .concat(isCtrlDown ? getSelectedElements().stream() : Stream.empty(),
-					                            connections.stream().map(Connection::getParent))
-					                    .collect(Collectors.toSet()));
+				setSelectedElements(selectedEls);
 				currentState = SelectingState.IDLE;
 				break;
 			}
