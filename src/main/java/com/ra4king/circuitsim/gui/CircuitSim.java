@@ -926,7 +926,16 @@ public class CircuitSim extends Application {
 	
 	void updateCanvasSize(CircuitManager circuitManager) {
 		runFxSync(() -> {
-			OptionalInt maxX = Stream
+			if (circuitManager == null) return;
+
+			// Do not render GUI if the current circuit is not being displayed.
+			if (circuitManager != getCurrentCircuit()) {
+				circuitManager.getCanvas().setWidth(0);
+				circuitManager.getCanvas().setHeight(0);
+				return;
+			}
+
+			int maxX = Stream
 				.concat(circuitManager.getSelectedElements().stream(),
 				        Stream.concat(circuitManager.getCircuitBoard().getComponents().stream(),
 				                      circuitManager
@@ -935,12 +944,13 @@ public class CircuitSim extends Application {
 					                      .stream()
 					                      .flatMap(links -> links.getWires().stream())))
 				.mapToInt(componentPeer -> componentPeer.getX() + componentPeer.getWidth())
-				.max();
+				.max()
+				.orElse(0);
 			
-			double maxWidth = Math.min(5000, getScaleFactor() * (maxX.orElse(0) + 5) * GuiUtils.BLOCK_SIZE);
+			double maxWidth = Math.min(5000, getScaleFactor() * (maxX + 5) * GuiUtils.BLOCK_SIZE);
 			circuitManager.getCanvas().setWidth(Math.max(maxWidth, circuitManager.getCanvasScrollPane().getWidth()));
 			
-			OptionalInt maxY = Stream
+			int maxY = Stream
 				.concat(circuitManager.getSelectedElements().stream(),
 				        Stream.concat(circuitManager.getCircuitBoard().getComponents().stream(),
 				                      circuitManager
@@ -949,9 +959,10 @@ public class CircuitSim extends Application {
 					                      .stream()
 					                      .flatMap(links -> links.getWires().stream())))
 				.mapToInt(componentPeer -> componentPeer.getY() + componentPeer.getHeight())
-				.max();
+				.max()
+				.orElse(0);
 			
-			double maxHeight = Math.min(5000, getScaleFactor() * (maxY.orElse(0) + 5) * GuiUtils.BLOCK_SIZE);
+			double maxHeight = Math.min(5000, getScaleFactor() * (maxY + 5) * GuiUtils.BLOCK_SIZE);
 			circuitManager.getCanvas().setHeight(Math.max(maxHeight,
 			                                              circuitManager.getCanvasScrollPane().getHeight()));
 			
@@ -1871,7 +1882,7 @@ public class CircuitSim extends Application {
 			canvasScrollPane
 				.heightProperty()
 				.addListener((observable, oldValue, newValue) -> this.updateCanvasSize(circuitManager));
-			
+
 			String originalName = n;
 			for (int count = 0; getCircuitManager(originalName) != null; count++) {
 				originalName = n;
@@ -2007,9 +2018,7 @@ public class CircuitSim extends Application {
 		scaleFactorSelect.setValue(1.0);
 		scaleFactorSelect.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			needsRepaint = true;
-			for (Pair<ComponentLauncherInfo, CircuitManager> pair : circuitManagers.values()) {
-				updateCanvasSize(pair.getValue());
-			}
+			updateCanvasSize(getCurrentCircuit());
 		});
 		
 		buttonTabPane = new TabPane();
@@ -2040,6 +2049,9 @@ public class CircuitSim extends Application {
 				
 				needsRepaint = true;
 			}
+
+			if (oldManager != null) updateCanvasSize(oldManager);
+			if (newManager != null) updateCanvasSize(newManager);
 		});
 		
 		buttonsToggleGroup = new ToggleGroup();
