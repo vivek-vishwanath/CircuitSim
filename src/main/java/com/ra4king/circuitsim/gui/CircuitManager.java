@@ -631,23 +631,31 @@ public class CircuitManager {
 
 		switch (e.getCode()) {
 			case RIGHT: {
-				e.consume();
-				handleArrowPressed(Direction.EAST);
+				if (currentState != SelectingState.ELEMENT_DRAGGED) {
+					e.consume();
+					handleArrowPressed(Direction.EAST);
+				}
 				break;
 			}
 			case LEFT: {
-				e.consume();
-				handleArrowPressed(Direction.WEST);
+				if (currentState != SelectingState.ELEMENT_DRAGGED) {
+					e.consume();
+					handleArrowPressed(Direction.WEST);
+				}
 				break;
 			}
 			case UP: {
-				e.consume();
-				handleArrowPressed(Direction.NORTH);
+				if (currentState != SelectingState.ELEMENT_DRAGGED) {
+					e.consume();
+					handleArrowPressed(Direction.NORTH);
+				}
 				break;
 			}
 			case DOWN: {
-				e.consume();
-				handleArrowPressed(Direction.SOUTH);
+				if (currentState != SelectingState.ELEMENT_DRAGGED) {
+					e.consume();
+					handleArrowPressed(Direction.SOUTH);
+				}
 				break;
 			}
 			case SHIFT:
@@ -671,6 +679,8 @@ public class CircuitManager {
 				}
 				
 				reset();
+				break;
+			default:
 				break;
 		}
 	}
