@@ -935,54 +935,10 @@ public class CircuitSim extends Application {
 				return;
 			}
 
-			// Computes the rendered size of the circuit, adjusting the size of the canvas to take account.
-			// The canvas will be at minimum the size of the render window and at maximum 4x the size of the render window.
-			// This is done because immensely large canvas (~5000x5000 on macOS ARM) can cause OOM errors, namely:
-			//     java.lang.NullPointerException: 
-			//     Cannot invoke "com.sun.prism.RTTexture.createGraphics()" because "<local9>" is null
-			//
-			// This does cause a minor issue:
-			//     If a circuit is too large (or if you are zoomed in too closely),
-			//     you will not be able to access the entire circuit from the window.
-			//
-			//     This is fine because realistically, most of the circuits we use should be small enough
-			//     for this to not matter.
-			//     For larger circuits, you can zoom-out to access a different part of the circuit.
-			int maxX = Stream
-				.concat(circuitManager.getSelectedElements().stream(),
-				        Stream.concat(circuitManager.getCircuitBoard().getComponents().stream(),
-				                      circuitManager
-					                      .getCircuitBoard()
-					                      .getLinks()
-					                      .stream()
-					                      .flatMap(links -> links.getWires().stream())))
-				.mapToInt(componentPeer -> componentPeer.getX() + componentPeer.getWidth())
-				.max()
-				.orElse(0);
-			
-			double minWidth = circuitManager.getCanvasScrollPane().getWidth(); // size of pane
-			double maxWidth = 4 * minWidth;
-			double clampedWidth = Math.min(Math.max(minWidth, getScaleFactor() * (maxX + 5) * GuiUtils.BLOCK_SIZE), maxWidth);
-
-			circuitManager.getCanvas().setWidth(clampedWidth);
-			
-			int maxY = Stream
-				.concat(circuitManager.getSelectedElements().stream(),
-				        Stream.concat(circuitManager.getCircuitBoard().getComponents().stream(),
-				                      circuitManager
-					                      .getCircuitBoard()
-					                      .getLinks()
-					                      .stream()
-					                      .flatMap(links -> links.getWires().stream())))
-				.mapToInt(componentPeer -> componentPeer.getY() + componentPeer.getHeight())
-				.max()
-				.orElse(0);
-			
-			double minHeight = circuitManager.getCanvasScrollPane().getHeight(); // size of pane
-			double maxHeight = 4 * minHeight;
-			double clampedHeight = Math.min(Math.max(minHeight, getScaleFactor() * (maxY + 5) * GuiUtils.BLOCK_SIZE), maxHeight);
-
-			circuitManager.getCanvas().setHeight(clampedHeight);
+			double paneWidth = circuitManager.getCanvasScrollPane().getWidth();
+			circuitManager.getCanvas().setWidth(paneWidth);
+			double paneHeight = circuitManager.getCanvasScrollPane().getHeight();
+			circuitManager.getCanvas().setHeight(paneHeight);
 			
 			needsRepaint = true;
 		});
@@ -2036,7 +1992,6 @@ public class CircuitSim extends Application {
 		scaleFactorSelect.setValue(1.0);
 		scaleFactorSelect.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			needsRepaint = true;
-			updateCanvasSize(getCurrentCircuit());
 		});
 		
 		buttonTabPane = new TabPane();
