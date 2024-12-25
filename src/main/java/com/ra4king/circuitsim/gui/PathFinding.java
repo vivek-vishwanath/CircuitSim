@@ -24,6 +24,17 @@ public class PathFinding {
 	
 	private static final Cost INFINITY = new Cost(Integer.MAX_VALUE, Integer.MAX_VALUE);
 	
+	/**
+	 * Computes the best path between the source point and destination point.
+	 * @param sx source x
+	 * @param sy source y
+	 * @param dx destination x
+	 * @param dy destination y
+	 * @param valid a callback which indicates 
+	 *     whether a wire can be placed at a given point and orientation
+	 * @return a Pair, consisting of the set of wires that form the path 
+	 *     and the set of points visited during the traversal process.
+	 */
 	public static Pair<Set<Wire>, Set<Point>> bestPath(int sx, int sy, int dx, int dy, ValidWireLocation valid) {
 		if (dx < 0 || dy < 0) {
 			return new Pair<>(Collections.emptySet(), Collections.emptySet());
