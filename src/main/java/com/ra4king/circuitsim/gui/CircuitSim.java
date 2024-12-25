@@ -98,6 +98,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
+import javafx.scene.control.TabPane.TabDragPolicy;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToggleButton;
@@ -2022,6 +2023,7 @@ public class CircuitSim extends Application {
 		canvasTabPane = new TabPane();
 		canvasTabPane.setPrefWidth(800);
 		canvasTabPane.setPrefHeight(600);
+		canvasTabPane.setTabDragPolicy(TabDragPolicy.REORDER);
 		canvasTabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
 		canvasTabPane.widthProperty().addListener((observable, oldValue, newValue) -> needsRepaint = true);
 		canvasTabPane.heightProperty().addListener((observable, oldValue, newValue) -> needsRepaint = true);
