@@ -19,7 +19,6 @@ import com.ra4king.circuitsim.gui.Connection.WireConnection;
 import com.ra4king.circuitsim.gui.EditHistory.EditAction;
 import com.ra4king.circuitsim.gui.LinkWires.Wire;
 import com.ra4king.circuitsim.gui.PathFinding.LocationPreference;
-import com.ra4king.circuitsim.gui.PathFinding.Point;
 import com.ra4king.circuitsim.simulator.Circuit;
 import com.ra4king.circuitsim.simulator.CircuitState;
 import com.ra4king.circuitsim.simulator.SimulationException;
@@ -467,7 +466,7 @@ public class CircuitBoard {
 					
 					final int sx = sourceX;
 					final int sy = sourceY;
-					Pair<Set<Wire>, Set<Point>> pair = PathFinding.bestPath(sx, sy, x, y, (px, py, horizontal) -> {
+					Set<Wire> path = PathFinding.bestPath(sx, sy, x, y, (px, py, horizontal) -> {
 						if (px == x && py == y) {
 							return LocationPreference.VALID;
 						}
@@ -518,8 +517,8 @@ public class CircuitBoard {
 						
 						return LocationPreference.VALID;
 					});
-					if (pair != null) {
-						paths.addAll(pair.getKey());
+					if (path != null) {
+						paths.addAll(path);
 					}
 				}
 				

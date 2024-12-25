@@ -1,6 +1,5 @@
 package com.ra4king.circuitsim.gui;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,8 +8,6 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import com.ra4king.circuitsim.gui.LinkWires.Wire;
-
-import javafx.util.Pair;
 
 /**
  * @author Roi Atalla
@@ -52,12 +49,11 @@ public final class PathFinding {
 	 * @param dy destination y
 	 * @param callback a callback which indicates 
 	 *     whether a wire can be placed at a given point and orientation
-	 * @return a Pair, consisting of the set of wires that form the path 
-	 *     and the set of points visited during the traversal process.
+	 * @return the set of wires that form the best path between the two points
 	 */
-	public static Pair<Set<Wire>, Set<Point>> bestPath(int sx, int sy, int dx, int dy, ValidWireLocation callback) {
+	public static Set<Wire> bestPath(int sx, int sy, int dx, int dy, ValidWireLocation callback) {
 		if (dx < 0 || dy < 0) {
-			return new Pair<>(Collections.emptySet(), Collections.emptySet());
+			return Set.of();
 		}
 		
 		Point source = new Point(sx, sy);
@@ -74,13 +70,13 @@ public final class PathFinding {
 		int iterations = 0;
 		while (!frontier.isEmpty()) {
 			if (Thread.currentThread().isInterrupted()) {
-				return new Pair<>(Collections.emptySet(), parents.keySet());
+				return Set.of();
 			}
 			
 			iterations++;
 			if (iterations == 5000) {
 				System.err.println("Path finding taking too long, bail...");
-				return new Pair<>(Collections.emptySet(), parents.keySet());
+				return Set.of();
 			}
 
 			Node current = frontier.poll();
@@ -91,7 +87,7 @@ public final class PathFinding {
 			parents.put(current.point, current.parent);
 
 			if (destination.equals(current.point)) {
-				return new Pair<>(constructPath(parents, current.point), parents.keySet());
+				return constructPath(parents, current.point);
 			}
 
 			// Add neighbors
