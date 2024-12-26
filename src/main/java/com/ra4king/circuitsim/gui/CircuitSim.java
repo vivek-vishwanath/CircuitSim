@@ -1815,7 +1815,7 @@ public class CircuitSim extends Application {
 		}
 		
 		runFxSync(() -> {
-			CircuitManager circuitManager = new CircuitManager(name, this, this.canvasScrollPane, simulator, showGridProp);
+			CircuitManager circuitManager = new CircuitManager(name, this, simulator, showGridProp);
 			circuitManager.getCircuit().addListener(this::circuitModified);
 			
 			// If name already exists, add a number to the name until it doesn't exist.

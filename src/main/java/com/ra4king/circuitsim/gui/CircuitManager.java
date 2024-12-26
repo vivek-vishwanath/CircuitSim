@@ -29,7 +29,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -93,8 +92,6 @@ public class CircuitManager {
 	private SelectingState currentState = SelectingState.IDLE;
 	
 	private final CircuitSim simulatorWindow;
-	@Deprecated
-	private final ScrollPane canvasScrollPane;
 	private final BooleanProperty showGrid;
 	private final CircuitBoard circuitBoard;
 	
@@ -154,9 +151,8 @@ public class CircuitManager {
 	private long lastExceptionTime;
 	private static final long SHOW_ERROR_DURATION = 3000;
 	
-	CircuitManager(String name, CircuitSim simulatorWindow, ScrollPane canvasScrollPane, Simulator simulator, BooleanProperty showGrid) {
+	CircuitManager(String name, CircuitSim simulatorWindow, Simulator simulator, BooleanProperty showGrid) {
 		this.simulatorWindow = simulatorWindow;
-		this.canvasScrollPane = canvasScrollPane;
 		this.showGrid = showGrid;
 		circuitBoard = new CircuitBoard(name, this, simulator, simulatorWindow.getEditHistory());
 	}
@@ -214,16 +210,6 @@ public class CircuitManager {
 	
 	public CircuitSim getSimulatorWindow() {
 		return simulatorWindow;
-	}
-	
-	@Deprecated
-	public ScrollPane getCanvasScrollPane() {
-		return canvasScrollPane;
-	}
-	
-	@Deprecated
-	public Canvas getCanvas() {
-		return (Canvas)canvasScrollPane.getContent();
 	}
 	
 	/**
@@ -432,10 +418,6 @@ public class CircuitManager {
 		setTranslate(translateOrigin.subtract(factor * x, factor * y));
 	}
 
-	@Deprecated
-	public void paint() {
-		paint(getCanvas());
-	}
 	public void paint(Canvas canvas) {
 		if (canvas == null) return;
 		GraphicsContext graphics = canvas.getGraphicsContext2D();
