@@ -21,13 +21,16 @@ import com.ra4king.circuitsim.simulator.SimulationException;
 import com.ra4king.circuitsim.simulator.Simulator;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -90,6 +93,7 @@ public class CircuitManager {
 	private SelectingState currentState = SelectingState.IDLE;
 	
 	private final CircuitSim simulatorWindow;
+	@Deprecated
 	private final ScrollPane canvasScrollPane;
 	private final BooleanProperty showGrid;
 	private final CircuitBoard circuitBoard;
@@ -157,61 +161,6 @@ public class CircuitManager {
 		this.canvasScrollPane = canvasScrollPane;
 		this.showGrid = showGrid;
 		circuitBoard = new CircuitBoard(name, this, simulator, simulatorWindow.getEditHistory());
-		
-		getCanvas().setOnContextMenuRequested(event -> {
-			ContextMenu menu = new ContextMenu();
-			
-			MenuItem copy = new MenuItem("Copy");
-			copy.setOnAction(event1 -> simulatorWindow.copySelectedComponents());
-			
-			MenuItem cut = new MenuItem("Cut");
-			cut.setOnAction(event1 -> simulatorWindow.cutSelectedComponents());
-			
-			MenuItem paste = new MenuItem("Paste");
-			paste.setOnAction(event1 -> simulatorWindow.pasteFromClipboard());
-			
-			MenuItem delete = new MenuItem("Delete");
-			delete.setOnAction(event1 -> {
-				mayThrow(() -> circuitBoard.removeElements(selectedElements));
-				setSelectedElements(Collections.emptySet());
-				reset();
-			});
-			
-			Optional<ComponentPeer<?>>
-				any =
-				circuitBoard
-					.getComponents()
-					.stream()
-					.filter(component -> component.containsScreenCoord((int)Math.round(
-						                                                   event.getX() * simulatorWindow.getScaleFactorInverted()),
-					                                                   (int)Math.round(event.getY() *
-					                                                                   simulatorWindow.getScaleFactorInverted())))
-					.findAny();
-			
-			if (any.isPresent()) {
-				if (isCtrlDown) {
-					Set<GuiElement> selected = new HashSet<>(getSelectedElements());
-					selected.add(any.get());
-					setSelectedElements(selected);
-				} else if (!getSelectedElements().contains(any.get())) {
-					setSelectedElements(Collections.singleton(any.get()));
-				}
-			}
-			
-			if (getSelectedElements().size() > 0) {
-				menu.getItems().addAll(copy, cut, paste, delete);
-			} else {
-				menu.getItems().add(paste);
-			}
-			
-			if (getSelectedElements().size() == 1) {
-				menu.getItems().addAll(getSelectedElements().iterator().next().getContextMenuItems(this));
-			}
-			
-			if (menu.getItems().size() > 0) {
-				menu.show(getCanvas().getScene().getWindow(), event.getScreenX(), event.getScreenY());
-			}
-		});
 	}
 	
 	public void setName(String name) {
@@ -257,7 +206,6 @@ public class CircuitManager {
 		startConnection = null;
 		endConnection = null;
 		inspectLinkWires = null;
-		simulatorWindow.updateCanvasSize(this);
 		
 		setNeedsRepaint();
 	}
@@ -270,14 +218,47 @@ public class CircuitManager {
 		return simulatorWindow;
 	}
 	
+	@Deprecated
 	public ScrollPane getCanvasScrollPane() {
 		return canvasScrollPane;
 	}
 	
+	@Deprecated
 	public Canvas getCanvas() {
 		return (Canvas)canvasScrollPane.getContent();
 	}
 	
+	/**
+	 * @return the maximum bounds (in the circuit coordinate system) for the size of the board.
+	 */
+	public Bounds getMaxCircuitBounds() {
+		int maxX = Stream
+		.concat(this.getSelectedElements().stream(),
+				Stream.concat(this.getCircuitBoard().getComponents().stream(),
+							  this
+								  .getCircuitBoard()
+								  .getLinks()
+								  .stream()
+								  .flatMap(links -> links.getWires().stream())))
+		.mapToInt(componentPeer -> componentPeer.getX() + componentPeer.getWidth())
+		.max()
+		.orElse(0) + 5;
+	
+	int maxY = Stream
+		.concat(this.getSelectedElements().stream(),
+				Stream.concat(this.getCircuitBoard().getComponents().stream(),
+							  this
+								  .getCircuitBoard()
+								  .getLinks()
+								  .stream()
+								  .flatMap(links -> links.getWires().stream())))
+		.mapToInt(componentPeer -> componentPeer.getY() + componentPeer.getHeight())
+		.max()
+		.orElse(0) + 5;
+
+		return new BoundingBox(0, 0, maxX, maxY);
+	}
+
 	public Circuit getCircuit() {
 		return circuitBoard.getCircuit();
 	}
@@ -313,10 +294,12 @@ public class CircuitManager {
 		updateSelectedProperties();
 	}
 	
+	@Deprecated
 	boolean needsRepaint() {
 		return needsRepaint;
 	}
 	
+	@Deprecated
 	void setNeedsRepaint() {
 		needsRepaint = true;
 	}
@@ -434,15 +417,18 @@ public class CircuitManager {
 	 * Sets `translateOrigin`, but restricts newOrigin to not display any out-of-bounds values
 	 * @param newOrigin the new origin
 	 */
-	private void setTranslate(Point2D newOrigin) {
+	public void setTranslate(Point2D newOrigin) {
 		double x = Math.min(0, newOrigin.getX());
 		double y = Math.min(0, newOrigin.getY());
 		translateOrigin = new Point2D(x, y);
 	}
+	@Deprecated
 	public void paint() {
+		paint(getCanvas().getGraphicsContext2D());
+	}
+	public void paint(GraphicsContext graphics) {
+		if (graphics == null) return;
 		needsRepaint = false;
-		
-		GraphicsContext graphics = getCanvas().getGraphicsContext2D();
 		
 		graphics.save();
 		try {
@@ -450,9 +436,11 @@ public class CircuitManager {
 			graphics.setFontSmoothingType(FontSmoothingType.LCD);
 			
 			// Set a background.
+			double canvasWidth = graphics.getCanvas().getWidth();
+			double canvasHeight = graphics.getCanvas().getHeight();
 			boolean drawGrid = showGrid.getValue();
 			graphics.setFill(drawGrid ? Color.DARKGRAY : Color.WHITE);
-			graphics.fillRect(0, 0, getCanvas().getWidth(), getCanvas().getHeight());
+			graphics.fillRect(0, 0, canvasWidth, canvasHeight);
 			
 			// Perform graphics transform.
 			//
@@ -465,7 +453,7 @@ public class CircuitManager {
 			// Draw the light background and grid starting at canvas (0, 0) and moving onwards.
 			graphics.setFill(drawGrid ? Color.LIGHTGRAY : Color.WHITE);
 			if (drawGrid) {
-				Point2D canvasEnd = pixelToCanvasCoord(getCanvas().getWidth(), getCanvas().getHeight());
+				Point2D canvasEnd = pixelToCanvasCoord(canvasWidth, canvasHeight);
 				graphics.fillRect(0, 0, canvasEnd.getX(), canvasEnd.getY());
 				graphics.setFill(Color.BLACK);
 				for (int i = 0; i < canvasEnd.getX(); i += GuiUtils.BLOCK_SIZE) {
@@ -1283,5 +1271,63 @@ public class CircuitManager {
 		simulatorWindow.setClickMode(false);
 		resetLastPressed();
 		setNeedsRepaint();
+	}
+
+	public void contextMenuRequested(ContextMenuEvent e) {
+		ContextMenu menu = new ContextMenu();
+			
+		MenuItem copy = new MenuItem("Copy");
+		copy.setOnAction(event1 -> simulatorWindow.copySelectedComponents());
+		
+		MenuItem cut = new MenuItem("Cut");
+		cut.setOnAction(event1 -> simulatorWindow.cutSelectedComponents());
+		
+		MenuItem paste = new MenuItem("Paste");
+		paste.setOnAction(event1 -> simulatorWindow.pasteFromClipboard());
+		
+		MenuItem delete = new MenuItem("Delete");
+		delete.setOnAction(event1 -> {
+			mayThrow(() -> circuitBoard.removeElements(selectedElements));
+			setSelectedElements(Collections.emptySet());
+			reset();
+		});
+		
+		Optional<ComponentPeer<?>>
+			any =
+			circuitBoard
+				.getComponents()
+				.stream()
+				.filter(component -> component.containsScreenCoord((int)Math.round(
+																	   e.getX() * simulatorWindow.getScaleFactorInverted()),
+																   (int)Math.round(e.getY() *
+																				   simulatorWindow.getScaleFactorInverted())))
+				.findAny();
+		
+		if (any.isPresent()) {
+			if (isCtrlDown) {
+				Set<GuiElement> selected = new HashSet<>(getSelectedElements());
+				selected.add(any.get());
+				setSelectedElements(selected);
+			} else if (!getSelectedElements().contains(any.get())) {
+				setSelectedElements(Collections.singleton(any.get()));
+			}
+		}
+		
+		if (getSelectedElements().size() > 0) {
+			menu.getItems().addAll(copy, cut, paste, delete);
+		} else {
+			menu.getItems().add(paste);
+		}
+		
+		if (getSelectedElements().size() == 1) {
+			menu.getItems().addAll(getSelectedElements().iterator().next().getContextMenuItems(this));
+		}
+		
+		if (menu.getItems().size() > 0) {
+			if (e.getTarget() instanceof Node) {
+				Node target = (Node) e.getTarget();
+				menu.show(target.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+			}
+		}
 	}
 }
