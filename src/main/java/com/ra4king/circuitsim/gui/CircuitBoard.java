@@ -482,7 +482,7 @@ public class CircuitBoard {
 					
 					lastException = null;
 					
-					circuitManager.setNeedsRepaint();
+					circuitManager.getSimulatorWindow().setNeedsRepaint();
 				}
 				
 				latch.countDown();

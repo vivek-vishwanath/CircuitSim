@@ -389,6 +389,10 @@ public class CircuitSim extends Application {
 		}
 	}
 	
+	void setNeedsRepaint() {
+		needsRepaint = true;
+	}
+
 	/**
 	 * Get all circuits.
 	 *
@@ -2669,9 +2673,9 @@ public class CircuitSim extends Application {
 					
 					CircuitManager manager = getCurrentCircuit();
 					if (manager != null) {
-						if ((needsRepaint || manager.needsRepaint())) {
-							needsRepaint = false;
+						if (needsRepaint) {
 							simulator.runSync(manager::paint);
+							needsRepaint = false;
 						}
 						
 						if (!loadingFile) {

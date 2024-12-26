@@ -154,8 +154,6 @@ public class CircuitManager {
 	private long lastExceptionTime;
 	private static final long SHOW_ERROR_DURATION = 3000;
 	
-	private boolean needsRepaint;
-	
 	CircuitManager(String name, CircuitSim simulatorWindow, ScrollPane canvasScrollPane, Simulator simulator, BooleanProperty showGrid) {
 		this.simulatorWindow = simulatorWindow;
 		this.canvasScrollPane = canvasScrollPane;
@@ -207,7 +205,7 @@ public class CircuitManager {
 		endConnection = null;
 		inspectLinkWires = null;
 		
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 	}
 	
 	public void destroy() {
@@ -292,16 +290,6 @@ public class CircuitManager {
 		selectedElements.clear();
 		selectedElements.addAll(elements);
 		updateSelectedProperties();
-	}
-	
-	@Deprecated
-	boolean needsRepaint() {
-		return needsRepaint;
-	}
-	
-	@Deprecated
-	void setNeedsRepaint() {
-		needsRepaint = true;
 	}
 	
 	private Properties getCommonSelectedProperties() {
@@ -396,7 +384,7 @@ public class CircuitManager {
 		isDraggedHorizontally = false;
 		startConnection = null;
 		endConnection = null;
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 	}
 	
 	/**
@@ -428,7 +416,6 @@ public class CircuitManager {
 	}
 	public void paint(GraphicsContext graphics) {
 		if (graphics == null) return;
-		needsRepaint = false;
 		
 		graphics.save();
 		try {
@@ -703,14 +690,14 @@ public class CircuitManager {
 			lastPressedConsumed =
 				lastPressed.keyPressed(this, circuitBoard.getCurrentState(), e.getCode(), e.getText());
 			lastPressedKeyCode = e.getCode();
-			setNeedsRepaint();
+			simulatorWindow.setNeedsRepaint();
 		}
 		
 		if (lastPressed != null && lastPressedConsumed) {
 			return;
 		}
 		
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 		
 		if (e.isShortcutDown()) {
 			isCtrlDown = true;
@@ -768,7 +755,7 @@ public class CircuitManager {
 		if (selectedElements.size() == 1 && !e.isShortcutDown()) {
 			GuiElement element = selectedElements.iterator().next();
 			element.keyTyped(this, circuitBoard.getCurrentState(), e.getCharacter());
-			setNeedsRepaint();
+			simulatorWindow.setNeedsRepaint();
 		}
 	}
 	
@@ -776,12 +763,12 @@ public class CircuitManager {
 		if (e.getCode().isModifierKey()) {
 			if (!e.isShortcutDown()) {
 				isCtrlDown = false;
-				setNeedsRepaint();
+				simulatorWindow.setNeedsRepaint();
 			}
 			if (!e.isShiftDown()) {
 				simulatorWindow.setClickMode(false);
 					isShiftDown = false;
-					setNeedsRepaint();
+					simulatorWindow.setNeedsRepaint();
 			}
 		}
 		
@@ -789,7 +776,7 @@ public class CircuitManager {
 			lastPressed.keyReleased(this, circuitBoard.getCurrentState(), e.getCode(), e.getText());
 			lastPressed = null;
 			lastPressedKeyCode = null;
-			setNeedsRepaint();
+			simulatorWindow.setNeedsRepaint();
 		}
 	}
 	
@@ -868,7 +855,7 @@ public class CircuitManager {
 			}
 			
 			if (startConnection != selected) {
-				setNeedsRepaint();
+				simulatorWindow.setNeedsRepaint();
 			}
 			
 			startConnection = selected;
@@ -885,7 +872,7 @@ public class CircuitManager {
 			if (currDiffX == 0 || prevDiffX == 0 ||
 			    currDiffX / Math.abs(currDiffX) != prevDiffX / Math.abs(prevDiffX)) {
 				if (isDraggedHorizontally) {
-					setNeedsRepaint();
+					simulatorWindow.setNeedsRepaint();
 				}
 				
 				isDraggedHorizontally = false;
@@ -894,7 +881,7 @@ public class CircuitManager {
 			if (currDiffY == 0 || prevDiffY == 0 ||
 			    currDiffY / Math.abs(currDiffY) != prevDiffY / Math.abs(prevDiffY)) {
 				if (!isDraggedHorizontally) {
-					setNeedsRepaint();
+					simulatorWindow.setNeedsRepaint();
 				}
 				
 				isDraggedHorizontally = true;
@@ -906,7 +893,7 @@ public class CircuitManager {
 				                            GuiUtils.getCircuitCoord(lastMousePosition.getY()));
 			
 			if (endConnection != connection) {
-				setNeedsRepaint();
+				simulatorWindow.setNeedsRepaint();
 			}
 			
 			endConnection = connection;
@@ -920,7 +907,7 @@ public class CircuitManager {
 			potentialComponent.setY(
 				GuiUtils.getCircuitCoord(lastMousePosition.getY()) - potentialComponent.getHeight() / 2);
 			
-			setNeedsRepaint();
+			simulatorWindow.setNeedsRepaint();
 		}
 	}
 
@@ -1041,7 +1028,7 @@ public class CircuitManager {
 				break;
 		}
 		
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 	}
 	
 	public void mouseReleased(MouseEvent e) {
@@ -1111,7 +1098,7 @@ public class CircuitManager {
 		
 		checkStartConnection();
 		
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 	}
 	
 	public void mouseDragged(MouseEvent e) {
@@ -1189,7 +1176,7 @@ public class CircuitManager {
 		
 		checkStartConnection();
 		
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 	}
 	
 	private GuiElement lastEntered;
@@ -1199,7 +1186,7 @@ public class CircuitManager {
 		lastMousePosition = pixelToCanvasCoord(e.getX(), e.getY());
 		
 		if (currentState != SelectingState.IDLE) {
-			setNeedsRepaint();
+			simulatorWindow.setNeedsRepaint();
 		}
 		
 		updatePotentialComponent();
@@ -1225,30 +1212,30 @@ public class CircuitManager {
 					
 					(lastEntered = peer).mouseEntered(this, circuitBoard.getCurrentState());
 					
-					setNeedsRepaint();
+					simulatorWindow.setNeedsRepaint();
 				}
 			} else if (lastEntered != null) {
 				lastEntered.mouseExited(this, circuitBoard.getCurrentState());
 				lastEntered = null;
 				
-				setNeedsRepaint();
+				simulatorWindow.setNeedsRepaint();
 			}
 		} else if (lastEntered != null) {
 			lastEntered.mouseExited(this, circuitBoard.getCurrentState());
 			lastEntered = null;
 			
-			setNeedsRepaint();
+			simulatorWindow.setNeedsRepaint();
 		}
 	}
 	
 	public void mouseEntered(MouseEvent e) {
 		isMouseInsideCanvas = true;
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 	}
 	
 	public void mouseExited(MouseEvent e) {
 		isMouseInsideCanvas = false;
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 	}
 	
 	public void mouseWheelScrolled(ScrollEvent e) {
@@ -1270,7 +1257,7 @@ public class CircuitManager {
 		mouseExited(null);
 		simulatorWindow.setClickMode(false);
 		resetLastPressed();
-		setNeedsRepaint();
+		simulatorWindow.setNeedsRepaint();
 	}
 
 	public void contextMenuRequested(ContextMenuEvent e) {
