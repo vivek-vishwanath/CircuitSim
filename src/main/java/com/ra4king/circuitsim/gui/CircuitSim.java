@@ -2165,7 +2165,7 @@ public class CircuitSim extends Application {
 								return;
 							}
 
-							manager.paint(circuitCanvas.getGraphicsContext2D());
+							manager.paint(circuitCanvas);
 							Image image = circuitCanvas.snapshot(null, null);
 							RenderedImage rendered = SwingFXUtils.fromFXImage(image, null);
 							images.put(name, rendered);
@@ -2674,8 +2674,8 @@ public class CircuitSim extends Application {
 					CircuitManager manager = getCurrentCircuit();
 					if (manager != null) {
 						if (needsRepaint) {
-							simulator.runSync(manager::paint);
 							needsRepaint = false;
+							simulator.runSync(() -> manager.paint(circuitCanvas));
 						}
 						
 						if (!loadingFile) {

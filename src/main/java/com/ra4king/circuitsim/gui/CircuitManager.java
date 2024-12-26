@@ -412,22 +412,20 @@ public class CircuitManager {
 	}
 	@Deprecated
 	public void paint() {
-		paint(getCanvas().getGraphicsContext2D());
+		paint(getCanvas());
 	}
-	public void paint(GraphicsContext graphics) {
-		if (graphics == null) return;
-		
+	public void paint(Canvas canvas) {
+		if (canvas == null) return;
+		GraphicsContext graphics = canvas.getGraphicsContext2D();
 		graphics.save();
 		try {
 			graphics.setFont(GuiUtils.getFont(13));
 			graphics.setFontSmoothingType(FontSmoothingType.LCD);
 			
 			// Set a background.
-			double canvasWidth = graphics.getCanvas().getWidth();
-			double canvasHeight = graphics.getCanvas().getHeight();
 			boolean drawGrid = showGrid.getValue();
 			graphics.setFill(drawGrid ? Color.DARKGRAY : Color.WHITE);
-			graphics.fillRect(0, 0, canvasWidth, canvasHeight);
+			graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 			
 			// Perform graphics transform.
 			//
@@ -440,7 +438,7 @@ public class CircuitManager {
 			// Draw the light background and grid starting at canvas (0, 0) and moving onwards.
 			graphics.setFill(drawGrid ? Color.LIGHTGRAY : Color.WHITE);
 			if (drawGrid) {
-				Point2D canvasEnd = pixelToCanvasCoord(canvasWidth, canvasHeight);
+				Point2D canvasEnd = pixelToCanvasCoord(canvas.getWidth(), canvas.getHeight());
 				graphics.fillRect(0, 0, canvasEnd.getX(), canvasEnd.getY());
 				graphics.setFill(Color.BLACK);
 				for (int i = 0; i < canvasEnd.getX(); i += GuiUtils.BLOCK_SIZE) {
