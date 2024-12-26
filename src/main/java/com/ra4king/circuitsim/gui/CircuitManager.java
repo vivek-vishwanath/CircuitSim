@@ -665,6 +665,8 @@ public class CircuitManager {
 					}
 					break;
 				}
+				default:
+					break;
 			}
 		} finally {
 			graphics.restore();
@@ -944,6 +946,7 @@ public class CircuitManager {
 		if (e.getButton() != MouseButton.PRIMARY) {
 			switch (currentState) {
 				case PLACING_COMPONENT, CONNECTION_SELECTED, CONNECTION_DRAGGED -> reset();
+				default -> {}
 			}
 			
 			return;
