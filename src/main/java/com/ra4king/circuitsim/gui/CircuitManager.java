@@ -93,8 +93,6 @@ public class CircuitManager {
 	private final ScrollPane canvasScrollPane;
 	private final BooleanProperty showGrid;
 	private final CircuitBoard circuitBoard;
-
-	private ContextMenu menu;
 	
 	/**
 	 * The position of the last mouse interaction on the Canvas
@@ -161,7 +159,7 @@ public class CircuitManager {
 		circuitBoard = new CircuitBoard(name, this, simulator, simulatorWindow.getEditHistory());
 		
 		getCanvas().setOnContextMenuRequested(event -> {
-			menu = new ContextMenu();
+			ContextMenu menu = new ContextMenu();
 			
 			MenuItem copy = new MenuItem("Copy");
 			copy.setOnAction(event1 -> simulatorWindow.copySelectedComponents());
@@ -211,7 +209,7 @@ public class CircuitManager {
 			}
 			
 			if (menu.getItems().size() > 0) {
-				menu.show(getCanvas(), event.getScreenX(), event.getScreenY());
+				menu.show(getCanvas().getScene().getWindow(), event.getScreenX(), event.getScreenY());
 			}
 		});
 	}
@@ -939,10 +937,6 @@ public class CircuitManager {
 	}
 
 	public void mousePressed(MouseEvent e) {
-		if (menu != null) {
-			menu.hide();
-		}
-		
 		if (e.getButton() != MouseButton.PRIMARY) {
 			switch (currentState) {
 				case PLACING_COMPONENT, CONNECTION_SELECTED, CONNECTION_DRAGGED -> reset();
