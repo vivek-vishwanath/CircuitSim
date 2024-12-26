@@ -39,6 +39,41 @@ import javafx.scene.text.Text;
 import javafx.util.Pair;
 
 /**
+ * Wrapper in charge of the GUI for managing a {@link CircuitBoard}.
+ * This class also handles the mouse and keyboard interactions
+ * that enable displaying and editing of a given circuit.
+ * 
+ * <h3>Coordinate Systems</h3>
+ * 
+ * Due to the nature of this class, there are 3 different coordinate systems involved in its
+ * implementation. To reduce redundancy, they will be given the following names:
+ * <ol>
+ *     <li>
+ *         <b>Circuit Coordinate System</b>: An integer coordinate system that increments in tiles.
+ *         The position of ports and components are defined in this coordinate system.
+ *         This coordinate system is returned by methods such as {@link GuiElement#getX()} and 
+ *         {@link GuiElement#getY()} and is stored as two int variables.
+ *     </li>
+ *     <li>
+ *         <b>Canvas Coordinate System</b>: A double coordinate system representing the graphics 
+ *         before any transforms (particularly scaling and translating). The graphics are defined
+ *         under this coordinate system. Note that 1 tile in the circuit coordinate system 
+ *         corresponds to {@link GuiUtils#BLOCK_SIZE} units in the canvas coordinate system.
+ *         This coordinate system is returned by methods such as {@link GuiElement#getScreenX()} and
+ *         {@link GuiElement#getScreenY} and is stored as two double variables or a {@link Point2D}.
+ *     </li>
+ *     <li>
+ *         <b>Pixel Coordinate System</b>: A double coordinate system representing the graphics
+ *         after all transforms (particularly scaling and translating). 1 unit in the pixel coordinate
+ *         system physically corresponds to a pixel in the Scene, so any coordinate values from
+ *         outside CircuitManager typically will be in this system. This system directly corresponds to
+ *         the local coordinate system in JavaFX.
+ *         This coordinate system is returned by methods such as {@link Canvas#getWidth()}, 
+ *         {@link Canvas#getHeight()}, {@link MouseEvent#getX()}, {@link MouseEvent#getY()}, etc. and 
+ *         is stored as two double variables or a {@link Point2D}.
+ *     </li>
+ * </ol>
+ * 
  * @author Roi Atalla
  */
 public class CircuitManager {
@@ -58,12 +93,27 @@ public class CircuitManager {
 	private final ScrollPane canvasScrollPane;
 	private final BooleanProperty showGrid;
 	private final CircuitBoard circuitBoard;
-	
+
 	private ContextMenu menu;
 	
+	/**
+	 * The position of the last mouse interaction on the Canvas
+	 * under the (untransformed) canvas coordinate space.
+	 */
 	private Point2D lastMousePosition = new Point2D(0, 0);
+	/**
+	 * The position of the last mouse press on the Canvas
+	 * under the (untransformed) canvas coordinate space.
+	 */
 	private Point2D lastMousePressed = new Point2D(0, 0);
-	
+	/**
+	 * The amount to translate the origin in the pixel coordinate space.
+	 * 
+	 * (0, 0) in canvas coordinate space 
+	 * maps to (tx * scale, ty * scale) in pixel coordinate space.
+	 */
+	private Point2D translateOrigin = new Point2D(0, 0);
+
 	private GuiElement lastPressed;
 	private boolean lastPressedConsumed;
 	private KeyCode lastPressedKeyCode;
@@ -354,6 +404,20 @@ public class CircuitManager {
 		setNeedsRepaint();
 	}
 	
+	/**
+	 * Converts a coordinate in the pixel coordinate system to the canvas coordinate system
+	 * (by undoing the transforms applied.)
+	 * 
+	 * @param x Pixel X
+	 * @param y Pixel Y
+	 * @return the coordinate in the canvas coordinate system
+	 */
+	private Point2D pixelToCanvasCoord(double x, double y) {
+		return new Point2D(x, y)
+			.multiply(simulatorWindow.getScaleFactorInverted())
+			.subtract(translateOrigin);
+	}
+
 	public void paint() {
 		needsRepaint = false;
 		
@@ -364,17 +428,27 @@ public class CircuitManager {
 			graphics.setFont(GuiUtils.getFont(13));
 			graphics.setFontSmoothingType(FontSmoothingType.LCD);
 			
+			// Set a background.
 			boolean drawGrid = showGrid.getValue();
-			graphics.setFill(drawGrid ? Color.LIGHTGRAY : Color.WHITE);
+			graphics.setFill(drawGrid ? Color.DARKGRAY : Color.WHITE);
 			graphics.fillRect(0, 0, getCanvas().getWidth(), getCanvas().getHeight());
 			
+			// Perform graphics transform.
+			//
+			// The transformation order here is reversed (like matrix multiplication), so:
+			// Canvas -> Pixel: translate by (+tx, +ty), then scale by (scale)
+			// Pixel -> Canvas: scale by (1/scale), then translate by (-tx, -ty)
 			graphics.scale(simulatorWindow.getScaleFactor(), simulatorWindow.getScaleFactor());
+			graphics.translate(translateOrigin.getX(), translateOrigin.getY());
 			
-			graphics.setFill(Color.BLACK);
+			// Draw the light background and grid starting at canvas (0, 0) and moving onwards.
+			graphics.setFill(drawGrid ? Color.LIGHTGRAY : Color.WHITE);
 			if (drawGrid) {
-				double scaleInverted = simulatorWindow.getScaleFactorInverted();
-				for (int i = 0; i < getCanvas().getWidth() * scaleInverted; i += GuiUtils.BLOCK_SIZE) {
-					for (int j = 0; j < getCanvas().getHeight() * scaleInverted; j += GuiUtils.BLOCK_SIZE) {
+				Point2D canvasEnd = pixelToCanvasCoord(getCanvas().getWidth(), getCanvas().getHeight());
+				graphics.fillRect(0, 0, canvasEnd.getX(), canvasEnd.getY());
+				graphics.setFill(Color.BLACK);
+				for (int i = 0; i < canvasEnd.getX(); i += GuiUtils.BLOCK_SIZE) {
+					for (int j = 0; j < canvasEnd.getY(); j += GuiUtils.BLOCK_SIZE) {
 						graphics.fillRect(i, j, 1, 1);
 					}
 				}
@@ -572,9 +646,9 @@ public class CircuitManager {
 		}
 	}
 	
+	@FunctionalInterface
 	interface ThrowableRunnable {
 		void run() throws Exception;
-		
 	}
 	
 	boolean mayThrow(ThrowableRunnable runnable) {
@@ -630,6 +704,22 @@ public class CircuitManager {
 		}
 
 		switch (e.getCode()) {
+			case W: {
+				translateOrigin = translateOrigin.add(0, GuiUtils.BLOCK_SIZE);
+				break;
+			}
+			case A: {
+				translateOrigin = translateOrigin.add(GuiUtils.BLOCK_SIZE, 0);
+				break;
+			}
+			case S: {
+				translateOrigin = translateOrigin.add(0, -GuiUtils.BLOCK_SIZE);
+				break;
+			}
+			case D: {
+				translateOrigin = translateOrigin.add(-GuiUtils.BLOCK_SIZE, 0);
+				break;
+			}
 			case RIGHT: {
 				e.consume();
 				handleArrowPressed(Direction.EAST);
@@ -671,6 +761,8 @@ public class CircuitManager {
 				}
 				
 				reset();
+				break;
+			default:
 				break;
 		}
 	}
@@ -834,7 +926,7 @@ public class CircuitManager {
 			setNeedsRepaint();
 		}
 	}
-	
+
 	public void mousePressed(MouseEvent e) {
 		if (menu != null) {
 			menu.hide();
@@ -848,12 +940,8 @@ public class CircuitManager {
 			return;
 		}
 		
-		lastMousePosition =
-			new Point2D(e.getX() * simulatorWindow.getScaleFactorInverted(),
-			            e.getY() * simulatorWindow.getScaleFactorInverted());
-		lastMousePressed =
-			new Point2D(e.getX() * simulatorWindow.getScaleFactorInverted(),
-			            e.getY() * simulatorWindow.getScaleFactorInverted());
+		lastMousePosition = pixelToCanvasCoord(e.getX(), e.getY());
+		lastMousePressed = pixelToCanvasCoord(e.getX(), e.getY());
 		
 		switch (currentState) {
 			case ELEMENT_DRAGGED:
@@ -965,9 +1053,7 @@ public class CircuitManager {
 			return;
 		}
 		
-		lastMousePosition =
-			new Point2D(e.getX() * simulatorWindow.getScaleFactorInverted(),
-			            e.getY() * simulatorWindow.getScaleFactorInverted());
+		lastMousePosition = pixelToCanvasCoord(e.getX(), e.getY());
 		
 		switch (currentState) {
 			case IDLE:
@@ -1031,9 +1117,7 @@ public class CircuitManager {
 		}
 		
 		Point2D prevMousePosition = lastMousePosition;
-		lastMousePosition =
-			new Point2D(e.getX() * simulatorWindow.getScaleFactorInverted(),
-			            e.getY() * simulatorWindow.getScaleFactorInverted());
+		lastMousePosition = pixelToCanvasCoord(e.getX(), e.getY());
 		
 		switch (currentState) {
 			case IDLE:
@@ -1101,9 +1185,7 @@ public class CircuitManager {
 	
 	public void mouseMoved(MouseEvent e) {
 		Point2D prevMousePosition = lastMousePosition;
-		lastMousePosition =
-			new Point2D(e.getX() * simulatorWindow.getScaleFactorInverted(),
-			            e.getY() * simulatorWindow.getScaleFactorInverted());
+		lastMousePosition = pixelToCanvasCoord(e.getX(), e.getY());
 		
 		if (currentState != SelectingState.IDLE) {
 			setNeedsRepaint();
