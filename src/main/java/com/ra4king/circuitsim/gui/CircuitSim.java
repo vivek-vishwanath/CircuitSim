@@ -5,7 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.math.RoundingMode;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +98,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TabPane.TabDragPolicy;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -112,6 +116,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.GridPane;
@@ -130,6 +135,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
+import javafx.util.StringConverter;
 
 /**
  * @author Roi Atalla
@@ -172,7 +178,7 @@ public class CircuitSim extends Application {
 	private Runnable refreshComponentsTabs;
 	
 	private ComboBox<Integer> bitSizeSelect;
-	private ComboBox<Double> scaleFactorSelect;
+	private TextField scaleFactorInput;
 	private Label fpsLabel;
 	private Label clockLabel;
 	private Label messageLabel;
@@ -353,40 +359,19 @@ public class CircuitSim extends Application {
 	}
 	
 	public double getScaleFactor() {
-		return scaleFactorSelect.getSelectionModel().getSelectedItem();
+		@SuppressWarnings("unchecked")
+		TextFormatter<Double> formatter = (TextFormatter<Double>) scaleFactorInput.getTextFormatter();
+		return formatter.getValue();
 	}
 	
+	public void setScaleFactor(double scale) {
+		@SuppressWarnings("unchecked")
+		TextFormatter<Double> formatter = (TextFormatter<Double>) scaleFactorInput.getTextFormatter();
+		formatter.setValue(Math.clamp(scale, 0.25, 8));
+	}
+
 	public double getScaleFactorInverted() {
 		return 1.0 / getScaleFactor();
-	}
-	
-	void zoomIn(double x, double y) {
-		int selectedIndex = scaleFactorSelect.getSelectionModel().getSelectedIndex();
-		if (selectedIndex < scaleFactorSelect.getItems().size()) {
-			double oldZoom = scaleFactorSelect.getSelectionModel().getSelectedItem();
-			scaleFactorSelect.getSelectionModel().select(selectedIndex + 1);
-			double newZoom = scaleFactorSelect.getSelectionModel().getSelectedItem();
-			
-			setScrollPosition(x, y, oldZoom, newZoom);
-		}
-	}
-	
-	void zoomOut(double x, double y) {
-		int selectedIndex = scaleFactorSelect.getSelectionModel().getSelectedIndex();
-		if (selectedIndex > 0) {
-			double oldZoom = scaleFactorSelect.getSelectionModel().getSelectedItem();
-			scaleFactorSelect.getSelectionModel().select(selectedIndex - 1);
-			double newZoom = scaleFactorSelect.getSelectionModel().getSelectedItem();
-			
-			setScrollPosition(x, y, oldZoom, newZoom);
-		}
-	}
-	
-	private void setScrollPosition(double x, double y, double oldZoom, double newZoom) {
-		CircuitManager manager = getCurrentCircuit();
-		if (manager != null) {
-			manager.zoomInOnPoint(x, y, oldZoom, newZoom);
-		}
 	}
 	
 	void setNeedsRepaint() {
@@ -1348,7 +1333,7 @@ public class CircuitSim extends Application {
 							}
 							break;
 						case "Scale":
-							scaleFactorSelect.setValue(Double.parseDouble(value));
+							setScaleFactor(Double.parseDouble(value));
 							break;
 						case "LastSavePath":
 							lastSaveFile = new File(value);
@@ -1389,7 +1374,7 @@ public class CircuitSim extends Application {
 			conf.add("WindowWidth=" + (int)stage.getWidth());
 			conf.add("WindowHeight=" + (int)stage.getHeight());
 		}
-		conf.add("Scale=" + scaleFactorSelect.getValue());
+		conf.add("Scale=" + getScaleFactor());
 		conf.add("HelpShown=" + VERSION);
 		if (lastSaveFile != null) {
 			conf.add("LastSavePath=" + lastSaveFile.getAbsolutePath());
@@ -1939,15 +1924,31 @@ public class CircuitSim extends Application {
 			.selectedItemProperty()
 			.addListener((observable, oldValue, newValue) -> modifiedSelection(selectedComponent));
 		
-		scaleFactorSelect = new ComboBox<>();
-		for (int i = 3; i <= 10; i++) {
-			scaleFactorSelect.getItems().add(i / 10.0);
-		}
-		for (int i = 1; i <= 16; i++) {
-			scaleFactorSelect.getItems().add(1 + i * 0.25);
-		}
-		scaleFactorSelect.setValue(1.0);
-		scaleFactorSelect.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+		scaleFactorInput = new TextField();
+		scaleFactorInput.setMaxWidth(80);
+		scaleFactorInput.setPrefWidth(80);
+		scaleFactorInput.setTextFormatter(new TextFormatter<>(
+			new StringConverter<>() {
+				@Override
+				public String toString(Double value) {
+					// Round to 2 decimal places.
+					if (value == null) return "";
+					DecimalFormat df = new DecimalFormat("0.0#");
+					df.setRoundingMode(RoundingMode.HALF_UP);
+					return value != null ? df.format(value) : "";
+				}
+
+				@Override
+				public Double fromString(String value) {
+					// Normal parsing.
+					return value != null && !value.isBlank() ? Math.clamp(Double.valueOf(value), 0.25, 8) : 1.0;
+				}
+
+			},
+			1.0, 
+			change -> change.getControlNewText().matches("\\d*(?:\\.\\d*)?") ? change : null
+		));
+		scaleFactorInput.getTextFormatter().valueProperty().addListener((observable, oldValue, newValue) -> {
 			needsRepaint = true;
 		});
 		
@@ -1982,12 +1983,15 @@ public class CircuitSim extends Application {
 			e.consume();
 		});
 		circuitCanvas.addEventHandler(MouseEvent.MOUSE_RELEASED, onCurrentCircuit(CircuitManager::mouseReleased));
-		circuitCanvas.addEventHandler(ScrollEvent.SCROLL, onCurrentCircuit(CircuitManager::mouseWheelScrolled));
+		circuitCanvas.addEventHandler(ScrollEvent.SCROLL_STARTED, onCurrentCircuit(CircuitManager::scrollStarted));
+		circuitCanvas.addEventHandler(ScrollEvent.SCROLL, onCurrentCircuit(CircuitManager::scroll));
+		circuitCanvas.addEventHandler(ScrollEvent.SCROLL_FINISHED, onCurrentCircuit(CircuitManager::scrollFinished));
 		circuitCanvas.addEventHandler(MouseEvent.MOUSE_ENTERED, onCurrentCircuit(CircuitManager::mouseEntered));
 		circuitCanvas.addEventHandler(MouseEvent.MOUSE_EXITED, onCurrentCircuit(CircuitManager::mouseExited));
 		circuitCanvas.addEventHandler(KeyEvent.KEY_PRESSED, onCurrentCircuit(CircuitManager::keyPressed));
 		circuitCanvas.addEventHandler(KeyEvent.KEY_TYPED, onCurrentCircuit(CircuitManager::keyTyped));
 		circuitCanvas.addEventHandler(KeyEvent.KEY_RELEASED, onCurrentCircuit(CircuitManager::keyReleased));
+		circuitCanvas.addEventHandler(ZoomEvent.ZOOM, onCurrentCircuit(CircuitManager::zoom));
 		circuitCanvas.focusedProperty().addListener((observable, oldValue, newValue) -> {
 			CircuitManager manager = getCurrentCircuit();
 			if (manager != null) {
@@ -2153,7 +2157,7 @@ public class CircuitSim extends Application {
 						circuitManagers.forEach((name, pair) -> {
 							CircuitManager manager = pair.getValue();
 							manager.setTranslate(Point2D.ZERO);
-							scaleFactorSelect.setValue(1.0);
+							setScaleFactor(1.0);
 							
 							Bounds circuitBounds = pair.getValue().getMaxCircuitBounds();
 
@@ -2594,7 +2598,7 @@ public class CircuitSim extends Application {
 		                          bitSizeSelect,
 		                          blank,
 		                          new Label("Scale:"),
-		                          scaleFactorSelect);
+		                          scaleFactorInput);
 		
 		VBox.setVgrow(canvasPropsSplit, Priority.ALWAYS);
 		scene = new Scene(new VBox(menuBar, toolBar, canvasPropsSplit));

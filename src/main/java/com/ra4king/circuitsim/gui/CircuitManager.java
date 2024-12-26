@@ -35,6 +35,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.ZoomEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.Text;
@@ -137,7 +138,11 @@ public class CircuitManager {
 	private boolean isDraggedHorizontally;
 	private boolean isCtrlDown;
 	private boolean isShiftDown;
-	
+	/**
+	 * A boolean that indicates whether a scroll should zoom or pan.
+	 */
+	private boolean zoomOnScroll;
+
 	private final Circuit dummyCircuit = new Circuit("Dummy", new Simulator());
 	private ComponentPeer<?> potentialComponent;
 	private ComponentCreator<?> componentCreator;
@@ -395,27 +400,6 @@ public class CircuitManager {
 		double x = Math.min(0, newOrigin.getX());
 		double y = Math.min(0, newOrigin.getY());
 		translateOrigin = new Point2D(x, y);
-	}
-	/**
-	 * Zooms in at a given point (x, y).
-	 * 
-	 * This depends on the scale before zooming in and new scale after zooming in.
-	 * (This also applies to zooming out).
-	 * 
-	 * @param x Pixel X
-	 * @param y Pixel Y
-	 * @param oldScale the old zoom scale value
-	 * @param newScale the new zoom scale value
-	 */
-	public void zoomInOnPoint(double x, double y, double oldScale, double newScale) {
-		// Let (tx, ty) = translateOrigin.
-		// Pixel (x, y) must be at the same canvas coordinate before and after zooming, 
-		// so we must meet the constraint (x / oldScale - tx = x / newScale - tx').
-		// When you solve this constraint, you get: (tx' = tx - factor * x),
-		// where factor is the value below.
-
-		double factor = (newScale - oldScale) / (newScale * oldScale);
-		setTranslate(translateOrigin.subtract(factor * x, factor * y));
 	}
 
 	public void paint(Canvas canvas) {
@@ -1240,14 +1224,53 @@ public class CircuitManager {
 		simulatorWindow.setNeedsRepaint();
 	}
 	
-	public void mouseWheelScrolled(ScrollEvent e) {
-		if (isCtrlDown) {
-			if (e.getDeltaY() < 0) {
-				simulatorWindow.zoomOut(e.getX(), e.getY());
-			} else {
-				simulatorWindow.zoomIn(e.getX(), e.getY());
-			}
+	/**
+	 * Applies a zoom, setting the new scale to newScale and zooming around the origin.
+	 * @param originX the origin's X coordinate
+	 * @param originY the origin's Y coordinate
+	 * @param zoomFactor the factor to scale by
+	 *     This is a multiplier on the old scale. If the old scale is 0.5x and zoomFactor is 2,
+	 *     this sets the scale to 1.0x.
+	 */
+	private void applyZoom(double originX, double originY, double zoomFactor) {
+		// Zoom
+		double oldScale = simulatorWindow.getScaleFactor();
+		zoomFactor = Math.clamp(oldScale * zoomFactor, 0.25, 8);
+
+		simulatorWindow.setScaleFactor(zoomFactor);
+		
+		// Zoom in on point.
+		// Let (tx, ty) = translateOrigin.
+		// Pixel (x, y) must be at the same canvas coordinate before and after zooming, 
+		// so we must meet the constraint (x / oldScale - tx = x / newScale - tx').
+		// When you solve this constraint, you get: (tx' = tx - factor * x),
+		// where factor is the value below.
+		double factor = (zoomFactor - oldScale) / (zoomFactor * oldScale);
+		setTranslate(translateOrigin.subtract(factor * originX, factor * originY));
+	}
+
+	public void scrollStarted(ScrollEvent e) {
+		// If user presses control during scroll, it should not change operation.
+		this.zoomOnScroll = this.isCtrlDown;
+	}
+	public void scroll(ScrollEvent e) {
+		if (this.zoomOnScroll) {
+			// Zoom
+			applyZoom(e.getX(), e.getY(), Math.pow(2, e.getDeltaY() / 32));
+		} else {
+			// Pan
+			Point2D delta = new Point2D(e.getDeltaX(), e.getDeltaY())
+				.multiply(simulatorWindow.getScaleFactorInverted());
+			setTranslate(translateOrigin.add(delta));
+			simulatorWindow.setNeedsRepaint();
 		}
+	}
+	public void scrollFinished(ScrollEvent e) {
+
+	}
+	
+	public void zoom(ZoomEvent e) {
+		applyZoom(e.getX(), e.getY(), e.getZoomFactor());
 	}
 	
 	public void focusGained() {
