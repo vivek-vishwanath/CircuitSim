@@ -79,7 +79,7 @@ import javafx.util.Pair;
 public class CircuitManager {
 	private enum SelectingState {
 		IDLE,
-		HIGHLIGHT_DRAGGED,
+		BACKGROUND_DRAGGED,
 		ELEMENT_SELECTED,
 		CONNECTION_SELECTED,
 		ELEMENT_DRAGGED,
@@ -113,6 +113,20 @@ public class CircuitManager {
 	 * maps to (tx * scale, ty * scale) in pixel coordinate space.
 	 */
 	private Point2D translateOrigin = new Point2D(0, 0);
+
+	/**
+	 * The position of the last mouse press on the Canvas
+	 * under pixel coordinate space.
+	 * 
+	 * This is used for panning.
+	 */
+	private Point2D lastMousePressedPan = new Point2D(0, 0);
+	/**
+	 * A temporary value which holds the translate origin on mouse press.
+	 * 
+	 * This is used for panning.
+	 */
+	private Point2D translateOriginBeforePan = new Point2D(0, 0);
 
 	private GuiElement lastPressed;
 	private boolean lastPressedConsumed;
@@ -418,6 +432,15 @@ public class CircuitManager {
 			.subtract(translateOrigin);
 	}
 
+	/**
+	 * Sets `translateOrigin`, but restricts newOrigin to not display any out-of-bounds values
+	 * @param newOrigin the new origin
+	 */
+	private void setTranslate(Point2D newOrigin) {
+		double x = Math.min(0, newOrigin.getX());
+		double y = Math.min(0, newOrigin.getY());
+		translateOrigin = new Point2D(x, y);
+	}
 	public void paint() {
 		needsRepaint = false;
 		
@@ -630,14 +653,16 @@ public class CircuitManager {
 					}
 					break;
 				}
-				case HIGHLIGHT_DRAGGED: {
-					double startX = Math.min(lastMousePressed.getX(), lastMousePosition.getX());
-					double startY = Math.min(lastMousePressed.getY(), lastMousePosition.getY());
-					double width = Math.abs(lastMousePosition.getX() - lastMousePressed.getX());
-					double height = Math.abs(lastMousePosition.getY() - lastMousePressed.getY());
-					
-					graphics.setStroke(Color.GREEN.darker());
-					graphics.strokeRect(startX, startY, width, height);
+				case BACKGROUND_DRAGGED: {
+					if (!simulatorWindow.isClickMode()) {
+						double startX = Math.min(lastMousePressed.getX(), lastMousePosition.getX());
+						double startY = Math.min(lastMousePressed.getY(), lastMousePosition.getY());
+						double width = Math.abs(lastMousePosition.getX() - lastMousePressed.getX());
+						double height = Math.abs(lastMousePosition.getY() - lastMousePressed.getY());
+						
+						graphics.setStroke(Color.GREEN.darker());
+						graphics.strokeRect(startX, startY, width, height);
+					}
 					break;
 				}
 			}
@@ -704,22 +729,6 @@ public class CircuitManager {
 		}
 
 		switch (e.getCode()) {
-			case W: {
-				translateOrigin = translateOrigin.add(0, GuiUtils.BLOCK_SIZE);
-				break;
-			}
-			case A: {
-				translateOrigin = translateOrigin.add(GuiUtils.BLOCK_SIZE, 0);
-				break;
-			}
-			case S: {
-				translateOrigin = translateOrigin.add(0, -GuiUtils.BLOCK_SIZE);
-				break;
-			}
-			case D: {
-				translateOrigin = translateOrigin.add(-GuiUtils.BLOCK_SIZE, 0);
-				break;
-			}
 			case RIGHT: {
 				e.consume();
 				handleArrowPressed(Direction.EAST);
@@ -942,11 +951,13 @@ public class CircuitManager {
 		
 		lastMousePosition = pixelToCanvasCoord(e.getX(), e.getY());
 		lastMousePressed = pixelToCanvasCoord(e.getX(), e.getY());
-		
+		lastMousePressedPan = new Point2D(e.getX(), e.getY());
+		translateOriginBeforePan = translateOrigin;
+
 		switch (currentState) {
 			case ELEMENT_DRAGGED:
 			case CONNECTION_SELECTED:
-			case HIGHLIGHT_DRAGGED:
+			case BACKGROUND_DRAGGED:
 				break;
 			
 			case IDLE:
@@ -1101,7 +1112,14 @@ public class CircuitManager {
 				if (isCtrlDown) {
 					break;
 				}
-			case HIGHLIGHT_DRAGGED:
+			case BACKGROUND_DRAGGED:
+				if (simulatorWindow.isClickMode()) {
+					setTranslate(
+						translateOriginBeforePan
+							.add(e.getX(), e.getY())
+							.subtract(lastMousePressedPan)
+					);
+				}
 				currentState = SelectingState.IDLE;
 				break;
 		}
@@ -1121,8 +1139,8 @@ public class CircuitManager {
 		
 		switch (currentState) {
 			case IDLE:
-			case HIGHLIGHT_DRAGGED:
-				currentState = SelectingState.HIGHLIGHT_DRAGGED;
+			case BACKGROUND_DRAGGED:
+				currentState = SelectingState.BACKGROUND_DRAGGED;
 				
 				int startX = (int)(Math.min(lastMousePressed.getX(), lastMousePosition.getX()));
 				int startY = (int)(Math.min(lastMousePressed.getY(), lastMousePosition.getY()));
@@ -1133,15 +1151,23 @@ public class CircuitManager {
 					selectedElements.clear();
 				}
 				
-				setSelectedElements(Stream
-					                    .concat(getSelectedElements().stream(), Stream
-						                    .concat(circuitBoard.getComponents().stream(),
-						                            circuitBoard
-							                            .getLinks()
-							                            .stream()
-							                            .flatMap(link -> link.getWires().stream()))
-						                    .filter(peer -> peer.isWithinScreenCoord(startX, startY, width, height)))
-					                    .collect(Collectors.toSet()));
+				if (simulatorWindow.isClickMode()) {
+					setTranslate(
+						translateOriginBeforePan
+							.add(e.getX(), e.getY())
+							.subtract(lastMousePressedPan)
+					);
+				} else {
+					setSelectedElements(Stream
+											.concat(getSelectedElements().stream(), Stream
+												.concat(circuitBoard.getComponents().stream(),
+														circuitBoard
+															.getLinks()
+															.stream()
+															.flatMap(link -> link.getWires().stream()))
+												.filter(peer -> peer.isWithinScreenCoord(startX, startY, width, height)))
+											.collect(Collectors.toSet()));
+				}
 				break;
 			
 			case ELEMENT_SELECTED:
