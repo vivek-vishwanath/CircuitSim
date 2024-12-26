@@ -410,6 +410,28 @@ public class CircuitManager {
 		double y = Math.min(0, newOrigin.getY());
 		translateOrigin = new Point2D(x, y);
 	}
+	/**
+	 * Zooms in at a given point (x, y).
+	 * 
+	 * This depends on the scale before zooming in and new scale after zooming in.
+	 * (This also applies to zooming out).
+	 * 
+	 * @param x Pixel X
+	 * @param y Pixel Y
+	 * @param oldScale the old zoom scale value
+	 * @param newScale the new zoom scale value
+	 */
+	public void zoomInOnPoint(double x, double y, double oldScale, double newScale) {
+		// Let (tx, ty) = translateOrigin.
+		// Pixel (x, y) must be at the same canvas coordinate before and after zooming, 
+		// so we must meet the constraint (x / oldScale - tx = x / newScale - tx').
+		// When you solve this constraint, you get: (tx' = tx - factor * x),
+		// where factor is the value below.
+
+		double factor = (newScale - oldScale) / (newScale * oldScale);
+		setTranslate(translateOrigin.subtract(factor * x, factor * y));
+	}
+
 	@Deprecated
 	public void paint() {
 		paint(getCanvas());

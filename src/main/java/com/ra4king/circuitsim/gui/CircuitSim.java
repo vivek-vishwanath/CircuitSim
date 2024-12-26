@@ -363,29 +363,29 @@ public class CircuitSim extends Application {
 	void zoomIn(double x, double y) {
 		int selectedIndex = scaleFactorSelect.getSelectionModel().getSelectedIndex();
 		if (selectedIndex < scaleFactorSelect.getItems().size()) {
+			double oldZoom = scaleFactorSelect.getSelectionModel().getSelectedItem();
 			scaleFactorSelect.getSelectionModel().select(selectedIndex + 1);
+			double newZoom = scaleFactorSelect.getSelectionModel().getSelectedItem();
 			
-			setScrollPosition(x, y);
+			setScrollPosition(x, y, oldZoom, newZoom);
 		}
 	}
 	
 	void zoomOut(double x, double y) {
 		int selectedIndex = scaleFactorSelect.getSelectionModel().getSelectedIndex();
 		if (selectedIndex > 0) {
+			double oldZoom = scaleFactorSelect.getSelectionModel().getSelectedItem();
 			scaleFactorSelect.getSelectionModel().select(selectedIndex - 1);
+			double newZoom = scaleFactorSelect.getSelectionModel().getSelectedItem();
 			
-			setScrollPosition(x, y);
+			setScrollPosition(x, y, oldZoom, newZoom);
 		}
 	}
 	
-	private void setScrollPosition(double x, double y) {
+	private void setScrollPosition(double x, double y, double oldZoom, double newZoom) {
 		CircuitManager manager = getCurrentCircuit();
 		if (manager != null) {
-			ScrollPane scrollPane = manager.getCanvasScrollPane();
-			Canvas canvas = manager.getCanvas();
-			
-			scrollPane.setHvalue(scrollPane.getHmax() * x / canvas.getWidth());
-			scrollPane.setVvalue(scrollPane.getVmax() * y / canvas.getHeight());
+			manager.zoomInOnPoint(x, y, oldZoom, newZoom);
 		}
 	}
 	
