@@ -14,6 +14,7 @@ public final class IntegerString {
 	private final String valueString;
 	private final int value;
 	private final int base;
+	private final boolean prefixed;
 	
 	/**
 	 * Creates an integer out of a string.
@@ -41,25 +42,31 @@ public final class IntegerString {
 	public IntegerString(String valueString, int defaultBase) {
 		int base = defaultBase;
 		boolean isNegative = valueString.startsWith("-");
-		
+		boolean prefixed = false;
+
 		// Compute negative and base-override, if prefixes are present:
 		if (isNegative) {
 			valueString = valueString.substring(1);
 		}
 		if (valueString.startsWith("0x")) {
 			base = 16;
+			prefixed = true;
 			valueString = valueString.substring(2);
 		} else if (valueString.startsWith("x")) {
 			base = 16;
+			prefixed = true;
 			valueString = valueString.substring(1);
 		} else if (valueString.startsWith("0b")) {
 			base = 2;
+			prefixed = true;
 			valueString = valueString.substring(2);
 		} else if (valueString.startsWith("b")) {
 			base = 2;
+			prefixed = true;
 			valueString = valueString.substring(1);
 		} else if (valueString.startsWith("#")) {
 			base = 10;
+			prefixed = true;
 			valueString = valueString.substring(1);
 		}
 		// Check negative after prefix
@@ -75,10 +82,11 @@ public final class IntegerString {
 			throw new SimulationException(valueString + " is not a valid value of base " + base);
 		}
 		this.base = base;
+		this.prefixed = prefixed;
 		// Readd prefixes (note this converts 'x' and 'b' to '0x' and '0b'):
 		String negPrefix = isNegative ? "-" : "";
 		String basePrefix = "";
-		if (base != defaultBase) {
+		if (prefixed) {
 			basePrefix = switch (base) {
 				case 2 -> "0b";
 				case 10 -> "#";
@@ -96,6 +104,7 @@ public final class IntegerString {
 	public IntegerString(int value) {
 		this.value = value;
 		this.base = 10;
+		this.prefixed = false;
 		this.valueString = Integer.toString(value);
 	}
 	
@@ -107,18 +116,6 @@ public final class IntegerString {
 		return base;
 	}
 	
-	/**
-	 * @return the string representation of this value (with an explicit prefix)
-	 */
-	public String prefixedString() {
-		return switch (base) {
-			case 2  -> String.format("0b%s", Integer.toString(value, 2));
-			case 10 -> String.format("#%d", value);
-			case 16 -> String.format("0x%X", value);
-			default -> Integer.toString(value);
-		};
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof IntegerString) {
@@ -136,6 +133,20 @@ public final class IntegerString {
 	@Override
 	public String toString() {
 		return this.valueString;
+	}
+
+	/**
+	 * Casts this integer string to a string of a different base.
+	 * If the integer string is prefixed, then this doesn't change the string.
+	 * 
+	 * This also does not prefix the string.
+	 * 
+	 * @param radix Base to cast to string
+	 * @return the string representation
+	 */
+	public String toString(int radix) {
+		if (this.prefixed) return this.valueString;
+		return Integer.toString(this.value, radix);
 	}
 
 	public static final class IntegerStringValidator implements PropertyValidator<IntegerString> {
