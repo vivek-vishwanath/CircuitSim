@@ -107,7 +107,11 @@ public final class PathFinding {
 					continue;
 				}
 
-				int additionalLength = preference == LocationPreference.PREFER ? 0 : 1;
+				int additionalLength = switch (preference) {
+					case PREFER -> 0;
+					case VALID -> 1;
+					case INVALID -> 999;
+				};
 				
 				int additionalTurns = 0;
 				if (current.directionEntered != null && direction != current.directionEntered) {

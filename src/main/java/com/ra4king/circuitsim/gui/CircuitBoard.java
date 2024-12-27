@@ -395,16 +395,20 @@ public class CircuitBoard {
 						}
 						
 						linkWires = lw;
-					
-						if (linkWires != null) {
-							// Override sourceX, sourceY with:
-							// the first fork or the port at the end of the link
-							// endConnection = where the source for pathfinding will be
-							//
+
+						// Set sourceX and sourceY to the earliest connection point along the wire.
+						// This is either the closest fork from where the port was originally 
+						// or the port at the end of the link (if there is no fork).
+						//
+						// We first check if we even need to move sourceX/sourceY.
+						// If we don't have a wire connecting to this port or there's a second port already here,
+						// then we've found the source and we can move on.
+						if (linkWires != null && !getConnections(sourceX, sourceY).stream().anyMatch(c -> c instanceof PortConnection)) {
 							// The search for this is unfortunately O(n^2) (n = # of wires in link wires),
 							// but it seems like that's also true of other wire algorithms for LinkWire.
 							// Unfortunate.
 							//
+							// endConnection = where the source for pathfinding will be
 							// currentX, currentY = current location we're traversing
 							// nextConnection = the connection on the other side of the wire we're traversing
 							int currentX = sourceX;
@@ -416,11 +420,11 @@ public class CircuitBoard {
 								for (Wire w : wires) {
 									Connection wStart = w.getStartConnection();
 									Connection wEnd = w.getEndConnection();
-									if (wStart.getX() == currentX && wStart.getY() == currentY) {
+									if (wStart.isAt(currentX, currentY)) {
 										wires.remove(w);
 										nextConnection = wEnd;
 										break;
-									} else if (wEnd.getX() == currentX && wEnd.getY() == currentY) {
+									} else if (wEnd.isAt(currentX, currentY)) {
 										wires.remove(w);
 										nextConnection = wStart;
 										break;
@@ -432,11 +436,14 @@ public class CircuitBoard {
 								}
 								
 								Set<Connection> connections = getConnections(nextConnection.getX(), nextConnection.getY());
-								// If connections > 2, this is a fork, so we stop here.
-								// If connections < 2, then this is a dead end, so we stop here.
+								// If connections < 2, then this is a dead end. Cancel this operation (it causes gnarly behaviors if we pathfind from the dead end).
+								// If connections > 2, this is a fork, so we have found the end, so we can stop here.
 								// If connections == 2 and the other connection is a port, then we've hit the end, so we also stop here.
-								boolean isEnd = connections.size() != 2 || connections.stream().anyMatch(c -> c instanceof PortConnection);
-								if (isEnd) {
+								if (connections.size() < 2) {
+									wires.addAll(linkWires.getWires());
+									endConnection = null;
+									break;
+								} else if (connections.size() > 2 || connections.stream().anyMatch(c -> c instanceof PortConnection)) {
 									endConnection = nextConnection;
 									break;
 								} else {
@@ -454,7 +461,6 @@ public class CircuitBoard {
 							consumedWires.addAll(traversedWires);
 						}
 					}
-
 
 					// All components currently on the board or being dragged.
 					Set<ComponentPeer<?>> components = new HashSet<>(getComponents());
@@ -478,7 +484,7 @@ public class CircuitBoard {
 						// All connections to (px, py) (including preexisting paths and a path found for a different port)
 						Set<Connection> connections = Stream
 							.concat(connectedPorts.stream(), paths.stream().flatMap(w -> w.getConnections().stream()))
-							.filter(c -> c.getX() == px && c.getY() == py)
+							.filter(c -> c.isAt(px, py))
 							.collect(Collectors.toSet());
 						synchronized (CircuitBoard.this) {
 							connections.addAll(getConnections(px, py));
@@ -491,19 +497,37 @@ public class CircuitBoard {
 								return LocationPreference.INVALID;
 							}
 							
-							// Prefer wires that will line up with wires that already exist.
-							if (connection.getLinkWires() == null || linkWires == null ||
-							    connection.getLinkWires() == linkWires) {
-								return LocationPreference.PREFER;
-							}
-							
-							// Reject any ports connecting to the ends of other wires
-							// (we don't want to connect our wire to a wire that's not ours)
+							// Reject any points that would overlap with another wire
+							// (same orientation and same point)
+							// or would cause the wire to connect to another wire
+							// (point on the edge of wire)
 							if (connection instanceof WireConnection) {
 								Wire wire = (Wire)connection.getParent();
-								if (wire.isHorizontal() == horizontal || connection == wire.getStartConnection() ||
-								    connection == wire.getEndConnection()) {
-									return LocationPreference.INVALID;
+								if (!consumedWires.contains(wire)) {
+									// Path overlaps with present wire.
+									if (wire.isHorizontal() == horizontal && wire.contains(px, py)) {
+										// This line ^^ contains a bug and can fail sometimes
+										// (especially for ports that are on the middle of wires).
+										// The calculation below could help (alongside a !canOverlap above) 
+										// (it basically says "if you're on a middle of a wire, you can pass through it"),
+										// but that makes the pathfinding of two ports (e.g. those of an AND gate) 
+										// on the middle of a single wire worse.
+										// Adding extra cost to wires that overlap only partially works because
+										// ports moving along a wire would still have suboptimal pathfinding
+										// after enough movement. I don't really know what to here.
+
+										// boolean canOverlap = linkWires == null 
+										// 	&& wire.contains(sx, sy)
+										// 	&& !paths.contains(wire);
+										return LocationPreference.INVALID;
+									}
+									// Path would wrongly connect with present wire
+									if (wire.getStartConnection().isAt(px, py)) {
+										return LocationPreference.INVALID;
+									}
+									if (wire.getEndConnection().isAt(px, py)) {
+										return LocationPreference.INVALID;
+									}
 								}
 							}
 						}
