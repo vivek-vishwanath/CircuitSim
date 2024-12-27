@@ -416,24 +416,29 @@ public class CircuitBoard {
 							Connection endConnection = null;
 							Set<Wire> wires = new HashSet<>(linkWires.getWires());
 							while (!wires.isEmpty()) {
-								Connection nextConnection = null;
-								for (Wire w : wires) {
-									Connection wStart = w.getStartConnection();
-									Connection wEnd = w.getEndConnection();
-									if (wStart.isAt(currentX, currentY)) {
-										wires.remove(w);
-										nextConnection = wEnd;
-										break;
-									} else if (wEnd.isAt(currentX, currentY)) {
-										wires.remove(w);
-										nextConnection = wStart;
-										break;
-									}
-								}
-								if (nextConnection == null) {
-									// No "next" connection was found, so something's gone wrong.
+								// Find the next connection to traverse.
+								final int cx = currentX, cy = currentY;
+								List<Connection> possibleNext = wires.stream()
+									.<Connection>mapMulti((w, consumer) -> {
+										Connection wStart = w.getStartConnection();
+										Connection wEnd = w.getEndConnection();
+										if (wStart.isAt(cx, cy)) {
+											consumer.accept(wEnd);
+										} else if (wEnd.isAt(cx, cy)) {
+											consumer.accept(wStart);
+										}
+									})
+									.limit(2)
+									.toList();
+								if (possibleNext.size() != 1) {
+									// Either no "next" connection was found,
+									// or multiple possible branches were found.
+
+									// In either case, we can't really explore, so end here.
 									break;
 								}
+								Connection nextConnection = possibleNext.get(0);
+								wires.remove(nextConnection.getParent());
 								
 								Set<Connection> connections = getConnections(nextConnection.getX(), nextConnection.getY());
 								// If connections < 2, then this is a dead end. Cancel this operation (it causes gnarly behaviors if we pathfind from the dead end).
