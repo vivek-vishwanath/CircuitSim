@@ -142,6 +142,23 @@ public class CircuitManager {
 	 * A boolean that indicates whether a scroll should zoom or pan.
 	 */
 	private boolean zoomOnScroll;
+	/**
+	 * A boolean that indicates whether the user has a trackpad 
+	 * (as opposed to a mouse wheel).
+	 * 
+	 * It is unfortunately difficult to track whether a scroll event 
+	 * is done with a trackpad or a scroll wheel while also maintaining trackpad inertia.
+	 * 
+	 * Note that trackpads trigger the scrollStart/scrollEnd events, while mouse wheels don't.
+	 * So, you would think that setting this field in the interval between those two events would work,
+	 * but it doesn't because inertial scroll events can happen after scrollEnd.
+	 * 
+	 * The way this variable is handled is basically:
+	 * - set usingTrackpad to true when scrollStart (because we know we're trackpadding there)
+	 * - set usingTrackpad to false during an event where scrolling can't happen (because we know scrolling has ended!)
+	 * Not perfect, but it'll catch most cases and the case where it fails is super unlikely (right?)
+	 */
+	private boolean usingTrackpad;
 
 	private final Circuit dummyCircuit = new Circuit("Dummy", new Simulator());
 	private ComponentPeer<?> potentialComponent;
@@ -423,14 +440,28 @@ public class CircuitManager {
 			graphics.scale(simulatorWindow.getScaleFactor(), simulatorWindow.getScaleFactor());
 			graphics.translate(translateOrigin.getX(), translateOrigin.getY());
 			
-			// Draw the light background and grid starting at canvas (0, 0) and moving onwards.
-			graphics.setFill(drawGrid ? Color.LIGHTGRAY : Color.WHITE);
+			// Draw the light background and grid on the part of the canvas visible on the screen.
 			if (drawGrid) {
+				// Find the start of the tile at pixel (0, 0).
+				Point2D canvasStart = pixelToCanvasCoord(0, 0);
+				canvasStart = canvasStart.subtract(
+					canvasStart.getX() % GuiUtils.BLOCK_SIZE,
+					canvasStart.getY() % GuiUtils.BLOCK_SIZE
+				);
+				// Find the canvas coordinate for the end of the canvas.
 				Point2D canvasEnd = pixelToCanvasCoord(canvas.getWidth(), canvas.getHeight());
-				graphics.fillRect(0, 0, canvasEnd.getX(), canvasEnd.getY());
+
+				// BG of writable region
+				graphics.setFill(Color.LIGHTGRAY);
+				double bgOriginX = Math.max(0, canvasStart.getX());
+				double bgOriginY = Math.max(0, canvasStart.getY());
+				double bgWidth = canvasEnd.getX() - bgOriginX;
+				double bgHeight = canvasEnd.getY() - bgOriginY;
+				graphics.fillRect(bgOriginX, bgOriginY, bgWidth, bgHeight);
+				// Grid
 				graphics.setFill(Color.BLACK);
-				for (int i = 0; i < canvasEnd.getX(); i += GuiUtils.BLOCK_SIZE) {
-					for (int j = 0; j < canvasEnd.getY(); j += GuiUtils.BLOCK_SIZE) {
+				for (double i = canvasStart.getX(); i < canvasEnd.getX(); i += GuiUtils.BLOCK_SIZE) {
+					for (double j = canvasStart.getY(); j < canvasEnd.getY(); j += GuiUtils.BLOCK_SIZE) {
 						graphics.fillRect(i, j, 1, 1);
 					}
 				}
@@ -898,6 +929,7 @@ public class CircuitManager {
 	}
 
 	public void mousePressed(MouseEvent e) {
+		this.usingTrackpad = false;
 		if (e.getButton() != MouseButton.PRIMARY) {
 			switch (currentState) {
 				case PLACING_COMPONENT, CONNECTION_SELECTED, CONNECTION_DRAGGED -> reset();
@@ -1252,25 +1284,30 @@ public class CircuitManager {
 	public void scrollStarted(ScrollEvent e) {
 		// If user presses control during scroll, it should not change operation.
 		this.zoomOnScroll = this.isCtrlDown;
+		this.usingTrackpad = true;
 	}
 	public void scroll(ScrollEvent e) {
-		if (this.zoomOnScroll) {
+		boolean useZoom = this.usingTrackpad ? this.zoomOnScroll : this.isCtrlDown;
+		if (useZoom) {
 			// Zoom
-			applyZoom(e.getX(), e.getY(), Math.pow(2, e.getDeltaY() / 32));
+			// We don't need inertia for zoom
+			if (!e.isInertia()) {
+				applyZoom(e.getX(), e.getY(), Math.pow(2, e.getDeltaY() / 32));
+			}
 		} else {
 			// Pan
 			Point2D delta = new Point2D(e.getDeltaX(), e.getDeltaY())
 				.multiply(simulatorWindow.getScaleFactorInverted());
 			setTranslate(translateOrigin.add(delta));
-			simulatorWindow.setNeedsRepaint();
 		}
+		simulatorWindow.setNeedsRepaint();
 	}
 	public void scrollFinished(ScrollEvent e) {
-
 	}
 	
 	public void zoom(ZoomEvent e) {
 		applyZoom(e.getX(), e.getY(), e.getZoomFactor());
+		simulatorWindow.setNeedsRepaint();
 	}
 	
 	public void focusGained() {
