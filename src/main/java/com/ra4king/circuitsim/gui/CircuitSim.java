@@ -2156,11 +2156,12 @@ public class CircuitSim extends Application {
 					runFxSync(() -> simulator.runSync(() -> {
 						circuitManagers.forEach((name, pair) -> {
 							CircuitManager manager = pair.getValue();
-							manager.setTranslate(Point2D.ZERO);
-							setScaleFactor(1.0);
 							
-							Bounds circuitBounds = pair.getValue().getMaxCircuitBounds();
-
+							Bounds circuitBounds = pair.getValue().getCircuitBounds();
+							Point2D newOrigin = new Point2D(circuitBounds.getMinX(), circuitBounds.getMinY())
+								.multiply(-GuiUtils.BLOCK_SIZE);
+							manager.setTranslate(newOrigin);
+							setScaleFactor(1.0);
 							try {
 								circuitCanvas.setWidth(circuitBounds.getWidth() * getScaleFactor() * GuiUtils.BLOCK_SIZE);
 								circuitCanvas.setHeight(circuitBounds.getHeight() * getScaleFactor() * GuiUtils.BLOCK_SIZE);
@@ -2173,6 +2174,8 @@ public class CircuitSim extends Application {
 							Image image = circuitCanvas.snapshot(null, null);
 							RenderedImage rendered = SwingFXUtils.fromFXImage(image, null);
 							images.put(name, rendered);
+
+							manager.setTranslate(Point2D.ZERO);
 						});
 						updateCanvasSize();
 					}));

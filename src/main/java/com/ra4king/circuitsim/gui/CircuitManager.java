@@ -235,34 +235,22 @@ public class CircuitManager {
 	}
 	
 	/**
-	 * @return the maximum bounds (in the circuit coordinate system) for the size of the board.
+	 * @return the bounds for the circuit board (in the circuit coordinate system).
 	 */
-	public Bounds getMaxCircuitBounds() {
-		int maxX = Stream
-		.concat(this.getSelectedElements().stream(),
-				Stream.concat(this.getCircuitBoard().getComponents().stream(),
-							  this
-								  .getCircuitBoard()
-								  .getLinks()
-								  .stream()
-								  .flatMap(links -> links.getWires().stream())))
-		.mapToInt(componentPeer -> componentPeer.getX() + componentPeer.getWidth())
-		.max()
-		.orElse(0) + 5;
-	
-	int maxY = Stream
-		.concat(this.getSelectedElements().stream(),
-				Stream.concat(this.getCircuitBoard().getComponents().stream(),
-							  this
-								  .getCircuitBoard()
-								  .getLinks()
-								  .stream()
-								  .flatMap(links -> links.getWires().stream())))
-		.mapToInt(componentPeer -> componentPeer.getY() + componentPeer.getHeight())
-		.max()
-		.orElse(0) + 5;
+	public Bounds getCircuitBounds() {
+		Set<GuiElement> elements = new HashSet<>();
+		elements.addAll(this.getSelectedElements());
+		elements.addAll(this.getCircuitBoard().getComponents());
+		for (LinkWires links : this.getCircuitBoard().getLinks()) {
+			elements.addAll(links.getWires());
+		}
 
-		return new BoundingBox(0, 0, maxX, maxY);
+		int minX = elements.stream().mapToInt(el -> el.getX()).min().orElse(5) - 5;
+		int minY = elements.stream().mapToInt(el -> el.getY()).min().orElse(5) - 5;
+		int maxX = elements.stream().mapToInt(el -> el.getX() + el.getWidth()).max().orElse(0) + 5;
+		int maxY = elements.stream().mapToInt(el -> el.getY() + el.getHeight()).max().orElse(0) + 5;
+
+		return new BoundingBox(minX, minY, maxX - minX, maxY - minY);
 	}
 
 	public Circuit getCircuit() {
