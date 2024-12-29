@@ -64,10 +64,12 @@ public class CircuitBoard {
 	private static class MoveComputeResult {
 		final Set<Wire> wiresToAdd;
 		final Set<Wire> wiresToRemove;
+		final Set<Connection> failedConnections;
 		
-		MoveComputeResult(Set<Wire> wiresToAdd, Set<Wire> wiresToRemove) {
+		MoveComputeResult(Set<Wire> wiresToAdd, Set<Wire> wiresToRemove, Set<Connection> failedConnections) {
 			this.wiresToAdd = wiresToAdd;
 			this.wiresToRemove = wiresToRemove;
+			this.failedConnections = failedConnections;
 		}
 	}
 	
@@ -344,6 +346,7 @@ public class CircuitBoard {
 			computeThread = new Thread(() -> {
 				Set<Wire> paths = new HashSet<>();
 				Set<Wire> consumedWires = new HashSet<>();
+				Set<Connection> failedConnections = new HashSet<>();
 
 				Set<Pair<Integer, Integer>> portsSeen = new HashSet<>();
 				
@@ -546,8 +549,10 @@ public class CircuitBoard {
 						
 						return LocationPreference.VALID;
 					});
-					if (path != null) {
+					if (path != null && !path.isEmpty()) {
 						paths.addAll(path);
+					} else {
+						failedConnections.add(connectedPort);
 					}
 				}
 				
@@ -556,7 +561,7 @@ public class CircuitBoard {
 					Set<Wire> toRemove = consumedWires;
 					Set<Wire> toAdd = new HashSet<>(paths);
 					
-					moveResult = new MoveComputeResult(toAdd, toRemove);
+					moveResult = new MoveComputeResult(toAdd, toRemove, failedConnections);
 					if (computeThread == Thread.currentThread()) {
 						computeThread = null;
 					}
@@ -1297,12 +1302,18 @@ public class CircuitBoard {
 					}
 				}
 				
+				// Paint removed and added wires and paint connections without paths
 				MoveComputeResult result = this.moveResult;
 				if (result != null) {
-					graphics.setFill(Color.RED);
+					graphics.setStroke(Color.RED);
 					result.wiresToRemove.forEach(wire -> wire.paint(graphics));
 					
-					graphics.setFill(Color.BLACK);
+					graphics.setFill(Color.RED);
+					result.failedConnections.forEach(c -> {
+						graphics.fillOval(c.getScreenX(), c.getScreenY(), c.getScreenWidth(), c.getScreenHeight());
+					});
+
+					graphics.setStroke(Color.BLACK);
 					result.wiresToAdd.forEach(wire -> wire.paint(graphics));
 				}
 			} finally {
