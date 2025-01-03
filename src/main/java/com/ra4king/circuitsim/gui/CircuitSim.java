@@ -370,7 +370,7 @@ public class CircuitSim extends Application {
 	public void setScaleFactor(double scale) {
 		@SuppressWarnings("unchecked")
 		TextFormatter<Double> formatter = (TextFormatter<Double>) scaleFactorInput.getTextFormatter();
-		formatter.setValue(Math.clamp(scale, 0.25, 8));
+		formatter.setValue(Math.min(Math.max(scale, 0.25), 8)); // clamp value between 0.25 and 8
 	}
 
 	public double getScaleFactorInverted() {
@@ -1956,8 +1956,9 @@ public class CircuitSim extends Application {
 
 				@Override
 				public Double fromString(String value) {
-					// Normal parsing.
-					return value != null && !value.isBlank() ? Math.clamp(Double.valueOf(value), 0.25, 8) : 1.0;
+					// If parseable, parse and clamp to between 0.25 and 8.
+					// Otherwise, just default to 1.
+					return value != null && !value.isBlank() ? Math.min(Math.max(Double.valueOf(value), 0.25), 8) : 1.0;
 				}
 
 			},
