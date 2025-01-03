@@ -296,6 +296,7 @@ public class CircuitSim extends Application {
 		editHistory = new EditHistory(this);
 		editHistory.addListener((action, manager, params) -> {
 			updateTitle();
+			needsRepaint = true;
 		});
 		
 		componentManager = new ComponentManager();
