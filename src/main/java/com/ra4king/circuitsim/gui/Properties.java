@@ -18,7 +18,6 @@ import javafx.stage.Stage;
 /**
  * @author Roi Atalla
  */
-@SuppressWarnings("unchecked")
 public class Properties {
 	private final Map<String, Property<?>> properties;
 	private final CircuitSimVersion version;
