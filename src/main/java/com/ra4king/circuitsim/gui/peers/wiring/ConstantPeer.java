@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ra4king.circuitsim.gui.ComponentManager.ComponentManagerInterface;
+import com.ra4king.circuitsim.gui.CircuitSimVersion;
 import com.ra4king.circuitsim.gui.ComponentPeer;
 import com.ra4king.circuitsim.gui.Connection.PortConnection;
 import com.ra4king.circuitsim.gui.GuiUtils;
@@ -24,6 +25,12 @@ import javafx.util.Pair;
  * @author Roi Atalla
  */
 public class ConstantPeer extends ComponentPeer<Constant> {
+	/**
+	 * In 1.9.2b and prior, unprefixed constants resolve to base 10.
+	 * In 1.10.0 [2110 edition] and after, unprefixed constants resolve to the display base.
+	 */
+	private static final CircuitSimVersion MAXIMUM_VERSION_FOR_LEGACY_VALUE_PARSING = new CircuitSimVersion("1.9.2b");
+
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(
 			new Pair<>("Wiring", "Constant"),
@@ -59,6 +66,7 @@ public class ConstantPeer extends ComponentPeer<Constant> {
 		Property<IntegerString> valueProperty = Properties.VALUE(base.value);
 		properties.ensureProperty(valueProperty);
 
+		// Handling previous input:
 		if (oldValueProperty != null) {
 			if (oldValueProperty.value instanceof IntegerString) {
 				IntegerString valStr = (IntegerString) oldValueProperty.value;
@@ -70,7 +78,13 @@ public class ConstantPeer extends ComponentPeer<Constant> {
 					// If base is the same, repropagate the old value (but not the validator)
 					properties.setValue(valueProperty, valStr);
 				}
+			} else if (props.getVersion().compareTo(MAXIMUM_VERSION_FOR_LEGACY_VALUE_PARSING) <= 0) {
+				// On importing a legacy file:
+				// Convert all legacy constants (base 10) by converting string to display base:
+				IntegerString valStr = IntegerString.parseFromLegacy(oldValueProperty.getStringValue(), base.value);
+				properties.setValue(valueProperty, valStr);
 			} else {
+				// On importing a regular file:
 				properties.updateIfExists(oldValueProperty);
 			}
 		}

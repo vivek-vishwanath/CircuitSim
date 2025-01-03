@@ -108,6 +108,28 @@ public final class IntegerString {
 		this.valueString = Integer.toString(value);
 	}
 	
+	/**
+	 * Similar to default parsing, 
+	 * but unprefixed values are parsed as base-10 and converted to their display base.
+	 * 
+	 * @param valueString the string to parse
+	 * @param defaultBase the display base
+	 */
+	public static IntegerString parseFromLegacy(String valueString, int base) {
+		// Cast value and force prefix:
+		IntegerString valStr = new IntegerString(valueString, 10);
+		String string = valStr.toString(base);
+		if (!valStr.prefixed) {
+			string = switch (base) {
+				case 2 -> "0b" + string;
+				case 16 -> "0x" + string;
+				default -> string;
+			};
+		}
+		
+		return new IntegerString(string, base);
+	}
+
 	public int getValue() {
 		return value;
 	}
