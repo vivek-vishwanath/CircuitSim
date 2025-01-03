@@ -10,7 +10,12 @@ mainClassName = 'com.ra4king.circuitsim.gui.CircuitSimRunner'
 group 'CircuitSim'
 
 ext.moduleName = 'Project.com.ra4king.circuitsim.gui'
-sourceCompatibility = JavaVersion.VERSION_14
+
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(17))
+	}
+}
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -117,7 +122,7 @@ compileJava {
 		options.compilerArgs = [
 				'--module-path', classpath.asPath,
 				'--add-modules', 'javafx.controls,javafx.swing',
-				'-Xlint:unchecked'
+				'-Xlint:unchecked','-Xlint:deprecation'
 		]
 		classpath = files()
 	}
