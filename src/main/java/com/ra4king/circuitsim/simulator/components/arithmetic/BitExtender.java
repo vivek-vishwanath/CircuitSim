@@ -56,6 +56,9 @@ public class BitExtender extends Component {
 							extended.setBit(i, State.ONE);
 						}
 						break;
+					
+					case ZERO:
+						break;
 				}
 			}
 			

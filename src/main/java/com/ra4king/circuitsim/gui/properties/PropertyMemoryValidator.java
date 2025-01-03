@@ -134,23 +134,24 @@ public class PropertyMemoryValidator implements PropertyValidator<List<MemoryLin
 	private int[] parsePartial(String contents) {
 		int[] values = new int[1 << addressBits];
 		
-		Scanner scanner = new Scanner(contents);
-		int length;
-		for (length = 0; length < values.length && scanner.hasNext(); length++) {
-			String piece = scanner.next();
-			if (piece.matches("^\\d+-[\\da-fA-F]+$")) {
-				String[] split = piece.split("-");
-				int count = Integer.parseInt(split[0]);
-				int val = parseValue(split[1]);
-				for (int j = 0; j < count && length < values.length; j++, length++) {
-					values[length] = val;
+		try (Scanner scanner = new Scanner(contents)) {
+			int length;
+			for (length = 0; length < values.length && scanner.hasNext(); length++) {
+				String piece = scanner.next();
+				if (piece.matches("^\\d+-[\\da-fA-F]+$")) {
+					String[] split = piece.split("-");
+					int count = Integer.parseInt(split[0]);
+					int val = parseValue(split[1]);
+					for (int j = 0; j < count && length < values.length; j++, length++) {
+						values[length] = val;
+					}
+					length--; // to account for extra increment
+				} else {
+					values[length] = parseValue(piece);
 				}
-				length--; // to account for extra increment
-			} else {
-				values[length] = parseValue(piece);
 			}
+			return Arrays.copyOf(values, length);
 		}
-		return Arrays.copyOf(values, length);
 	}
 	
 	@Override
@@ -207,7 +208,7 @@ public class PropertyMemoryValidator implements PropertyValidator<List<MemoryLin
 		TableView<MemoryLine> tableView = new TableView<>();
 		tableView.getSelectionModel().setCellSelectionEnabled(true);
 		tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN);
 		tableView.setEditable(true);
 		
 		TableColumn<MemoryLine, String> address = new TableColumn<>("Address");
@@ -365,9 +366,11 @@ public class PropertyMemoryValidator implements PropertyValidator<List<MemoryLin
 					String clipboard = Clipboard.getSystemClipboard().getString();
 					if (clipboard != null) {
 						try {
-							ObservableList<TablePosition>
-								selectedCells =
-								tableView.getSelectionModel().getSelectedCells();
+							// This is silly.
+							@SuppressWarnings("unchecked")
+							ObservableList<TablePosition<?, ?>> selectedCells =
+								(ObservableList<TablePosition<?, ?>>) 
+									(ObservableList<?>) tableView.getSelectionModel().getSelectedCells();
 							
 							int[] values = parsePartial(clipboard);
 							
