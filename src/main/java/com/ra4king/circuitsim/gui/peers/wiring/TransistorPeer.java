@@ -101,6 +101,7 @@ public class TransistorPeer extends ComponentPeer<Transistor> {
 		boolean gateLoc = getProperties().getValue(GATE_LOCATION_PROPERTY);
 		switch (getProperties().getValue(Properties.DIRECTION)) {
 			case WEST, SOUTH -> gateLoc = !gateLoc;
+			case EAST, NORTH -> {}
 		}
 		
 		int yOff = gateLoc ? 0 : height;

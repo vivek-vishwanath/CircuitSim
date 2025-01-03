@@ -149,6 +149,7 @@ public class PinPeer extends ComponentPeer<Pin> {
 				currentValue.setBit(0, value == 1 ? State.ONE : State.ZERO);
 				getComponent().setValue(state, currentValue);
 			}
+			default -> {}
 		}
 		
 		return false;

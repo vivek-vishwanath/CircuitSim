@@ -88,6 +88,7 @@ public class RegisterPeer extends ComponentPeer<Register> {
 				}
 				state.pushValue(getComponent().getPort(Register.PORT_OUT), currentValue);
 			}
+			default -> {}
 		}
 		
 		return false;
