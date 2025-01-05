@@ -1,4 +1,4 @@
-CircuitSim v1.9.2b
+CircuitSim v1.10.0b (2110 VERSION)
 ==================
 
 NOTE: The CS 2110 fork of CircuitSim is not compatible with [upstream CircuitSim][1]
@@ -14,7 +14,7 @@ Screenshot
 Building
 ========
 
-The provided gradle scripts can be used to easily build a JAR file. Just run `./gradlew jar` on Linux
+The provided gradle scripts can be used to easily build a JAR file. Just run `./gradlew jar` on Linux/macOS
 or `.\gradlew.bat jar` on Windows!
 
 The release directory contains a `build.sh` script that automatically builds the JAR, and generates an executable image
@@ -23,13 +23,25 @@ for Windows, Mac, and Linux.
 Changelog
 =========
 
-1.9.2b
+1.10.0 (CS 2110 version)
 ======
-CS 2110–specific release
 
-- Support both aarch64 and x86\_64 on both Linux and macOS
+- Improve pathfinding to create less destructive wire paths
+- Implement canvas pan and zoom gestures (+ fix major performance bug as a result)
+- Fix bug where short circuits would persist after subcircuit with short circuit is deleted
+- Interpret constants using the constant component display base instead of defaulting to base 10
+- Add icon for macOS builds
+
+1.9.2b (CS 2110 version)
+======
+
+NOTE: This is the first major diverging version of the fork.
+
+- Support both `aarch64` and `x86_64` on both Linux and macOS
 - Display high-impedance/floating state as "z", not "x"
 - Hide SR/D Flip-Flops because they will confuse students
+- Output floating for arithmetic components with floating C-IN inputs (Aug 2024 build)
+- Fixed a few bugs with unintuitive keyboard shortcuts (Aug 2024 build)
 - Removed Herobrine
 
 1.9.1
