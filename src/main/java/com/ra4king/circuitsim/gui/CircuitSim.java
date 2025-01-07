@@ -2630,6 +2630,17 @@ public class CircuitSim extends Application {
 		stage.sizeToScene();
 		stage.centerOnScreen();
 		
+		// Ctrl+1, +2, +3, ..., +9
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT1, KeyCodeCombination.SHORTCUT_DOWN), clickMode::fire);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT2, KeyCodeCombination.SHORTCUT_DOWN), inputPinButton::fire);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT3, KeyCodeCombination.SHORTCUT_DOWN), outputPinButton::fire);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT4, KeyCodeCombination.SHORTCUT_DOWN), andButton::fire);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT5, KeyCodeCombination.SHORTCUT_DOWN), orButton::fire);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT6, KeyCodeCombination.SHORTCUT_DOWN), notButton::fire);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT7, KeyCodeCombination.SHORTCUT_DOWN), xorButton::fire);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT8, KeyCodeCombination.SHORTCUT_DOWN), tunnelButton::fire);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DIGIT9, KeyCodeCombination.SHORTCUT_DOWN), textButton::fire);
+
 		if (openWindow) {
 			showWindow();
 			
