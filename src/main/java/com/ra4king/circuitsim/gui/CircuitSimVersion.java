@@ -1,25 +1,13 @@
 package com.ra4king.circuitsim.gui;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
-import javafx.stage.Modality;
 
 public final class CircuitSimVersion implements Comparable<CircuitSimVersion> {
 	private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(b?)");
 	
-	public static final CircuitSimVersion VERSION = new CircuitSimVersion("1.10.0b 2110 version");
-	
+	public static final CircuitSimVersion VERSION = new CircuitSimVersion("1.10.0-CE");
+
 	private final String version;
 	private final int major;
 	private final int minor;

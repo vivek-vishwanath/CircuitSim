@@ -147,7 +147,9 @@ import javafx.util.StringConverter;
  */
 public class CircuitSim extends Application {
 	public static final String VERSION = CircuitSimVersion.VERSION.getVersion(); // for backwards compatibility
-	public static final String VERSION_TAG_LINE = "CircuitSim v" + VERSION + ", created by Roi Atalla © 2022";
+	private static final String VERSION_NO_CE = VERSION.substring(0, VERSION.length() - "-CE".length());
+	public static final String VERSION_TAG_LINE = "CircuitSim CE v" + VERSION_NO_CE;
+	public static final String VERSION_TAG_LINE_LONG = "CircuitSim %s Edition v" + VERSION_NO_CE;
 	
 	private static boolean mainCalled = false;
 	
@@ -853,7 +855,7 @@ public class CircuitSim extends Application {
 		if (editHistory.editStackSize() != savedEditStackSize) {
 			name += " *";
 		}
-		stage.setTitle("CircuitSim v" + VERSION + name);
+		stage.setTitle(VERSION_TAG_LINE + name);
 	}
 	
 	private ComponentCreator<?> getSubcircuitPeerCreator(String name) {
@@ -2565,8 +2567,19 @@ public class CircuitSim extends Application {
 			alert.initOwner(stage);
 			alert.initModality(Modality.WINDOW_MODAL);
 			alert.setTitle("About");
-			alert.setHeaderText(VERSION_TAG_LINE);
-			alert.setContentText("Third party tools:\nGSON by Google");
+
+			// Add silly factor:
+			String[] cDescriptors = {
+				"Cacophonous", "Carefree", "Casual", "Catastrophic", "Catchy",
+				"Cautious", "Cavernous", "Celestial", "Ceramic", "Certain",
+				"Charismatic", "Cherubic", "Chirping", "Chivalrous", "Chronic",
+				"Citrusy", "Clairvoyant", "Clandestine", "Clever", "Colorful",
+				"Community", "Complex", "Conniving", "Cool", "Corny", "Covetous", 
+				"Cozy", "Creative", "Cryogenic", "Cryptic", "Cuddly", "Cynical"
+			};
+			String desc = cDescriptors[(int)(Math.random() * cDescriptors.length)];
+			alert.setHeaderText(VERSION_TAG_LINE_LONG.formatted(desc));
+
 			String javaVersion = System.getProperty("java.version");
 			String javaVendor = System.getProperty("java.vendor");
 			String javaVendorVersion = System.getProperty("java.vendor.version", "?");

@@ -1,9 +1,11 @@
-CircuitSim v1.10.0b (2110 VERSION)
+CircuitSim CE v1.10.0
 ==================
 
-NOTE: The CS 2110 fork of CircuitSim is not compatible with [upstream CircuitSim][1]
-jars, nor the version used in CS 2200. If you're a CS 2110 student looking to
-download CircuitSim, use the jar provided on Canvas.
+This is a fork of CircuitSim used for CS 2110 and CS 2200 at Georgia Tech.
+
+NOTE: This fork of CircuitSim is not compatible with [upstream CircuitSim][1]
+jars. If you're a student looking to download CircuitSim for CS 2110 or CS 2200, refer to the instructions
+provided by your course.
 
 Basic circuit simulator with many built-in components. Check out `src/com/ra4king/circuitsim/simulator/components`
 for examples of how Components are written. Their GUI counterparts are in `src/com/ra4king/circuitsim/gui/peers`.
@@ -23,7 +25,7 @@ for Windows, Mac, and Linux.
 Changelog
 =========
 
-1.10.0 (CS 2110 version)
+1.10.0 (CE)
 ======
 
 - Improve pathfinding to create less destructive wire paths

@@ -1,0 +1,39 @@
+name: Release app
+permissions:
+  contents: write
+on:
+  workflow_dispatch:
+    inputs:
+      build_version:
+        type: string
+        description: The version of the CircuitSim executables
+        required: true
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          [
+            { name: 'windows', image: 'windows-latest' }
+          ]
+    runs-on: ${{ matrix.os.image }}
+    defaults:
+        run:
+          working-directory: ./release
+    steps:
+      - name: Github Checkout
+        uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build Executables
+        run: ./build.sh ${{ inputs.build_version }}
+        shell: bash
+      - name: Upload Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create v${{ inputs.build_version }} out/*
+        shell: bash
