@@ -86,6 +86,7 @@ import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -131,6 +132,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -1903,6 +1905,40 @@ public class CircuitSim extends Application {
 	}
 	
 	/**
+	 * Inline Text node helper. Creates a JavaFX Text node with one function call.
+	 * @param font the font to use
+	 * @param text the text contents
+	 * @return a new Text node
+	 */
+	private static Text createText(Font font, String text) {
+		Text textNode = new Text(text);
+		textNode.setFont(font);
+		return textNode;
+	}
+	/**
+	 * Inline Text node helper. Creates a JavaFX Text node with multiple lines with one function call.
+	 * @param font the font to use
+	 * @param text the content of the lines
+	 * @return a new Text node
+	 */
+	private static Text createMultilineText(Font font, String... text) {
+		return createText(font, String.join("\n", text) + "\n");
+	}
+	/**
+	 * Inline Hyperlink node helper. Creates a JavaFX Hyperlink node with one function call.
+	 * @param font the font to use
+	 * @param text the text contents
+	 * @param url the URL to link to
+	 * @return a new Hyperlink node
+	 */
+	private Hyperlink createHyperlink(Font font, String text, String url) {
+		Hyperlink link = new Hyperlink(text);
+		link.setFont(font);
+		link.setOnAction(e -> this.getHostServices().showDocument(url));
+		return link;
+	}
+
+	/**
 	 * Do not call this directly, called automatically
 	 *
 	 * @param stage The Stage instance to create this Circuit Simulator in
@@ -2468,6 +2504,9 @@ public class CircuitSim extends Application {
 		                                 frequenciesMenu);
 		
 		// HELP Menu
+		final Font fParagraph = new Font(14);
+		final Font fHeader = new Font(16);
+
 		Menu helpMenu = new Menu("Help");
 		help = new MenuItem("Help");
 		help.setOnAction(event -> {
@@ -2477,29 +2516,43 @@ public class CircuitSim extends Application {
 			alert.setTitle("Help");
 			alert.setHeaderText(VERSION_TAG_LINE);
 			
-			String msg = " - [New in 1.9.0] You can turn off the grid background: View -> Show grid\n" +
-			             " - [New in 1.9.0] You can export your circuits to image files: File -> Export as images\n" +
-			             " - [New in 1.9.0] New component: 7-segment display.\n" +
-			             " - [New in 1.9.0] Updated components: probes and constants can now in display multiple " +
-			             "formats.\n" +
-			             " - [New in 1.9.0] Integer inputs now accept multiple formats: decimal, binary, and hex" +
-			             ".\n\n - Right clicking works! Try it on components, subcircuits, and circuit tabs.\n" +
-			             " - Double clicking on a subcircuit will automatically go to its circuit tab as a child " +
-			             "state.\n" +
-			             " - Holding Shift will enable Click Mode which will click through to components.\n" +
-			             " - Holding Shift and clicking on a wire will show you value on the wire in binary.\n" +
-			             " - Holding Shift after dragging a new wire will delete existing wires.\n" +
-			             " - Holding Ctrl while dragging a new wire allows release of the mouse, and continuing the " +
-			             "wire on click.\n" +
-			             " - Holding Ctrl while selecting components and wires will include them in the selection " +
-			             "group.\n" +
-			             " - Holding Ctrl while dragging components will disable preserving connections.\n" +
-			             " - Holding Ctrl while placing a new component will keep the component selected.\n";
-			
-			Text helpText = new Text();
-			helpText.setText(msg);
-			helpText.setFont(new Font(14));
-			alert.getDialogPane().setContent(helpText);
+			TextFlow helpTextPane = new TextFlow(
+				createText(fHeader, "Editing\n"),
+				createMultilineText(fParagraph,
+					" - Use left pane to access components and edit component properties",
+					" - Drag from a component port or wire to create a wire",
+					" - Drag selected items to move items",
+					" - Ctrl + Click item to toggle-add item to selection",
+					" - Ctrl + Click from a component port or wire to start creating a wire and click again to complete wire",
+					" - Ctrl + Drag selected items to move items without reconnecting items to circuit",
+					" - Ctrl + Place component to \"stamp\"-place a component",
+					" - Shift while dragging wire to delete wires",
+					" - Use default shortcuts (or right-click) to copy, cut, and paste",
+					" - Create subcircuits with [Circuits -> New circuit], and access them with the Circuits tab on the left pane"
+				),
+
+				createText(fHeader, "\nSimulating\n"),
+				createMultilineText(fParagraph,
+					"- Start simulation: [Simulation -> Clock Enabled]",
+					"- Simulate a single clock tick: [Simulation -> Tick clock]",
+					"- Double-click a subcircuit to view its state",
+					"- Hold Shift (or click top-left button) to enable Click Mode:",
+					"    - Click wires to view their binary value",
+					"    - Click on inputs to toggle their values",
+					"    - Drag on background to pan on canvas"
+				),
+
+				createText(fHeader, "\nViewing\n"),
+				createMultilineText(fParagraph,
+					"- Turn off the grid background with [View -> Show grid]",
+					"- Export circuits as images with [File -> Export as images]",
+					"- You can pan and zoom on the canvas with any of the following methods:",
+					"    - Using trackpad gestures",
+					"    - Scrolling with a mouse wheel to pan vertically and Ctrl + Scroll-ing with a mouse wheel to zoom",
+					"    - Dragging on the background in click mode to pan"
+				)
+			);
+			alert.getDialogPane().setContent(new ScrollPane(helpTextPane));
 			
 			alert.show();
 			alert.setResizable(true);
@@ -2514,6 +2567,35 @@ public class CircuitSim extends Application {
 			alert.setTitle("About");
 			alert.setHeaderText(VERSION_TAG_LINE);
 			alert.setContentText("Third party tools:\nGSON by Google");
+			String javaVersion = System.getProperty("java.version");
+			String javaVendor = System.getProperty("java.vendor");
+			String javaVendorVersion = System.getProperty("java.vendor.version", "?");
+			String jfxVersion = System.getProperty("javafx.runtime.version");
+			String osName = System.getProperty("os.name");
+			String osVersion = System.getProperty("os.version");
+			String osArch = System.getProperty("os.arch");
+			TextFlow aboutPane = new TextFlow(
+				// Summary text
+				createText(fParagraph, "Originally created by Roi Atalla \u00A9 2022\n"),
+				createText(fParagraph, "Software licensed under the BSD 3-Clause License\n"),
+				createText(fParagraph, "CE Repository can be found on"),
+				createHyperlink(fParagraph, "GitHub", "https://github.com/gt-cs2110/CircuitSim"),
+				createText(fParagraph, "\n"),
+				// Version text
+				createText(fHeader, "\nVersion info:\n"),
+				createMultilineText(fParagraph, 
+					String.format("CircuitSim version: %s", VERSION),
+					String.format("Java version: %s", javaVersion),
+					String.format("JRE vendor: %s (%s)", javaVendor, javaVendorVersion),
+					String.format("JavaFX version: %s", jfxVersion),
+					String.format("Operating system: %s %s (%s)", osName, osVersion, osArch)
+				),
+				// Third party tools
+				createText(fHeader, "\nThird party tools used:\n"),
+				createText(fParagraph, " - "),
+				createHyperlink(fParagraph, "GSON by Google", "https://github.com/google/gson")
+			);
+			alert.getDialogPane().setContent(aboutPane);
 			alert.show();
 		});
 		helpMenu.getItems().addAll(help, about);
