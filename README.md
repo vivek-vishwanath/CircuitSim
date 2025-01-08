@@ -19,8 +19,10 @@ Building
 The provided gradle scripts can be used to easily build a JAR file. Just run `./gradlew jar` on Linux/macOS
 or `.\gradlew.bat jar` on Windows!
 
-The release directory contains a `build.sh` script that automatically builds the JAR, and generates an executable image
-for Windows, Mac, and Linux.
+The `release/` directory contains a `build.sh` script that automatically builds the JAR, and generates an executable image
+for Windows, Mac (Intel), and Linux.
+
+You can execute the JAR by running `java -jar CircuitSim.jar`. You must have JDK 17 or later.
 
 Changelog
 =========
