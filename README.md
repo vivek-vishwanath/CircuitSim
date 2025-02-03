@@ -19,14 +19,16 @@ Building
 The provided gradle scripts can be used to easily build a JAR file. Just run `./gradlew jar` on Linux/macOS
 or `.\gradlew.bat jar` on Windows!
 
-The release directory contains a `build.sh` script that automatically builds the JAR, and generates an executable image
-for Windows, Mac, and Linux.
+The `release/` directory contains a `build.sh` script that automatically builds the JAR, and generates an executable image
+for Windows, Mac (Intel), and Linux.
+
+You can execute the JAR by running `java -jar CircuitSim.jar`. You must have JDK 17 or later.
 
 Changelog
 =========
 
 1.10.0 (CE)
-======
+------
 
 - Improve pathfinding to create less destructive wire paths
 - Implement canvas pan and zoom gestures (+ fix major performance bug as a result)
@@ -35,7 +37,7 @@ Changelog
 - Add icon for macOS builds
 
 1.9.2b (CS 2110 version)
-======
+------
 
 NOTE: This is the first major diverging version of the fork.
 
@@ -47,12 +49,12 @@ NOTE: This is the first major diverging version of the fork.
 - Removed Herobrine
 
 1.9.1
-=====
+-----
 
 - Hotfix for ROM component not saving its contents to disk.
 
 1.9.0
-=====
+-----
 
 - The grid background can now be hidden: View -> uncheck Show grid
 - Circuits can be exported as image files: File -> Export as images
