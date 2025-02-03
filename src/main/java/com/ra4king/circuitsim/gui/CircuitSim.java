@@ -366,6 +366,16 @@ public class CircuitSim extends Application {
 		return clickMode.isSelected();
 	}
 	
+	/**
+	 * Clamps the scale factor to between the minimum and maximum ranges.
+	 */
+	public static double clampScaleFactor(double scale) {
+		if (Double.isNaN(scale)) return 1.0;
+		final double SCALE_MIN = 0.25;
+		final double SCALE_MAX = 8;
+		return Math.min(Math.max(scale, SCALE_MIN), SCALE_MAX);
+	}
+
 	public double getScaleFactor() {
 		@SuppressWarnings("unchecked")
 		TextFormatter<Double> formatter = (TextFormatter<Double>) scaleFactorInput.getTextFormatter();
@@ -375,7 +385,7 @@ public class CircuitSim extends Application {
 	public void setScaleFactor(double scale) {
 		@SuppressWarnings("unchecked")
 		TextFormatter<Double> formatter = (TextFormatter<Double>) scaleFactorInput.getTextFormatter();
-		formatter.setValue(Math.min(Math.max(scale, 0.25), 8)); // clamp value between 0.25 and 8
+		formatter.setValue(CircuitSim.clampScaleFactor(scale));
 	}
 
 	public double getScaleFactorInverted() {
@@ -1995,9 +2005,11 @@ public class CircuitSim extends Application {
 
 				@Override
 				public Double fromString(String value) {
-					// If parseable, parse and clamp to between 0.25 and 8.
-					// Otherwise, just default to 1.
-					return value != null && !value.isBlank() ? Math.min(Math.max(Double.valueOf(value), 0.25), 8) : 1.0;
+					if (value != null && !value.isBlank()) {
+						return CircuitSim.clampScaleFactor(Double.valueOf(value));
+					}
+
+					return 1.0;
 				}
 
 			},

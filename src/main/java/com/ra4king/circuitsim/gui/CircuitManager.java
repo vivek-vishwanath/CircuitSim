@@ -1263,8 +1263,7 @@ public class CircuitManager {
 	private void applyZoom(double originX, double originY, double zoomFactor) {
 		// Zoom
 		double oldScale = simulatorWindow.getScaleFactor();
-		zoomFactor = Math.min(Math.max(oldScale * zoomFactor, 0.25), 8); // clamp value between 0.25 and 8
-
+		zoomFactor = CircuitSim.clampScaleFactor(oldScale * zoomFactor);
 		simulatorWindow.setScaleFactor(zoomFactor);
 		
 		// Zoom in on point.
