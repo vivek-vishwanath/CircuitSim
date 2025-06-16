@@ -13,12 +13,8 @@ import com.ra4king.circuitsim.gui.Connection.PortConnection;
 import com.ra4king.circuitsim.gui.LinkWires.Wire;
 import com.ra4king.circuitsim.gui.Properties.Direction;
 import com.ra4king.circuitsim.gui.peers.SubcircuitPeer;
-import com.ra4king.circuitsim.simulator.Circuit;
-import com.ra4king.circuitsim.simulator.CircuitState;
-import com.ra4king.circuitsim.simulator.Port;
+import com.ra4king.circuitsim.simulator.*;
 import com.ra4king.circuitsim.simulator.Port.Link;
-import com.ra4king.circuitsim.simulator.SimulationException;
-import com.ra4king.circuitsim.simulator.Simulator;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.geometry.BoundingBox;
