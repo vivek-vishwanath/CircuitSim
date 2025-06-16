@@ -146,7 +146,7 @@ import javafx.util.StringConverter;
  * @author Roi Atalla
  */
 public class CircuitSim extends Application {
-	public static final String VERSION = CircuitSimVersion.VERSION.getVersion(); // for backwards compatibility
+	public static final String VERSION = CircuitSimVersion.VERSION.version; // for backwards compatibility
 	private static final String VERSION_NO_CE = VERSION.substring(0, VERSION.length() - "-CE".length());
 	public static final String VERSION_TAG_LINE = "CircuitSim CE v" + VERSION_NO_CE;
 	public static final String VERSION_TAG_LINE_LONG = "CircuitSim %s Edition v" + VERSION_NO_CE;
