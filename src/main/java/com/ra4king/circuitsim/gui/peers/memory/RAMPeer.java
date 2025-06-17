@@ -157,8 +157,8 @@ public class RAMPeer extends ComponentPeer<RAM> {
 			valueVal = new WireValue(getComponent().getDataBits());
 		}
 		
-		String address = addressVal.toHexString();
-		String value = valueVal.toHexString();
+		String address = addressVal.getHexString();
+		String value = valueVal.getHexString();
 		
 		int x = getScreenX();
 		int y = getScreenY();

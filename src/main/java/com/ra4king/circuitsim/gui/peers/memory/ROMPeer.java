@@ -153,8 +153,8 @@ public class ROMPeer extends ComponentPeer<ROM> {
 		graphics.setStroke(Color.BLACK);
 		GuiUtils.drawShape(graphics::strokeRect, this);
 		
-		String address = circuitState.getLastReceived(getComponent().getPort(ROM.PORT_ADDRESS)).toHexString();
-		String value = circuitState.getLastPushed(getComponent().getPort(ROM.PORT_DATA)).toHexString();
+		String address = circuitState.getLastReceived(getComponent().getPort(ROM.PORT_ADDRESS)).getHexString();
+		String value = circuitState.getLastPushed(getComponent().getPort(ROM.PORT_DATA)).getHexString();
 		
 		int x = getScreenX();
 		int y = getScreenY();

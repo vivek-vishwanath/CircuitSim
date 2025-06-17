@@ -207,7 +207,7 @@ object GuiUtils {
     fun setBitColor(graphics: GraphicsContext, value: WireValue) {
         if (value.bitSize == 1) {
             setBitColor(graphics, value.getBit(0))
-        } else if (value.isValidValue()) {
+        } else if (value.isValidValue) {
             graphics.stroke = Color.BLACK
             graphics.fill = Color.BLACK
         } else {

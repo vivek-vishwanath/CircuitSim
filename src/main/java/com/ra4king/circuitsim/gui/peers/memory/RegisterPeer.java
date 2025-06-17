@@ -101,7 +101,7 @@ public class RegisterPeer extends ComponentPeer<Register> {
 		graphics.setFill(Color.WHITE);
 		GuiUtils.drawShape(graphics::fillRect, this);
 		
-		String value = circuitState.getLastPushed(getComponent().getPort(Register.PORT_OUT)).toHexString();
+		String value = circuitState.getLastPushed(getComponent().getPort(Register.PORT_OUT)).getHexString();
 		
 		int x = getScreenX();
 		int y = getScreenY();

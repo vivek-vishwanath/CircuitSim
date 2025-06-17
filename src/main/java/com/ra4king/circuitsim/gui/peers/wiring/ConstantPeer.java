@@ -140,8 +140,8 @@ public class ConstantPeer extends ComponentPeer<Constant> {
 		
 		String valStr = switch (getProperties().getValue(Properties.BASE)) {
 			case BINARY -> value.toString();
-			case HEXADECIMAL -> value.toHexString();
-			case DECIMAL -> value.toDecString();
+			case HEXADECIMAL -> value.getHexString();
+			case DECIMAL -> value.getDecString();
 		};
 		
 		if (value.getBitSize() > 1) {
