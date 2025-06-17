@@ -76,7 +76,7 @@ public class Subcircuit extends Component {
 	
 	@Override
 	public void init(CircuitState circuitState, Object lastProperty) {
-		CircuitState subcircuitState = new CircuitState(subcircuit);
+		CircuitState subcircuitState = CircuitState.Companion.init(subcircuit);
 		circuitState.putComponentProperty(this, subcircuitState);
 		
 		Map<Pin, PinChangeListener> listeners = new HashMap<>();

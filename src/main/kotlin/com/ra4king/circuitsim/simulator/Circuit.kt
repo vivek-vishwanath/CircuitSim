@@ -10,7 +10,7 @@ class Circuit(var name: String, val simulator: Simulator) {
 
 	val components = HashSet<Component>()
     private val states = HashSet<CircuitState>()
-	val topLevelState = CircuitState(this)
+	val topLevelState = CircuitState.init(this)
     private val listeners = ConcurrentLinkedQueue<CircuitChangeListener>()
     private var exception: RuntimeException? = null
 
