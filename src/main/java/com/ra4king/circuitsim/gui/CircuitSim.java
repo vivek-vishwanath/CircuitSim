@@ -1154,7 +1154,7 @@ public class CircuitSim extends Application {
 				clipboard.setContent(content);
 			} catch (Exception exc) {
 				setLastException(exc);
-				getDebugUtil().logException("Error while copying", exc);
+				getDebugUtil().logException(exc, "Error while copying");
 			}
 		}
 	}
@@ -1245,7 +1245,7 @@ public class CircuitSim extends Application {
 									setLastException(exc);
 								} catch (Exception exc) {
 									setLastException(exc);
-									getDebugUtil().logException("Error loading component " + component.name, exc);
+									getDebugUtil().logException(exc, "Error loading component " + component.name);
 								}
 							}
 						}
@@ -1283,7 +1283,7 @@ public class CircuitSim extends Application {
 				setLastException(exc);
 			} catch (Exception exc) {
 				setLastException(exc);
-				getDebugUtil().logException("Error while pasting", exc);
+				getDebugUtil().logException(exc, "Error while pasting");
 			} finally {
 				editHistory.endGroup();
 				needsRepaint = true;
@@ -1362,7 +1362,7 @@ public class CircuitSim extends Application {
 			} catch (IOException exc) {
 				exc.printStackTrace();
 			} catch (Exception exc) {
-				getDebugUtil().logException("Error loading configuration file: " + file, exc);
+				getDebugUtil().logException(exc, "Error loading configuration file: " + file);
 			}
 		}
 		
@@ -1562,7 +1562,7 @@ public class CircuitSim extends Application {
 									latch.countDown();
 								} catch (Exception exc) {
 									excThrown = exc;
-									getDebugUtil().logException("Error loading component " + component.name, exc);
+									getDebugUtil().logException(exc, "Error loading component " + component.name);
 									latch.countDown();
 								}
 							}
