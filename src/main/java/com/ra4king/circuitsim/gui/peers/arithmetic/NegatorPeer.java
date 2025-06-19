@@ -40,8 +40,8 @@ public class NegatorPeer extends ComponentPeer<Negator> {
 		Negator negator = new Negator(properties.getValue(Properties.LABEL), properties.getValue(Properties.BITSIZE));
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, negator.getPort(Negator.PORT_IN), "In", 0, 2));
-		connections.add(new PortConnection(this, negator.getPort(Negator.PORT_OUT), "Out", 4, 2));
+		connections.add(new PortConnection(this, negator.getPort(Negator.Ports.PORT_IN), "In", 0, 2));
+		connections.add(new PortConnection(this, negator.getPort(Negator.Ports.PORT_OUT), "Out", 4, 2));
 		
 		init(negator, properties, connections);
 	}

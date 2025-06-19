@@ -51,11 +51,11 @@ public class ComparatorPeer extends ComponentPeer<Comparator> {
 		                                       properties.getValue(USE_SIGNED_COMPARE));
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, comparator.getPort(Comparator.PORT_A), "A", 0, 1));
-		connections.add(new PortConnection(this, comparator.getPort(Comparator.PORT_B), "B", 0, 3));
-		connections.add(new PortConnection(this, comparator.getPort(Comparator.PORT_LT), "A < B", getWidth(), 1));
-		connections.add(new PortConnection(this, comparator.getPort(Comparator.PORT_EQ), "A = B", getWidth(), 2));
-		connections.add(new PortConnection(this, comparator.getPort(Comparator.PORT_GT), "A > B", getWidth(), 3));
+		connections.add(new PortConnection(this, comparator.getPort(Comparator.Ports.PORT_A), "A", 0, 1));
+		connections.add(new PortConnection(this, comparator.getPort(Comparator.Ports.PORT_B), "B", 0, 3));
+		connections.add(new PortConnection(this, comparator.getPort(Comparator.Ports.PORT_LT), "A < B", getWidth(), 1));
+		connections.add(new PortConnection(this, comparator.getPort(Comparator.Ports.PORT_EQ), "A = B", getWidth(), 2));
+		connections.add(new PortConnection(this, comparator.getPort(Comparator.Ports.PORT_GT), "A > B", getWidth(), 3));
 		
 		init(comparator, properties, connections);
 	}

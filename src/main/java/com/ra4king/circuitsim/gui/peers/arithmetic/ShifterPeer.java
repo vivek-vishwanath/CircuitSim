@@ -47,9 +47,9 @@ public class ShifterPeer extends ComponentPeer<Shifter> {
 		                              properties.getValue("Shift Type"));
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, shifter.getPort(Shifter.PORT_IN), "In", 0, 1));
-		connections.add(new PortConnection(this, shifter.getPort(Shifter.PORT_SHIFT), "Shift", 0, 3));
-		connections.add(new PortConnection(this, shifter.getPort(Shifter.PORT_OUT), "Out", 4, 2));
+		connections.add(new PortConnection(this, shifter.getPort(Shifter.Ports.PORT_IN), "In", 0, 1));
+		connections.add(new PortConnection(this, shifter.getPort(Shifter.Ports.PORT_SHIFT), "Shift", 0, 3));
+		connections.add(new PortConnection(this, shifter.getPort(Shifter.Ports.PORT_OUT), "Out", 4, 2));
 		
 		init(shifter, properties, connections);
 	}

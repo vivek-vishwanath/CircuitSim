@@ -39,10 +39,10 @@ public class DividerPeer extends ComponentPeer<Divider> {
 		Divider divider = new Divider(properties.getValue(Properties.LABEL), properties.getValue(Properties.BITSIZE));
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, divider.getPort(Divider.PORT_DIVIDEND), "Dividend", 0, 1));
-		connections.add(new PortConnection(this, divider.getPort(Divider.PORT_DIVISOR), "Divisor", 0, 3));
-		connections.add(new PortConnection(this, divider.getPort(Divider.PORT_QUOTIENT), "Quotient", getWidth(), 2));
-		connections.add(new PortConnection(this, divider.getPort(Divider.PORT_REMAINDER), "Remainder", 2,
+		connections.add(new PortConnection(this, divider.getPort(Divider.Ports.PORT_DIVIDEND), "Dividend", 0, 1));
+		connections.add(new PortConnection(this, divider.getPort(Divider.Ports.PORT_DIVISOR), "Divisor", 0, 3));
+		connections.add(new PortConnection(this, divider.getPort(Divider.Ports.PORT_QUOTIENT), "Quotient", getWidth(), 2));
+		connections.add(new PortConnection(this, divider.getPort(Divider.Ports.PORT_REMAINDER), "Remainder", 2,
 		                                   getHeight()));
 		
 		init(divider, properties, connections);

@@ -41,11 +41,11 @@ public class SubtractorPeer extends ComponentPeer<Subtractor> {
 			new Subtractor(properties.getValue(Properties.LABEL), properties.getValue(Properties.BITSIZE));
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.PORT_A), "A", 0, 1));
-		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.PORT_B), "B", 0, 3));
-		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.PORT_CARRY_IN), "Carry in", 2, 0));
-		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.PORT_OUT), "Out", getWidth(), 2));
-		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.PORT_CARRY_OUT), "Carry out", 2,
+		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.Ports.PORT_A), "A", 0, 1));
+		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.Ports.PORT_B), "B", 0, 3));
+		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.Ports.PORT_CARRY_IN), "Carry in", 2, 0));
+		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.Ports.PORT_OUT), "Out", getWidth(), 2));
+		connections.add(new PortConnection(this, subtractor.getPort(Subtractor.Ports.PORT_CARRY_OUT), "Carry out", 2,
 		                                   getHeight()));
 		
 		init(subtractor, properties, connections);

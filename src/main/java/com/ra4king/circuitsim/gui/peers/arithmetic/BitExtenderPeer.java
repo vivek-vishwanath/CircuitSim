@@ -49,8 +49,8 @@ public class BitExtenderPeer extends ComponentPeer<BitExtender> {
 		                                       properties.getValue("Extension Type"));
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, extender.getPort(BitExtender.PORT_IN), "Input", 0, 2));
-		connections.add(new PortConnection(this, extender.getPort(BitExtender.PORT_OUT), "Output", getWidth(), 2));
+		connections.add(new PortConnection(this, extender.getPort(BitExtender.Ports.PORT_IN), "Input", 0, 2));
+		connections.add(new PortConnection(this, extender.getPort(BitExtender.Ports.PORT_OUT), "Output", getWidth(), 2));
 		
 		init(extender, properties, connections);
 	}
@@ -68,12 +68,12 @@ public class BitExtenderPeer extends ComponentPeer<BitExtender> {
 		graphics.setFill(Color.BLACK);
 		
 		graphics.fillText(
-			String.valueOf(getComponent().getInputBitSize()),
+			String.valueOf(getComponent().inputBitSize),
 			getScreenX() + 3,
 			getScreenY() + getScreenHeight() * 0.5 + 5);
 		
 		
-		String outputString = String.valueOf(getComponent().getOutputBitSize());
+		String outputString = String.valueOf(getComponent().outputBitSize);
 		Bounds outputBounds = GuiUtils.getBounds(graphics.getFont(), outputString);
 		
 		graphics.fillText(
@@ -81,7 +81,7 @@ public class BitExtenderPeer extends ComponentPeer<BitExtender> {
 			getScreenX() + getScreenWidth() - outputBounds.getWidth() - 3,
 			getScreenY() + getScreenHeight() * 0.5 + 5);
 		
-		String typeString = switch (getComponent().getExtensionType()) {
+		String typeString = switch (getComponent().extensionType) {
 			case ZERO -> "0";
 			case ONE -> "1";
 			case SIGN -> "sign";
