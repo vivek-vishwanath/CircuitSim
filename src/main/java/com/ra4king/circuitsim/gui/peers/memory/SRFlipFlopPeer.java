@@ -47,15 +47,15 @@ public class SRFlipFlopPeer extends ComponentPeer<SRFlipFlop> {
 		SRFlipFlop flipFlop = new SRFlipFlop(properties.getValue(Properties.LABEL));
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.PORT_S), "Set", 0, 1));
+		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.Ports.PORT_S), "Set", 0, 1));
 		connections.add(
-			clockConnection = new PortConnection(this, flipFlop.getPort(SRFlipFlop.PORT_CLOCK), "Clock", 0, 2));
-		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.PORT_R), "Reset", 0, 3));
-		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.PORT_PRESET), "Preset", 1, 4));
-		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.PORT_ENABLE), "Enable", 2, 4));
-		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.PORT_CLEAR), "Clear", 3, 4));
-		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.PORT_Q), "Current state", 4, 1));
-		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.PORT_QN), "NOT of current state", 4, 3));
+			clockConnection = new PortConnection(this, flipFlop.getPort(SRFlipFlop.Ports.PORT_CLOCK), "Clock", 0, 2));
+		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.Ports.PORT_R), "Reset", 0, 3));
+		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.Ports.PORT_PRESET), "Preset", 1, 4));
+		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.Ports.PORT_ENABLE), "Enable", 2, 4));
+		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.Ports.PORT_CLEAR), "Clear", 3, 4));
+		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.Ports.PORT_Q), "Current state", 4, 1));
+		connections.add(new PortConnection(this, flipFlop.getPort(SRFlipFlop.Ports.PORT_QN), "NOT of current state", 4, 3));
 		
 		init(flipFlop, properties, connections);
 	}
@@ -74,7 +74,7 @@ public class SRFlipFlopPeer extends ComponentPeer<SRFlipFlop> {
 		int width = getScreenWidth();
 		int height = getScreenHeight();
 		
-		State bit = state.getLastPushed(getComponent().getPort(SRFlipFlop.PORT_Q)).getBit(0);
+		State bit = state.getLastPushed(getComponent().getPort(SRFlipFlop.Ports.PORT_Q)).getBit(0);
 		GuiUtils.setBitColor(graphics, bit);
 		graphics.fillOval(x + width * 0.5 - 10, y + height * 0.5 - 10, 20, 20);
 		

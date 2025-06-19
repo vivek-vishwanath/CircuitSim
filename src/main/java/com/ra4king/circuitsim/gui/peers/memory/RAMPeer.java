@@ -28,6 +28,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.util.Pair;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 
 /**
  * @author Roi Atalla
@@ -63,18 +65,18 @@ public class RAMPeer extends ComponentPeer<RAM> {
 		RAM ram = new RAM(properties.getValue(Properties.LABEL), dataBits, addressBits, separateLoadStore);
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, ram.getPort(RAM.PORT_ADDRESS), "Address", 0, 2));
-		connections.add(clockConnection = new PortConnection(this, ram.getPort(RAM.PORT_CLK), "Clock", 3,
+		connections.add(new PortConnection(this, ram.getPort(RAM.Ports.PORT_ADDRESS), "Address", 0, 2));
+		connections.add(clockConnection = new PortConnection(this, ram.getPort(RAM.Ports.PORT_CLK), "Clock", 3,
 		                                                     getHeight()));
-		connections.add(new PortConnection(this, ram.getPort(RAM.PORT_ENABLE), "Enable", 4, getHeight()));
-		connections.add(new PortConnection(this, ram.getPort(RAM.PORT_LOAD), "Load", 5, getHeight()));
-		connections.add(new PortConnection(this, ram.getPort(RAM.PORT_DATA), "Data", getWidth(), 2));
+		connections.add(new PortConnection(this, ram.getPort(RAM.Ports.PORT_ENABLE), "Enable", 4, getHeight()));
+		connections.add(new PortConnection(this, ram.getPort(RAM.Ports.PORT_LOAD), "Load", 5, getHeight()));
+		connections.add(new PortConnection(this, ram.getPort(RAM.Ports.PORT_DATA), "Data", getWidth(), 2));
 		if (separateLoadStore) {
-			connections.add(new PortConnection(this, ram.getPort(RAM.PORT_DATA_IN), "Data Input", 0, 4));
-			connections.add(new PortConnection(this, ram.getPort(RAM.PORT_STORE), "Store", 6, getHeight()));
-			connections.add(new PortConnection(this, ram.getPort(RAM.PORT_CLEAR), "Clear", 7, getHeight()));
+			connections.add(new PortConnection(this, ram.getPort(RAM.Ports.PORT_DATA_IN), "Data Input", 0, 4));
+			connections.add(new PortConnection(this, ram.getPort(RAM.Ports.PORT_STORE), "Store", 6, getHeight()));
+			connections.add(new PortConnection(this, ram.getPort(RAM.Ports.PORT_CLEAR), "Clear", 7, getHeight()));
 		} else {
-			connections.add(new PortConnection(this, ram.getPort(RAM.PORT_CLEAR), "Clear", 6, getHeight()));
+			connections.add(new PortConnection(this, ram.getPort(RAM.Ports.PORT_CLEAR), "Clear", 6, getHeight()));
 		}
 		
 		init(ram, properties, connections);
@@ -97,10 +99,11 @@ public class RAMPeer extends ComponentPeer<RAM> {
 				new PropertyMemoryValidator(ram.getAddressBits(), ram.getDataBits());
 			
 			List<MemoryLine> memory = new ArrayList<>();
-			BiConsumer<Integer, Integer> listener = (address, data) -> {
+			Function2<Integer, Integer, kotlin.Unit> listener = (address, data) -> {
 				int index = address / 16;
 				MemoryLine line = memory.get(index);
 				line.values.get(address - index * 16).setValue(memoryValidator.formatValue(data));
+				return Unit.INSTANCE;
 			};
 			
 			if (isEditorOpen.getAndSet(true)) {
@@ -148,7 +151,7 @@ public class RAMPeer extends ComponentPeer<RAM> {
 		graphics.setStroke(Color.BLACK);
 		GuiUtils.drawClockInput(graphics, clockConnection, Direction.SOUTH);
 		
-		WireValue addressVal = circuitState.getLastReceived(getComponent().getPort(RAM.PORT_ADDRESS));
+		WireValue addressVal = circuitState.getLastReceived(getComponent().getPort(RAM.Ports.PORT_ADDRESS));
 		WireValue valueVal;
 		if (addressVal.isValidValue()) {
 			int val = getComponent().load(circuitState, addressVal.getValue());

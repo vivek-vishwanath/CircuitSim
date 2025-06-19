@@ -48,12 +48,12 @@ public class RegisterPeer extends ComponentPeer<Register> {
 			new Register(properties.getValue(Properties.LABEL), properties.getValue(Properties.BITSIZE));
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, register.getPort(Register.PORT_IN), "In", 0, 2));
-		connections.add(new PortConnection(this, register.getPort(Register.PORT_ENABLE), "Enable", 0, 3));
+		connections.add(new PortConnection(this, register.getPort(Register.Ports.PORT_IN), "In", 0, 2));
+		connections.add(new PortConnection(this, register.getPort(Register.Ports.PORT_ENABLE), "Enable", 0, 3));
 		connections.add(
-			clockConnection = new PortConnection(this, register.getPort(Register.PORT_CLK), "Clock", 1, getHeight()));
-		connections.add(new PortConnection(this, register.getPort(Register.PORT_ZERO), "Clear", 3, getHeight()));
-		connections.add(new PortConnection(this, register.getPort(Register.PORT_OUT), "Out", getWidth(), 2));
+			clockConnection = new PortConnection(this, register.getPort(Register.Ports.PORT_CLK), "Clock", 1, getHeight()));
+		connections.add(new PortConnection(this, register.getPort(Register.Ports.PORT_ZERO), "Clear", 3, getHeight()));
+		connections.add(new PortConnection(this, register.getPort(Register.Ports.PORT_OUT), "Out", getWidth(), 2));
 		
 		init(register, properties, connections);
 	}
@@ -70,7 +70,7 @@ public class RegisterPeer extends ComponentPeer<Register> {
 				} else {
 					value = Character.toUpperCase(c) - 'A' + 10;
 				}
-				WireValue currentValue = state.getLastPushed(getComponent().getPort(Register.PORT_OUT));
+				WireValue currentValue = state.getLastPushed(getComponent().getPort(Register.Ports.PORT_OUT));
 				WireValue typedValue = WireValue.of(value, Math.min(4, currentValue.getBitSize()));
 				if (typedValue.getValue() != value) {
 					typedValue.setAllBits(State.ZERO); // to prevent typing '9' on a 3-bit value, producing 1
@@ -86,7 +86,7 @@ public class RegisterPeer extends ComponentPeer<Register> {
 						currentValue.setBit(i, typedValue.getBit(i));
 					}
 				}
-				state.pushValue(getComponent().getPort(Register.PORT_OUT), currentValue);
+				state.pushValue(getComponent().getPort(Register.Ports.PORT_OUT), currentValue);
 			}
 			default -> {}
 		}
@@ -101,7 +101,7 @@ public class RegisterPeer extends ComponentPeer<Register> {
 		graphics.setFill(Color.WHITE);
 		GuiUtils.drawShape(graphics::fillRect, this);
 		
-		String value = circuitState.getLastPushed(getComponent().getPort(Register.PORT_OUT)).getHexString();
+		String value = circuitState.getLastPushed(getComponent().getPort(Register.Ports.PORT_OUT)).getHexString();
 		
 		int x = getScreenX();
 		int y = getScreenY();

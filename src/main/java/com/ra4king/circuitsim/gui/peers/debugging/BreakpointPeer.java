@@ -44,8 +44,8 @@ public class BreakpointPeer extends ComponentPeer<Breakpoint> {
 			properties.getValue(Properties.VALUE).getValue());
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, breakpoint.getPort(Breakpoint.PORT_ENABLE), "ENABLE", 0, 1));
-		connections.add(new PortConnection(this, breakpoint.getPort(Breakpoint.PORT_DATA), "DATA", 2, getHeight()));
+		connections.add(new PortConnection(this, breakpoint.getPort(Breakpoint.Ports.PORT_ENABLE), "ENABLE", 0, 1));
+		connections.add(new PortConnection(this, breakpoint.getPort(Breakpoint.Ports.PORT_DATA), "DATA", 2, getHeight()));
 		
 		init(breakpoint, properties, connections);
 	}

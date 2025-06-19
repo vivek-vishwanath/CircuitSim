@@ -25,6 +25,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.util.Pair;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 
 /**
  * @author Roi Atalla
@@ -68,9 +70,9 @@ public class ROMPeer extends ComponentPeer<ROM> {
 		ROM ram = new ROM(properties.getValue(Properties.LABEL), dataBits, addressBits, memory);
 		
 		List<PortConnection> connections = new ArrayList<>();
-		connections.add(new PortConnection(this, ram.getPort(ROM.PORT_ADDRESS), "Address", 0, 2));
-		connections.add(new PortConnection(this, ram.getPort(ROM.PORT_ENABLE), "Enable", 4, getHeight()));
-		connections.add(new PortConnection(this, ram.getPort(ROM.PORT_DATA), "Data", getWidth(), 2));
+		connections.add(new PortConnection(this, ram.getPort(ROM.Ports.PORT_ADDRESS), "Address", 0, 2));
+		connections.add(new PortConnection(this, ram.getPort(ROM.Ports.PORT_ENABLE), "Enable", 4, getHeight()));
+		connections.add(new PortConnection(this, ram.getPort(ROM.Ports.PORT_DATA), "Data", getWidth(), 2));
 		
 		init(ram, properties, connections);
 	}
@@ -99,11 +101,12 @@ public class ROMPeer extends ComponentPeer<ROM> {
 			PropertyMemoryValidator memoryValidator = (PropertyMemoryValidator)property.validator;
 			
 			List<MemoryLine> lines = new ArrayList<>();
-			BiConsumer<Integer, Integer> listener = (address, data) -> {
+			Function2<Integer, Integer, Unit> listener = (address, data) -> {
 				int index = address / 16;
 				MemoryLine line = property.value.get(index);
 				line.values.get(address - index * 16).setValue(memoryValidator.formatValue(data));
 				circuit.getCircuit().forEachState(state -> rom.valueChanged(state, null, 0));
+				return Unit.INSTANCE;
 			};
 			
 			if (isEditorOpen.getAndSet(true)) {
@@ -153,8 +156,8 @@ public class ROMPeer extends ComponentPeer<ROM> {
 		graphics.setStroke(Color.BLACK);
 		GuiUtils.drawShape(graphics::strokeRect, this);
 		
-		String address = circuitState.getLastReceived(getComponent().getPort(ROM.PORT_ADDRESS)).getHexString();
-		String value = circuitState.getLastPushed(getComponent().getPort(ROM.PORT_DATA)).getHexString();
+		String address = circuitState.getLastReceived(getComponent().getPort(ROM.Ports.PORT_ADDRESS)).getHexString();
+		String value = circuitState.getLastPushed(getComponent().getPort(ROM.Ports.PORT_DATA)).getHexString();
 		
 		int x = getScreenX();
 		int y = getScreenY();
