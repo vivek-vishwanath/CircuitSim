@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ra4king.circuitsim.gui.Connection.PortConnection;
 import com.ra4king.circuitsim.simulator.Component;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Roi Atalla
@@ -27,7 +28,7 @@ public abstract class ComponentPeer<C extends Component> extends GuiElement {
 		this.connections = connections;
 	}
 	
-	public C getComponent() {
+	public @NotNull C getComponent() {
 		return component;
 	}
 	
@@ -35,6 +36,7 @@ public abstract class ComponentPeer<C extends Component> extends GuiElement {
 		return properties;
 	}
 	
+	@NotNull
 	@Override
 	public List<PortConnection> getConnections() {
 		return connections;

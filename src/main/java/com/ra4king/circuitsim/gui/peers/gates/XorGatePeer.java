@@ -4,7 +4,7 @@ import com.ra4king.circuitsim.gui.ComponentManager.ComponentManagerInterface;
 import com.ra4king.circuitsim.gui.GuiUtils;
 import com.ra4king.circuitsim.gui.Properties;
 import com.ra4king.circuitsim.simulator.CircuitState;
-import com.ra4king.circuitsim.simulator.components.gates.XorGate;
+import com.ra4king.circuitsim.simulator.components.gates.Gate.XorGate;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;

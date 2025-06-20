@@ -55,11 +55,11 @@ abstract class GuiElement(var x: Int, var y: Int, var width: Int, var height: In
 
     open fun mouseExited(manager: CircuitManager, state: CircuitState) {}
 
-    open fun keyPressed(manager: CircuitManager, state: CircuitState, keyCode: KeyCode?, text: String?) = false
+    open fun keyPressed(manager: CircuitManager, state: CircuitState, keyCode: KeyCode, text: String) = false
 
-    open fun keyTyped(manager: CircuitManager, state: CircuitState, character: String?) {}
+    open fun keyTyped(manager: CircuitManager, state: CircuitState, character: String) {}
 
-    open fun keyReleased(manager: CircuitManager, state: CircuitState, keyCode: KeyCode?, text: String?) {}
+    open fun keyReleased(manager: CircuitManager, state: CircuitState, keyCode: KeyCode, text: String) {}
 
     open fun getContextMenuItems(circuit: CircuitManager) = mutableListOf<MenuItem>()
 
