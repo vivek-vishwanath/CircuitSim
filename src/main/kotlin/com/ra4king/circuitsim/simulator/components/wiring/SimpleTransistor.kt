@@ -1,10 +1,10 @@
-package com.ra4king.circuitsim.simulator.components.wiring;
+package com.ra4king.circuitsim.simulator.components.wiring
 
-import com.ra4king.circuitsim.simulator.CircuitState;
-import com.ra4king.circuitsim.simulator.Component;
-import com.ra4king.circuitsim.simulator.SimulationException;
-import com.ra4king.circuitsim.simulator.WireValue;
-import com.ra4king.circuitsim.simulator.WireValue.State;
+import com.ra4king.circuitsim.simulator.CircuitState
+import com.ra4king.circuitsim.simulator.Component
+import com.ra4king.circuitsim.simulator.SimulationException
+import com.ra4king.circuitsim.simulator.WireValue
+import com.ra4king.circuitsim.simulator.components.wiring.SimpleTransistor.Ports.*
 
 /**
  * @author Roi Atalla, Austin Adams, and Tom Conte
@@ -88,50 +88,38 @@ import com.ra4king.circuitsim.simulator.WireValue.State;
  * throw an error for P-types that are not hooked to VDD.</strong> [emphasis added]
  * </blockquote>
  */
-public class SimpleTransistor extends Component {
-	public static final int PORT_SOURCE = 0;
-	public static final int PORT_GATE = 1;
-	public static final int PORT_DRAIN = 2;
-	
-	private static final WireValue Z_VALUE = new WireValue(1);
-	
-	private boolean isIllegallyWired;
-	private boolean isPType;
-	
-	public SimpleTransistor(String name, boolean isPType) {
-		super(name, new int[] { 1, 1, 1 });
-		
-		this.isIllegallyWired = false;
-		this.isPType = isPType;
-	}
-	
-	public boolean getIllegallyWired() {
-		return this.isIllegallyWired;
-	}
-	
-	@Override
-	public void valueChanged(CircuitState state, WireValue value, int portIndex) {
-		if (portIndex == PORT_DRAIN) {
-			return;
-		}
-		
-		State enableBit = isPType ? State.ZERO : State.ONE;
-		State sourceBit = state.getLastReceived(getPort(PORT_SOURCE)).getBit(0);
-		boolean nTypeOk = isPType || sourceBit != State.ONE;
-		boolean pTypeOk = !isPType || sourceBit != State.ZERO;
-		this.isIllegallyWired = !nTypeOk || !pTypeOk;
-		
-		if (pTypeOk && nTypeOk && state.getLastReceived(getPort(PORT_GATE)).getBit(0) == enableBit) {
-			state.pushValue(getPort(PORT_DRAIN), new WireValue(sourceBit));
-		} else {
-			state.pushValue(getPort(PORT_DRAIN), Z_VALUE);
-			
-			if (!nTypeOk) {
-				throw new SimulationException("N-type transistor must not be connected to logic-level high!");
-			}
-			if (!pTypeOk) {
-				throw new SimulationException("P-type transistor must not be connected to ground!");
-			}
-		}
-	}
+class SimpleTransistor(name: String, private val isPType: Boolean) : Component(name, intArrayOf(1, 1, 1)) {
+    var illegallyWired: Boolean = false
+        private set
+
+    override fun valueChanged(state: CircuitState, value: WireValue, portIndex: Int) {
+        if (portIndex == PORT_DRAIN.ordinal) return
+
+        val enableBit = if (isPType) WireValue.State.ZERO else WireValue.State.ONE
+        val sourceBit = state.getLastReceived(getPort(PORT_SOURCE)).getBit(0)
+        val nTypeOk = isPType || sourceBit != WireValue.State.ONE
+        val pTypeOk = !isPType || sourceBit != WireValue.State.ZERO
+        this.illegallyWired = !nTypeOk || !pTypeOk
+
+        if (pTypeOk && nTypeOk && state.getLastReceived(getPort(PORT_GATE)).getBit(0) == enableBit) {
+            state.pushValue(getPort(PORT_DRAIN), WireValue(sourceBit))
+        } else {
+            state.pushValue(getPort(PORT_DRAIN), Z_VALUE)
+
+            if (!nTypeOk) {
+                throw SimulationException("N-type transistor must not be connected to logic-level high!")
+            }
+            if (!pTypeOk) {
+                throw SimulationException("P-type transistor must not be connected to ground!")
+            }
+        }
+    }
+
+    companion object {
+        private val Z_VALUE = WireValue(1)
+    }
+
+    enum class Ports {
+        PORT_SOURCE, PORT_GATE, PORT_DRAIN
+    }
 }

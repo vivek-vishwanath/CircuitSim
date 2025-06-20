@@ -157,19 +157,19 @@ public class SplitterPeer extends ComponentPeer<Splitter> {
 		
 		switch (direction) {
 			case EAST -> connections.add(new PortConnection(this,
-			                                                splitter.getPort(splitter.PORT_JOINED),
+			                                                splitter.getPort(splitter.getPortJoined()),
 			                                                0,
 			                                                inputOnTopLeft ? 0 : getHeight()));
 			case WEST -> connections.add(new PortConnection(this,
-			                                                splitter.getPort(splitter.PORT_JOINED),
+			                                                splitter.getPort(splitter.getPortJoined()),
 			                                                getWidth(),
 			                                                inputOnTopLeft ? 0 : getHeight()));
 			case SOUTH -> connections.add(new PortConnection(this,
-			                                                 splitter.getPort(splitter.PORT_JOINED),
+			                                                 splitter.getPort(splitter.getPortJoined()),
 			                                                 inputOnTopLeft ? 0 : getWidth(),
 			                                                 0));
 			case NORTH -> connections.add(new PortConnection(this,
-			                                                 splitter.getPort(splitter.PORT_JOINED),
+			                                                 splitter.getPort(splitter.getPortJoined()),
 			                                                 inputOnTopLeft ? 0 : getWidth(),
 			                                                 getHeight()));
 		}

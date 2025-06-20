@@ -67,17 +67,17 @@ public class SimpleTransistorPeer extends ComponentPeer<SimpleTransistor> {
 		}
 		
 		connections.add(new PortConnection(this,
-		                                   transistor.getPort(SimpleTransistor.PORT_SOURCE),
+		                                   transistor.getPort(SimpleTransistor.Ports.PORT_SOURCE),
 		                                   "Source",
 		                                   0,
 		                                   getHeight() - yOff));
 		connections.add(new PortConnection(this,
-		                                   transistor.getPort(SimpleTransistor.PORT_GATE),
+		                                   transistor.getPort(SimpleTransistor.Ports.PORT_GATE),
 		                                   "Gate",
 		                                   getWidth() / 2,
 		                                   yOff));
 		connections.add(new PortConnection(this,
-		                                   transistor.getPort(SimpleTransistor.PORT_DRAIN),
+		                                   transistor.getPort(SimpleTransistor.Ports.PORT_DRAIN),
 		                                   "Drain",
 		                                   getWidth(),
 		                                   getHeight() - yOff));

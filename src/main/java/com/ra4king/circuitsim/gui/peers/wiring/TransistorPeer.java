@@ -67,17 +67,17 @@ public class TransistorPeer extends ComponentPeer<Transistor> {
 			case WEST, SOUTH -> properties.getValue(GATE_LOCATION_PROPERTY) ? getHeight() : 0;
 		};
 		
-		connections.add(new PortConnection(this, transistor.getPort(Transistor.PORT_IN),
+		connections.add(new PortConnection(this, transistor.getPort(Transistor.Ports.PORT_IN),
 		                                   "Input",
 		                                   0,
 		                                   getHeight() - yOff));
 		connections.add(new PortConnection(this,
-		                                   transistor.getPort(Transistor.PORT_GATE),
+		                                   transistor.getPort(Transistor.Ports.PORT_GATE),
 		                                   "Gate",
 		                                   getWidth() / 2,
 		                                   yOff));
 		connections.add(new PortConnection(this,
-		                                   transistor.getPort(Transistor.PORT_OUT),
+		                                   transistor.getPort(Transistor.Ports.PORT_OUT),
 		                                   "Output",
 		                                   getWidth(),
 		                                   getHeight() - yOff));

@@ -114,7 +114,7 @@ public class PinPeer extends ComponentPeer<Pin> {
 		
 		Pin pin = getComponent();
 		
-		WireValue value = state.getLastPushed(pin.getPort(Pin.PORT));
+		WireValue value = state.getLastPushed(pin.getPort(Pin.Ports.PORT));
 		if (pin.getBitSize() == 1) {
 			pin.setValue(state, new WireValue(1, value.getBit(0) == State.ONE ? State.ZERO : State.ONE));
 		} else {
@@ -142,7 +142,7 @@ public class PinPeer extends ComponentPeer<Pin> {
 		switch (keyCode) {
 			case NUMPAD0, NUMPAD1, DIGIT0, DIGIT1 -> {
 				int value = text.charAt(0) - '0';
-				WireValue currentValue = new WireValue(state.getLastPushed(getComponent().getPort(Pin.PORT)));
+				WireValue currentValue = new WireValue(state.getLastPushed(getComponent().getPort(Pin.Ports.PORT)));
 				for (int i = currentValue.getBitSize() - 1; i > 0; i--) {
 					currentValue.setBit(i, currentValue.getBit(i - 1));
 				}
@@ -160,7 +160,7 @@ public class PinPeer extends ComponentPeer<Pin> {
 		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
 		
 		graphics.setFont(GuiUtils.getFont(16, true));
-		Port port = getComponent().getPort(Pin.PORT);
+		Port port = getComponent().getPort(Pin.Ports.PORT);
 		WireValue value = isInput() ? circuitState.getLastPushed(port) : circuitState.getLastReceived(port);
 		if (circuitState.isShortCircuited(port.getLink())) {
 			graphics.setFill(Color.RED);
