@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 
 import com.ra4king.circuitsim.gui.CircuitManager;
 import com.ra4king.circuitsim.gui.CircuitSim;
@@ -12,6 +11,7 @@ import com.ra4king.circuitsim.gui.ComponentManager.ComponentManagerInterface;
 import com.ra4king.circuitsim.gui.ComponentPeer;
 import com.ra4king.circuitsim.gui.Connection.PortConnection;
 import com.ra4king.circuitsim.gui.GuiUtils;
+import com.ra4king.circuitsim.gui.EditHistory;
 import com.ra4king.circuitsim.gui.Properties;
 import com.ra4king.circuitsim.gui.Properties.Property;
 import com.ra4king.circuitsim.gui.properties.PropertyMemoryValidator;
@@ -125,12 +125,17 @@ public class ROMPeer extends ComponentPeer<ROM> {
 							
 							int oldValue = rom.load(address);
 							rom.store(address, newValue);
-							
-							simulatorWindow.getEditHistory().addCustomAction(
-								circuit,
-								"Edit ROM",
-								() -> rom.store(address, oldValue),
-								() -> rom.store(address, newValue));
+
+							simulatorWindow.getEditHistory().addAction(new EditHistory.Edit(circuit) {
+								@Override
+								public void undo() {
+									rom.store(address, oldValue);
+								}
+								@Override
+								public void redo() {
+									rom.store(address, newValue);
+								}
+							});
 						});
 					}));
 					

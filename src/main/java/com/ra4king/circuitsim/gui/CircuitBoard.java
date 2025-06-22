@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 
 import com.ra4king.circuitsim.gui.Connection.PortConnection;
 import com.ra4king.circuitsim.gui.Connection.WireConnection;
-import com.ra4king.circuitsim.gui.EditHistory.EditAction;
 import com.ra4king.circuitsim.gui.LinkWires.Wire;
 import com.ra4king.circuitsim.gui.PathFinding.LocationPreference;
 import com.ra4king.circuitsim.simulator.Circuit;
@@ -228,8 +227,8 @@ public class CircuitBoard {
 				editHistory.enable();
 			}
 		});
-		
-		editHistory.addAction(EditAction.ADD_COMPONENT, circuitManager, component);
+
+		editHistory.addAction(new EditHistory.AddComponent(circuitManager, component));
 	}
 	
 	public void updateComponent(ComponentPeer<?> oldComponent, ComponentPeer<?> newComponent) {
@@ -251,7 +250,7 @@ public class CircuitBoard {
 				addComponent(newComponent);
 			} finally {
 				editHistory.enable();
-				editHistory.addAction(EditAction.UPDATE_COMPONENT, circuitManager, oldComponent, newComponent);
+				editHistory.addAction(new EditHistory.UpdateComponent(circuitManager, oldComponent, newComponent));
 			}
 		});
 	}
@@ -651,11 +650,7 @@ public class CircuitBoard {
 					
 					try {
 						editHistory.beginGroup();
-						editHistory.addAction(EditAction.MOVE_ELEMENT,
-						                      circuitManager,
-						                      component,
-						                      moveDeltaX,
-						                      moveDeltaY);
+						editHistory.addAction(new EditHistory.MoveElement(circuitManager, component, moveDeltaX, moveDeltaY));
 						addComponent(component, true);
 					} catch (RuntimeException exc) {
 						editHistory.clearGroup();
@@ -839,10 +834,9 @@ public class CircuitBoard {
 				wiresToRemove.forEach((linkWires, wires) -> {
 					links.remove(linkWires);
 					links.addAll(linkWires.splitWires(wires));
-					
-					wires.forEach((wire) -> editHistory.addAction(EditAction.REMOVE_WIRE,
-					                                              circuitManager,
-					                                              new Wire(null, wire)));
+
+					wires.forEach((wire) ->
+							editHistory.addAction(new EditHistory.RemoveWire(circuitManager, new Wire(null, wire))));
 				});
 				
 				rejoinWires();
@@ -1092,8 +1086,7 @@ public class CircuitBoard {
 		linkWires.addWire(wire);
 		links.add(linkWires);
 		wire.getConnections().forEach(this::addConnection);
-		
-		editHistory.addAction(EditAction.ADD_WIRE, circuitManager, wire);
+		editHistory.addAction(new EditHistory.AddWire(circuitManager, wire));
 	}
 	
 	private void removeWire(Wire wire) {
@@ -1105,8 +1098,7 @@ public class CircuitBoard {
 		}
 		
 		linkWires.removeWire(wire);
-		
-		editHistory.addAction(EditAction.REMOVE_WIRE, circuitManager, new Wire(null, wire));
+		editHistory.addAction(new EditHistory.RemoveWire(circuitManager, new Wire(null, wire)));
 	}
 	
 	// For EditHistory usage, so rejoinWires will only need to be called once.
@@ -1228,8 +1220,7 @@ public class CircuitBoard {
 		if (removeFromComponentsList) {
 			components.remove(component);
 		}
-		
-		editHistory.addAction(EditAction.REMOVE_COMPONENT, circuitManager, component);
+		editHistory.addAction(new EditHistory.RemoveComponent(circuitManager, component));
 	}
 	
 	private void handleConnection(Connection connection, LinkWires linkWires) {

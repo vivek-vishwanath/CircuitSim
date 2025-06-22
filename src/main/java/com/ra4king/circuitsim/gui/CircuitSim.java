@@ -39,7 +39,6 @@ import javax.imageio.ImageIO;
 import com.google.gson.JsonSyntaxException;
 import com.ra4king.circuitsim.gui.ComponentManager.ComponentCreator;
 import com.ra4king.circuitsim.gui.ComponentManager.ComponentLauncherInfo;
-import com.ra4king.circuitsim.gui.EditHistory.EditAction;
 import com.ra4king.circuitsim.gui.LinkWires.Wire;
 import com.ra4king.circuitsim.gui.Properties.Property;
 import com.ra4king.circuitsim.gui.file.FileFormat;
@@ -136,6 +135,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import javafx.util.StringConverter;
+import kotlin.Unit;
 
 /**
  * @author Roi Atalla
@@ -293,9 +293,10 @@ public class CircuitSim extends Application {
 		Clock.addChangeListener(simulator, value -> runSim());
 		
 		editHistory = new EditHistory(this);
-		editHistory.addListener((action, manager, params) -> {
+		editHistory.addListener((action) -> {
 			updateTitle();
 			needsRepaint = true;
+			return Unit.INSTANCE;
 		});
 		
 		componentManager = new ComponentManager();
@@ -635,8 +636,8 @@ public class CircuitSim extends Application {
 			Pair<ComponentLauncherInfo, CircuitManager> removed = circuitManagers.remove(tab.getText());
 			circuitModified(removed.getValue().getCircuit(), null, false);
 			removed.getValue().destroy();
-			
-			editHistory.addAction(EditAction.DELETE_CIRCUIT, manager, tab, idx);
+
+			editHistory.addAction(new EditHistory.DeleteCircuit(manager, tab, idx));
 			
 			if (addNewOnEmpty && isEmpty) {
 				createCircuit("New circuit");
@@ -920,8 +921,8 @@ public class CircuitSim extends Application {
 			
 			tab.setText(newName);
 			newPair.getValue().setName(newName);
-			
-			editHistory.addAction(EditAction.RENAME_CIRCUIT, null, this, tab, oldName, newName);
+
+			editHistory.addAction(new EditHistory.RenameCircuit(getCircuitManager(newName), tab, oldName, newName));
 			
 			refreshCircuitsTab();
 		});
@@ -1868,8 +1869,8 @@ public class CircuitSim extends Application {
 					tabs.remove(idx);
 					tabs.add(idx - 1, canvasTab);
 					canvasTabPane.getSelectionModel().select(canvasTab);
-					
-					editHistory.addAction(EditAction.MOVE_CIRCUIT, circuitManager, tabs, canvasTab, idx, idx - 1);
+
+					editHistory.addAction(new EditHistory.MoveCircuit(circuitManager, tabs, canvasTab, idx, idx-1));
 					
 					refreshCircuitsTab();
 				}
@@ -1883,8 +1884,8 @@ public class CircuitSim extends Application {
 					tabs.remove(idx);
 					tabs.add(idx + 1, canvasTab);
 					canvasTabPane.getSelectionModel().select(canvasTab);
-					
-					editHistory.addAction(EditAction.MOVE_CIRCUIT, circuitManager, tabs, canvasTab, idx, idx + 1);
+
+					editHistory.addAction(new EditHistory.MoveCircuit(circuitManager, tabs, canvasTab, idx, idx+1));
 					
 					refreshCircuitsTab();
 				}
@@ -1901,11 +1902,9 @@ public class CircuitSim extends Application {
 			canvasTabPane.getTabs().add(canvasTab);
 			
 			refreshCircuitsTab();
-			
-			editHistory.addAction(EditAction.CREATE_CIRCUIT,
-			                      circuitManager,
-			                      canvasTab,
-			                      canvasTabPane.getTabs().size() - 1);
+
+			editHistory.addAction(
+					new EditHistory.CreateCircuit(circuitManager, canvasTab,canvasTabPane.getTabs().size() - 1));
 			
 			this.circuitCanvas.requestFocus();
 		});
@@ -2345,7 +2344,10 @@ public class CircuitSim extends Application {
 			}
 		});
 		
-		editHistory.addListener((action, manager, params) -> undo.setDisable(editHistory.editStackSize() == 0));
+		editHistory.addListener(action -> {
+            undo.setDisable(editHistory.editStackSize() == 0);
+			return Unit.INSTANCE;
+        });
 		
 		redo = new MenuItem("Redo");
 		redo.setDisable(true);
@@ -2358,7 +2360,10 @@ public class CircuitSim extends Application {
 			}
 		});
 		
-		editHistory.addListener((action, manager, params) -> redo.setDisable(editHistory.redoStackSize() == 0));
+		editHistory.addListener((action) -> {
+            redo.setDisable(editHistory.redoStackSize() == 0);
+			return Unit.INSTANCE;
+        });
 		
 		MenuItem copy = new MenuItem("Copy");
 		copy.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.SHORTCUT_DOWN));
