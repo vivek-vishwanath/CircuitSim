@@ -3,8 +3,12 @@ package com.ra4king.circuitsim.gui;
 import java.util.List;
 
 import com.ra4king.circuitsim.gui.Connection.PortConnection;
+import com.ra4king.circuitsim.simulator.CircuitState;
 import com.ra4king.circuitsim.simulator.Component;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Roi Atalla
@@ -41,7 +45,16 @@ public abstract class ComponentPeer<C extends Component> extends GuiElement {
 	public List<PortConnection> getConnections() {
 		return connections;
 	}
-	
+
+	@Override
+	public void paint(GraphicsContext graphics, @Nullable CircuitState circuitState) {
+		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
+		graphics.setFill(Color.WHITE);
+		graphics.setStroke(Color.BLACK);
+		GuiUtils.drawShape(graphics::fillRect, this);
+		GuiUtils.drawShape(graphics::strokeRect, this);
+	}
+
 	@Override
 	public String toString() {
 		return getComponent().toString();

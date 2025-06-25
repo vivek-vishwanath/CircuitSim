@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 
 import com.ra4king.circuitsim.gui.CircuitManager;
 import com.ra4king.circuitsim.gui.CircuitSim;
@@ -137,16 +136,10 @@ public class RAMPeer extends ComponentPeer<RAM> {
 		});
 		return Collections.singletonList(menuItem);
 	}
-	
+
 	@Override
 	public void paint(GraphicsContext graphics, CircuitState circuitState) {
-		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
-		
-		graphics.setFill(Color.WHITE);
-		GuiUtils.drawShape(graphics::fillRect, this);
-		
-		graphics.setStroke(Color.BLACK);
-		GuiUtils.drawShape(graphics::strokeRect, this);
+		super.paint(graphics, circuitState);
 		
 		graphics.setStroke(Color.BLACK);
 		GuiUtils.drawClockInput(graphics, clockConnection, Direction.SOUTH);

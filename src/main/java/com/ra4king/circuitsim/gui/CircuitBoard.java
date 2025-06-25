@@ -590,7 +590,7 @@ public class CircuitBoard {
 	 * Note only the ComponentPeers have their coordinates updated after this call. Wires will reset back to their
 	 * original coordinates, thus the need for the returned set of updated wires.
 	 */
-	public Set<GuiElement> finalizeMove() {
+	public HashSet<GuiElement> finalizeMove() {
 		if (moveElements == null) {
 			return null;
 		}
@@ -686,7 +686,7 @@ public class CircuitBoard {
 			}
 		});
 		
-		Set<GuiElement> newSelectedElements;
+		HashSet<GuiElement> newSelectedElements;
 		
 		if (!cannotMoveHere) {
 			for (GuiElement element : elements) {

@@ -53,15 +53,10 @@ public class ShifterPeer extends ComponentPeer<Shifter> {
 		
 		init(shifter, properties, connections);
 	}
-	
+
 	@Override
-	public void paint(GraphicsContext graphics, CircuitState state) {
-		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
-		
-		graphics.setFill(Color.WHITE);
-		graphics.setStroke(Color.BLACK);
-		GuiUtils.drawShape(graphics::fillRect, this);
-		GuiUtils.drawShape(graphics::strokeRect, this);
+	public void paint(GraphicsContext graphics, CircuitState circuitState) {
+		super.paint(graphics, circuitState);
 		
 		graphics.setFill(Color.BLACK);
 		graphics.setLineWidth(1.5);

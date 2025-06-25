@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import com.ra4king.circuitsim.gui.CircuitManager;
 import com.ra4king.circuitsim.gui.ComponentPeer;
 import com.ra4king.circuitsim.gui.Connection.PortConnection;
-import com.ra4king.circuitsim.gui.GuiUtils;
 import com.ra4king.circuitsim.gui.Properties;
 import com.ra4king.circuitsim.gui.Properties.Direction;
 import com.ra4king.circuitsim.gui.Properties.Property;
@@ -19,7 +18,6 @@ import com.ra4king.circuitsim.simulator.components.Subcircuit;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.MenuItem;
-import javafx.scene.paint.Color;
 
 /**
  * @author Roi Atalla
@@ -190,12 +188,7 @@ public class SubcircuitPeer extends ComponentPeer<Subcircuit> {
 	
 	@Override
 	public void paint(GraphicsContext graphics, CircuitState circuitState) {
-		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
-		
-		graphics.setFill(Color.WHITE);
-		GuiUtils.drawShape(graphics::fillRect, this);
-		graphics.setStroke(Color.BLACK);
-		GuiUtils.drawShape(graphics::strokeRect, this);
+		super.paint(graphics, circuitState);
 		
 		if (mouseEntered) {
 			double width = getScreenWidth();

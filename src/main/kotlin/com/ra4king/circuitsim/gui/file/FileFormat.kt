@@ -132,7 +132,7 @@ object FileFormat {
         @JvmField
         val clockSpeed: Int,
         @JvmField
-        val libraryPaths: MutableSet<String>,
+        val libraryPaths: MutableSet<String>?,
         @JvmField
         val circuits: MutableList<CircuitInfo>,
         @JvmField
@@ -170,7 +170,7 @@ object FileFormat {
         }
 
         constructor(
-            globalBitSize: Int, clockSpeed: Int, libraryPaths: MutableSet<String>, circuits: MutableList<CircuitInfo>,
+            globalBitSize: Int, clockSpeed: Int, libraryPaths: MutableSet<String>?, circuits: MutableList<CircuitInfo>,
             revisionSignatures: MutableList<String>, copiedBlocks: MutableList<String>
         ) : this(
             CircuitSim.VERSION, globalBitSize, clockSpeed,

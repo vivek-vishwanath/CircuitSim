@@ -93,13 +93,10 @@ public class RegisterPeer extends ComponentPeer<Register> {
 		
 		return false;
 	}
-	
+
 	@Override
 	public void paint(GraphicsContext graphics, CircuitState circuitState) {
-		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
-		
-		graphics.setFill(Color.WHITE);
-		GuiUtils.drawShape(graphics::fillRect, this);
+		super.paint(graphics, circuitState);
 		
 		String value = circuitState.getLastPushed(getComponent().getPort(Register.Ports.PORT_OUT)).getHexString();
 		
@@ -116,8 +113,6 @@ public class RegisterPeer extends ComponentPeer<Register> {
 			Bounds bounds = GuiUtils.getBounds(graphics.getFont(), toPrint, false);
 			graphics.fillText(toPrint, x + width * 0.5 - bounds.getWidth() * 0.5, y + 11 + 10 * i);
 		}
-		graphics.setStroke(Color.BLACK);
-		GuiUtils.drawShape(graphics::strokeRect, this);
 		
 		graphics.setFill(Color.GRAY);
 		graphics.setFont(GuiUtils.getFont(10));

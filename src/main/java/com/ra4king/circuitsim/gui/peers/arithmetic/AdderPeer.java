@@ -51,12 +51,7 @@ public class AdderPeer extends ComponentPeer<Adder> {
 	
 	@Override
 	public void paint(GraphicsContext graphics, CircuitState circuitState) {
-		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
-		
-		graphics.setFill(Color.WHITE);
-		graphics.setStroke(Color.BLACK);
-		GuiUtils.drawShape(graphics::fillRect, this);
-		GuiUtils.drawShape(graphics::strokeRect, this);
+		super.paint(graphics, circuitState);
 		
 		graphics.setFont(GuiUtils.getFont(16, true));
 		Bounds bounds = GuiUtils.getBounds(graphics.getFont(), "+");

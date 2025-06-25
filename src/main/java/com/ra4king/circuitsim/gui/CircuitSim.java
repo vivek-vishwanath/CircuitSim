@@ -388,7 +388,7 @@ public class CircuitSim extends Application {
 		return 1.0 / getScaleFactor();
 	}
 	
-	void setNeedsRepaint() {
+	public void setNeedsRepaint() {
 		needsRepaint = true;
 	}
 
@@ -650,11 +650,11 @@ public class CircuitSim extends Application {
 		});
 	}
 	
-	void clearProperties() {
+	public void clearProperties() {
 		setProperties("", null);
 	}
 	
-	void setProperties(ComponentPeer<?> componentPeer) {
+	public void setProperties(ComponentPeer<?> componentPeer) {
 		String name;
 		if (componentPeer.getClass() == SubcircuitPeer.class) {
 			name = componentPeer.getProperties().getProperty(SubcircuitPeer.SUBCIRCUIT).getStringValue();
@@ -665,7 +665,7 @@ public class CircuitSim extends Application {
 		setProperties(name, componentPeer.getProperties());
 	}
 	
-	void setProperties(String componentName, Properties properties) {
+	public void setProperties(String componentName, Properties properties) {
 		propertiesTable.getChildren().clear();
 		componentLabel.setText(componentName);
 		
@@ -731,7 +731,7 @@ public class CircuitSim extends Application {
 		return properties;
 	}
 	
-	void clearSelection() {
+	public void clearSelection() {
 		if (buttonsToggleGroup.getSelectedToggle() != null) {
 			buttonsToggleGroup.getSelectedToggle().setSelected(false);
 		}
@@ -961,9 +961,12 @@ public class CircuitSim extends Application {
 								manager.getSelectedElements().remove(peer);
 								
 								if (component == null) {
-									manager.mayThrow(() -> manager
-										.getCircuitBoard()
-										.removeElements(Collections.singleton(peer)));
+									manager.mayThrow(() -> {
+										manager
+												.getCircuitBoard()
+												.removeElements(Collections.singleton(peer));
+										return Unit.INSTANCE;
+									});
 									
 									resetSubcircuitStates(node);
 								} else {
@@ -972,9 +975,12 @@ public class CircuitSim extends Application {
 									                                                  componentPeer.getY());
 									
 									editHistory.disable();
-									manager.mayThrow(() -> manager
-										.getCircuitBoard()
-										.updateComponent(peer, newSubcircuit));
+									manager.mayThrow(() -> {
+										manager
+												.getCircuitBoard()
+												.updateComponent(peer, newSubcircuit);
+										return Unit.INSTANCE;
+									});
 									editHistory.enable();
 									
 									node.subcircuit = newSubcircuit.getComponent();
@@ -1105,7 +1111,7 @@ public class CircuitSim extends Application {
 		});
 	}
 	
-	void copySelectedComponents() {
+	public void copySelectedComponents() {
 		CircuitManager manager = getCurrentCircuit();
         if (this.revisionSignatures == null) {
             this.revisionSignatures = new LinkedList<String>();
@@ -1160,15 +1166,21 @@ public class CircuitSim extends Application {
 		}
 	}
 	
-	void cutSelectedComponents() {
+	public void cutSelectedComponents() {
 		CircuitManager manager = getCurrentCircuit();
 		if (manager != null) {
 			copySelectedComponents();
 			
-			manager.mayThrow(() -> manager.getCircuitBoard().finalizeMove());
+			manager.mayThrow(() -> {
+				manager.getCircuitBoard().finalizeMove();
+				return Unit.INSTANCE;
+			});
 			
 			Set<GuiElement> selectedElements = manager.getSelectedElements();
-			manager.mayThrow(() -> manager.getCircuitBoard().removeElements(selectedElements));
+			manager.mayThrow(() -> {
+				manager.getCircuitBoard().removeElements(selectedElements);
+				return Unit.INSTANCE;
+			});
 			
 			clearSelection();
 			
@@ -1176,7 +1188,7 @@ public class CircuitSim extends Application {
 		}
 	}
 	
-	void pasteFromClipboard() {
+	public void pasteFromClipboard() {
 		Clipboard clipboard = Clipboard.getSystemClipboard();
 		String data = (String)clipboard.getContent(copyDataFormat);
 		
@@ -1209,7 +1221,7 @@ public class CircuitSim extends Application {
 				if (manager != null) {
 					outer:
 					for (int i = 0; ; i += 3) { // start 0 in the case of Cut and Paste
-						Set<GuiElement> elementsCreated = new HashSet<>();
+						HashSet<GuiElement> elementsCreated = new HashSet<>();
 						
 						for (CircuitInfo circuit : parsed.circuits) {
 							for (ComponentInfo component : circuit.components) {
@@ -1256,9 +1268,12 @@ public class CircuitSim extends Application {
 							manager.getCircuitBoard().finalizeMove();
 							
 							editHistory.disable();
-							elementsCreated.forEach(element -> manager.mayThrow(() -> manager
-								.getCircuitBoard()
-								.addComponent((ComponentPeer<?>)element, false)));
+							elementsCreated.forEach(element -> manager.mayThrow(() -> {
+								manager
+										.getCircuitBoard()
+										.addComponent((ComponentPeer<?>) element, false);
+								return Unit.INSTANCE;
+							}));
 							manager.getCircuitBoard().removeElements(elementsCreated, false);
 							editHistory.enable();
 							
@@ -1273,7 +1288,10 @@ public class CircuitSim extends Application {
 							}
 							
 							manager.setSelectedElements(elementsCreated);
-							manager.mayThrow(() -> manager.getCircuitBoard().initMove(elementsCreated, false));
+							manager.mayThrow(() -> {
+								manager.getCircuitBoard().initMove(elementsCreated, false);
+								return Unit.INSTANCE;
+							});
 						});
 						
 						break;
@@ -1549,11 +1567,14 @@ public class CircuitSim extends Application {
 									}
 									
 									runnables.add(() -> {
-										manager.mayThrow(() -> manager
-											.getCircuitBoard()
-											.addComponent(creator.createComponent(properties,
-											                                      component.x,
-											                                      component.y)));
+										manager.mayThrow(() -> {
+											manager
+													.getCircuitBoard()
+													.addComponent(creator.createComponent(properties,
+															component.x,
+															component.y));
+											return Unit.INSTANCE;
+										});
 										bar.setProgress(bar.getProgress() + increment);
 										latch.countDown();
 									});
@@ -1570,9 +1591,12 @@ public class CircuitSim extends Application {
 							
 							for (WireInfo wire : circuit.wires) {
 								runnables.add(() -> {
-									manager.mayThrow(() -> manager
-										.getCircuitBoard()
-										.addWire(wire.x, wire.y, wire.length, wire.isHorizontal));
+									manager.mayThrow(() -> {
+										manager
+												.getCircuitBoard()
+												.addWire(wire.x, wire.y, wire.length, wire.isHorizontal);
+										return Unit.INSTANCE;
+									});
 									bar.setProgress(bar.getProgress() + increment);
 									latch.countDown();
 								});
@@ -2222,7 +2246,7 @@ public class CircuitSim extends Application {
 							Bounds circuitBounds = pair.getValue().getCircuitBounds();
 							Point2D newOrigin = new Point2D(circuitBounds.getMinX(), circuitBounds.getMinY())
 								.multiply(-GuiUtils.BLOCK_SIZE);
-							manager.setTranslate(newOrigin);
+							manager.setTranslateOrigin(newOrigin);
 							setScaleFactor(1.0);
 							try {
 								circuitCanvas.setWidth(circuitBounds.getWidth() * getScaleFactor() * GuiUtils.BLOCK_SIZE);
@@ -2237,7 +2261,7 @@ public class CircuitSim extends Application {
 							RenderedImage rendered = SwingFXUtils.fromFXImage(image, null);
 							images.put(name, rendered);
 
-							manager.setTranslate(Point2D.ZERO);
+							manager.setTranslateOrigin(Point2D.ZERO);
 						});
 						updateCanvasSize();
 					}));
@@ -2334,12 +2358,12 @@ public class CircuitSim extends Application {
 		undo.setOnAction(event -> {
 			CircuitManager manager = getCurrentCircuit();
 			if (manager != null) {
-				manager.setSelectedElements(Collections.emptySet());
+				manager.setSelectedElements(new HashSet<>());
 			}
 			
 			manager = editHistory.undo();
 			if (manager != null) {
-				manager.setSelectedElements(Collections.emptySet());
+				manager.setSelectedElements(new HashSet<>());
 				switchToCircuit(manager.getCircuit(), null);
 			}
 		});
@@ -2394,14 +2418,14 @@ public class CircuitSim extends Application {
 		selectAll.setOnAction(event -> {
 			CircuitManager manager = getCurrentCircuit();
 			if (manager != null && this.circuitCanvas.isFocused()) {
-				manager.setSelectedElements(Stream
-					                            .concat(manager.getCircuitBoard().getComponents().stream(),
-					                                    manager
-						                                    .getCircuitBoard()
-						                                    .getLinks()
-						                                    .stream()
-						                                    .flatMap(link -> link.getWires().stream()))
-					                            .collect(Collectors.toSet()));
+				manager.setSelectedElements(new HashSet<>(Stream
+						.concat(manager.getCircuitBoard().getComponents().stream(),
+								manager
+										.getCircuitBoard()
+										.getLinks()
+										.stream()
+										.flatMap(link -> link.getWires().stream()))
+						.collect(Collectors.toSet())));
 				needsRepaint = true;
 			}
 		});

@@ -54,15 +54,10 @@ public class BitExtenderPeer extends ComponentPeer<BitExtender> {
 		
 		init(extender, properties, connections);
 	}
-	
+
 	@Override
 	public void paint(GraphicsContext graphics, CircuitState circuitState) {
-		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
-		
-		graphics.setStroke(Color.BLACK);
-		graphics.setFill(Color.WHITE);
-		GuiUtils.drawShape(graphics::fillRect, this);
-		GuiUtils.drawShape(graphics::strokeRect, this);
+		super.paint(graphics, circuitState);
 		
 		graphics.setFont(GuiUtils.getFont(12, true));
 		graphics.setFill(Color.BLACK);

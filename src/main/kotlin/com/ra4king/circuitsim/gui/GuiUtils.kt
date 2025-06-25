@@ -83,10 +83,14 @@ object GuiUtils {
         text.layoutBounds
     }
 
-    @JvmStatic
-    fun drawShape(drawable: Drawable, element: GuiElement) {
-        drawable.draw(element.screenX, element.screenY, element.screenWidth, element.screenHeight)
+    fun drawShape(element: GuiElement, drawable: (Double, Double, Double, Double) -> Unit) {
+        drawable(element.screenX.toDouble(), element.screenY.toDouble(),
+            element.screenWidth.toDouble(), element.screenHeight.toDouble()
+        )
     }
+
+    @JvmStatic
+    fun drawShape(drawable: Drawable, element: GuiElement) = drawShape(element) { v1, v2, v3, v4 -> drawable.draw(v1, v2, v3, v4)}
 
     @JvmStatic
     fun drawName(graphics: GraphicsContext, component: ComponentPeer<*>, direction: Properties.Direction) {
@@ -327,6 +331,6 @@ object GuiUtils {
     }
 
     fun interface Drawable {
-        fun draw(x: Int, y: Int, width: Int, height: Int)
+        fun draw(x: Double, y: Double, width: Double, height: Double)
     }
 }

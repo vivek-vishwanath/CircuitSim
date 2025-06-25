@@ -109,7 +109,7 @@ public class ComponentManager {
 		}
 	}
 	
-	static <T extends ComponentPeer<?>> ComponentCreator<T> forClass(Class<T> clazz) {
+	public static <T extends ComponentPeer<?>> ComponentCreator<T> forClass(Class<T> clazz) {
 		return (properties, x, y) -> {
 			try {
 				return clazz.getConstructor(Properties.class, Integer.TYPE, Integer.TYPE).newInstance(properties, x,

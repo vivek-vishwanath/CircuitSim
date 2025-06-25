@@ -150,16 +150,10 @@ public class ROMPeer extends ComponentPeer<ROM> {
 		});
 		return Collections.singletonList(menuItem);
 	}
-	
+
 	@Override
 	public void paint(GraphicsContext graphics, CircuitState circuitState) {
-		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
-		
-		graphics.setFill(Color.WHITE);
-		GuiUtils.drawShape(graphics::fillRect, this);
-		
-		graphics.setStroke(Color.BLACK);
-		GuiUtils.drawShape(graphics::strokeRect, this);
+		super.paint(graphics, circuitState);
 		
 		String address = circuitState.getLastReceived(getComponent().getPort(ROM.Ports.PORT_ADDRESS)).getHexString();
 		String value = circuitState.getLastPushed(getComponent().getPort(ROM.Ports.PORT_DATA)).getHexString();

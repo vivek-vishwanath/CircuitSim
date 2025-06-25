@@ -46,15 +46,10 @@ public class SevenSegmentDisplay extends ComponentPeer<Component> {
 		connections.add(new PortConnection(this, component.getPort(0), "7-bit input", getWidth() / 2, getHeight()));
 		init(component, properties, connections);
 	}
-	
+
 	@Override
 	public void paint(GraphicsContext graphics, CircuitState circuitState) {
-		GuiUtils.drawName(graphics, this, getProperties().getValue(Properties.LABEL_LOCATION));
-		
-		graphics.setFill(Color.WHITE);
-		GuiUtils.drawShape(graphics::fillRect, this);
-		graphics.setStroke(Color.BLACK);
-		GuiUtils.drawShape(graphics::strokeRect, this);
+		super.paint(graphics, circuitState);
 		
 		WireValue value = circuitState.getLastReceived(getComponent().getPort(0));
 		
