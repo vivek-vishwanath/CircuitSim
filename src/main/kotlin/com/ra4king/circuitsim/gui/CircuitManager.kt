@@ -160,7 +160,7 @@ class CircuitManager(
         }
     val commonSelectedProperties
         get() = selectedElements.filterIsInstance<ComponentPeer<*>>().map { it.properties }
-            .reduce(Properties::intersect) ?: Properties()
+            .reduce(Properties::intersect)
 
 
     fun destroy() = circuitBoard.destroy()

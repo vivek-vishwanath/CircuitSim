@@ -53,7 +53,7 @@ class EditHistory(private val circuitSim: CircuitSim) {
 
     open class AddComponent(manager: CircuitManager, val component: ComponentPeer<*>) : Edit(manager) {
         override fun undo() {
-            val set = manager.circuitBoard.components.filter { it == component }.toSet()
+            val set = manager.circuitBoard.components.filter { it == component }.toHashSet()
             manager.mayThrow { manager.circuitBoard.removeElements(set) }
         }
 
@@ -95,7 +95,7 @@ class EditHistory(private val circuitSim: CircuitSim) {
 
     open class AddWire(manager: CircuitManager, val wire: LinkWires.Wire) : Edit(manager) {
         override fun undo() {
-            manager.mayThrow { manager.circuitBoard.removeElements(setOf(wire)) }
+            manager.mayThrow { manager.circuitBoard.removeElements(hashSetOf(wire)) }
         }
 
         override fun redo() {
@@ -202,13 +202,13 @@ class EditHistory(private val circuitSim: CircuitSim) {
                 for (i in popped.indices.reversed()) {
                     val edit = popped[i]
                     circuitManagers.add(edit.manager)
-                    edit.manager.circuitBoard.disableRejoinWires()
+                    edit.manager.circuitBoard.rejoinWiresEnabled = false
                     edit.undo()
                     editListeners.forEach { it(edit) }
                 }
             } finally {
                 enable()
-                circuitManagers.forEach { it.circuitBoard.enableRejoinWires() }
+                circuitManagers.forEach { it.circuitBoard.rejoinWiresEnabled = true }
             }
         }
 
@@ -230,13 +230,13 @@ class EditHistory(private val circuitSim: CircuitSim) {
                 disable()
                 for (edit in popped) {
                     circuitManagers.add(edit.manager)
-                    edit.manager.circuitBoard.disableRejoinWires()
+                    edit.manager.circuitBoard.rejoinWiresEnabled = false
                     edit.redo()
                     editListeners.forEach { it(edit) }
                 }
             } finally {
                 enable()
-                circuitManagers.forEach { it.circuitBoard.enableRejoinWires() }
+                circuitManagers.forEach { it.circuitBoard.rejoinWiresEnabled = true }
             }
         })
 

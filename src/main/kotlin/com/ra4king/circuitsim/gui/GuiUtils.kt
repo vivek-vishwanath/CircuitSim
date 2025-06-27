@@ -94,8 +94,8 @@ object GuiUtils {
 
     @JvmStatic
     fun drawName(graphics: GraphicsContext, component: ComponentPeer<*>, direction: Properties.Direction) {
-        if (!component.getComponent().name.isEmpty()) {
-            val bounds = getBounds(graphics.font, component.getComponent().name)
+        if (!component.component.name.isEmpty()) {
+            val bounds = getBounds(graphics.font, component.component.name)
             val coord = when (direction) {
                 Properties.Direction.EAST -> Pair(
                     component.screenX + component.screenWidth + 5.0,
@@ -118,7 +118,7 @@ object GuiUtils {
                 )
             }
             graphics.fill = Color.BLACK
-            graphics.fillText(component.getComponent().name, coord.first, coord.second)
+            graphics.fillText(component.component.name, coord.first, coord.second)
         }
     }
 

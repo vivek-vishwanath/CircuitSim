@@ -69,4 +69,7 @@ abstract class Connection(open val parent: GuiElement, val xOffset: Int, val yOf
 
         override val linkWires get() = parent.linkWires
     }
+
+    operator fun component1() = x
+    operator fun component2() = y
 }

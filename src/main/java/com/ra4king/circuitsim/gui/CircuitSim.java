@@ -964,7 +964,7 @@ public class CircuitSim extends Application {
 									manager.mayThrow(() -> {
 										manager
 												.getCircuitBoard()
-												.removeElements(Collections.singleton(peer));
+												.removeElements(new HashSet<>(Collections.singleton(peer)));
 										return Unit.INSTANCE;
 									});
 									
@@ -1176,7 +1176,7 @@ public class CircuitSim extends Application {
 				return Unit.INSTANCE;
 			});
 			
-			Set<GuiElement> selectedElements = manager.getSelectedElements();
+			HashSet<GuiElement> selectedElements = manager.getSelectedElements();
 			manager.mayThrow(() -> {
 				manager.getCircuitBoard().removeElements(selectedElements);
 				return Unit.INSTANCE;
