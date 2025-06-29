@@ -24,7 +24,7 @@ public class SubtractorPeer extends ComponentPeer<Subtractor> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Arithmetic", "Subtractor"),
 		                     new Image(SubtractorPeer.class.getResourceAsStream("/images/Subtractor.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	public SubtractorPeer(Properties props, int x, int y) {

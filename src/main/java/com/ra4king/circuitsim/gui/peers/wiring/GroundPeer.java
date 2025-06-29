@@ -23,7 +23,7 @@ public class GroundPeer extends ComponentPeer<Ground> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Wiring", "Ground"),
 		                     new Image(GroundPeer.class.getResourceAsStream("/images/Ground.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 
 	public GroundPeer(Properties props, int x, int y) {

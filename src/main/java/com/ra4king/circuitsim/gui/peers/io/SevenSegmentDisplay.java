@@ -26,7 +26,7 @@ public class SevenSegmentDisplay extends ComponentPeer<Component> {
 		manager.addComponent(
 			new Pair<>("Input/Output", "7-Segment Display"),
 			new Image(SevenSegmentDisplay.class.getResourceAsStream("/images/HexDisplay.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public SevenSegmentDisplay(Properties props, int x, int y) {

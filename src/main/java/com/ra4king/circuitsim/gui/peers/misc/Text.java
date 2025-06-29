@@ -34,7 +34,7 @@ public class Text extends ComponentPeer<Component> {
 		manager.addComponent(
 			new Pair<>("Misc", "Text"),
 			textImage = new Image(Text.class.getResourceAsStream("/images/Text.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	private static final Property<String> TEXT = new Property<>("Text", PropertyValidators.ANY_STRING_VALIDATOR, "");

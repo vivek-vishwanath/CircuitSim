@@ -28,7 +28,7 @@ public class SimpleTransistorPeer extends ComponentPeer<SimpleTransistor> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Wiring", "Transistor"),
 		                     new Image(TransistorPeer.class.getResourceAsStream("/images/SimpleTransistor.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	private static final Property<Boolean> TRANSISTOR_TYPE_PROPERTY;

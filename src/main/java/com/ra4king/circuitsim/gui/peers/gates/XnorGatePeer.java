@@ -20,7 +20,7 @@ public class XnorGatePeer extends GatePeer<XnorGate> {
 		manager.addComponent(
 			new Pair<>("Gates", "XNOR"),
 			new Image(XnorGatePeer.class.getResourceAsStream("/images/XnorGate.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public XnorGatePeer(Properties properties, int x, int y) {

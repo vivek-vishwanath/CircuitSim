@@ -19,7 +19,7 @@ public class NorGatePeer extends GatePeer<NorGate> {
 		manager.addComponent(
 			new Pair<>("Gates", "NOR"),
 			new Image(NorGatePeer.class.getResourceAsStream("/images/NorGate.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public NorGatePeer(Properties properties, int x, int y) {

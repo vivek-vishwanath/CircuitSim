@@ -28,7 +28,7 @@ public class Probe extends ComponentPeer<Component> {
 		manager.addComponent(
 			new Pair<>("Wiring", "Probe"),
 			new Image(Probe.class.getResourceAsStream("/images/Probe.png")),
-			new Properties(new Property<>(Properties.DIRECTION, Direction.SOUTH)));
+			new Properties(new Property<>(Properties.DIRECTION, Direction.SOUTH)), true);
 	}
 	
 	public Probe(Properties props, int x, int y) {

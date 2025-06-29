@@ -24,7 +24,7 @@ public class MultiplexerPeer extends ComponentPeer<Multiplexer> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Plexer", "Mux"),
 		                     new Image(MultiplexerPeer.class.getResourceAsStream("/images/Mux.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	public MultiplexerPeer(Properties props, int x, int y) {

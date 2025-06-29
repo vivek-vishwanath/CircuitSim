@@ -42,7 +42,7 @@ public class SplitterPeer extends ComponentPeer<Splitter> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Wiring", "Splitter"),
 		                     new Image(SplitterPeer.class.getResourceAsStream("/images/Splitter.png")),
-		                     new Properties(new Property<>(Properties.BITSIZE, 2)));
+		                     new Properties(new Property<>(Properties.BITSIZE, 2)), true);
 	}
 	
 	public SplitterPeer(Properties props, int x, int y) {

@@ -28,7 +28,7 @@ public class Button extends ComponentPeer<Component> {
 		manager.addComponent(
 			new Pair<>("Input/Output", "Button"),
 			new Image(Button.class.getResourceAsStream("/images/Button.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	private boolean isPressed = false;

@@ -28,7 +28,7 @@ public class HexDisplay extends ComponentPeer<Component> {
 		manager.addComponent(
 			new Pair<>("Input/Output", "Hex Display"),
 			new Image(HexDisplay.class.getResourceAsStream("/images/HexDisplay.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public HexDisplay(Properties props, int x, int y) {

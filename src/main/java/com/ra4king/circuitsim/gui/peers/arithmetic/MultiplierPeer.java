@@ -24,7 +24,7 @@ public class MultiplierPeer extends ComponentPeer<Multiplier> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Arithmetic", "Multiplier"),
 		                     new Image(MultiplierPeer.class.getResourceAsStream("/images/Multiplier.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	public MultiplierPeer(Properties props, int x, int y) {

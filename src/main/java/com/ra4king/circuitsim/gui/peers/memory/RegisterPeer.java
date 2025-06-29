@@ -29,7 +29,7 @@ public class RegisterPeer extends ComponentPeer<Register> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Memory", "Register"),
 		                     new Image(RegisterPeer.class.getResourceAsStream("/images/Register.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	private final PortConnection clockConnection;

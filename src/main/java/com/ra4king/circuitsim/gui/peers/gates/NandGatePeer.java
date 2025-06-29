@@ -19,7 +19,7 @@ public class NandGatePeer extends GatePeer<NandGate> {
 		manager.addComponent(
 			new Pair<>("Gates", "NAND"),
 			new Image(NandGatePeer.class.getResourceAsStream("/images/NandGate.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public NandGatePeer(Properties properties, int x, int y) {

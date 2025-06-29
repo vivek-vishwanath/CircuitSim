@@ -24,7 +24,7 @@ public class DecoderPeer extends ComponentPeer<Decoder> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Plexer", "Decoder"),
 		                     new Image(DecoderPeer.class.getResourceAsStream("/images/Decoder.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	public DecoderPeer(Properties props, int x, int y) {

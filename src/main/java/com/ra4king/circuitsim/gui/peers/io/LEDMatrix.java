@@ -34,7 +34,7 @@ public class LEDMatrix extends ComponentPeer<Component> {
 		manager.addComponent(
 			new Pair<>("Input/Output", "LED Matrix"),
 			new Image(LEDMatrix.class.getResourceAsStream("/images/LEDMatrix.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public LEDMatrix(Properties props, int x, int y) {

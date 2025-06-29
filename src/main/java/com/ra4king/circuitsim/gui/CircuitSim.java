@@ -659,7 +659,8 @@ public class CircuitSim extends Application {
 		if (componentPeer.getClass() == SubcircuitPeer.class) {
 			name = componentPeer.getProperties().getProperty(SubcircuitPeer.SUBCIRCUIT).getStringValue();
 		} else {
-			ComponentLauncherInfo info = componentManager.get(componentPeer.getClass(), componentPeer.getProperties());
+            //noinspection unchecked
+            ComponentLauncherInfo info = componentManager.get((Class<? extends ComponentPeer<?>>) componentPeer.getClass(), componentPeer.getProperties());
 			name = info.name.getValue();
 		}
 		setProperties(name, componentPeer.getProperties());
@@ -2130,7 +2131,7 @@ public class CircuitSim extends Application {
 			
 			componentManager.forEach(componentInfo -> {
 				if (!componentInfo.showInComponentsList) {
-					return;
+					return Unit.INSTANCE;
 				}
 				
 				Tab tab;
@@ -2152,6 +2153,7 @@ public class CircuitSim extends Application {
 				
 				ToggleButton toggleButton = setupButton(buttonsToggleGroup, componentInfo);
 				buttons.addRow(buttons.getChildren().size(), toggleButton);
+				return Unit.INSTANCE;
 			});
 			
 			circuitButtonsTab = null;

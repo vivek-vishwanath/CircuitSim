@@ -25,7 +25,7 @@ public class NegatorPeer extends ComponentPeer<Negator> {
 		manager.addComponent(
 			new Pair<>("Arithmetic", "Negator"),
 			new Image(NegatorPeer.class.getResourceAsStream("/images/Negator.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public NegatorPeer(Properties props, int x, int y) {

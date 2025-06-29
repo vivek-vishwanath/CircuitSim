@@ -43,7 +43,7 @@ public class Tunnel extends ComponentPeer<Component> {
 		manager.addComponent(
 			new Pair<>("Wiring", "Tunnel"),
 			new Image(Tunnel.class.getResourceAsStream("/images/Tunnel.png")),
-			new Properties(new Property<>(Properties.DIRECTION, Direction.WEST)));
+			new Properties(new Property<>(Properties.DIRECTION, Direction.WEST)), true);
 	}
 	
 	private final Component tunnel;

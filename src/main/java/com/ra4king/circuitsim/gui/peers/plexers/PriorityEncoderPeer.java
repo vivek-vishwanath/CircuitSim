@@ -24,7 +24,7 @@ public class PriorityEncoderPeer extends ComponentPeer<PriorityEncoder> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Plexer", "Priority Encoder"),
 		                     new Image(PriorityEncoderPeer.class.getResourceAsStream("/images/PriorityEncoder.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	private static final byte ENABLED_INOUT_SIDE_LEN = 4;

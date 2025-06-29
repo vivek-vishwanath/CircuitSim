@@ -36,7 +36,7 @@ public class ROMPeer extends ComponentPeer<ROM> {
 		manager.addComponent(
 			new Pair<>("Memory", "ROM"),
 			new Image(ROMPeer.class.getResourceAsStream("/images/ROM.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	private final Property<List<MemoryLine>> contentsProperty;

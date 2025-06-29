@@ -29,7 +29,7 @@ public class LED extends ComponentPeer<Component> {
 		manager.addComponent(
 			new Pair<>("Input/Output", "LED"),
 			new Image(LED.class.getResourceAsStream("/images/LED.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	private static final Property<Color> ON_COLOR_PROPERTY;

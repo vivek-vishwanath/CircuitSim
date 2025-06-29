@@ -25,7 +25,7 @@ public class ClockPeer extends ComponentPeer<Clock> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Wiring", "Clock"),
 		                     new Image(ClockPeer.class.getResourceAsStream("/images/Clock.png")),
-		                     new Properties());
+							 new Properties(), true);
 	}
 	
 	public ClockPeer(Properties props, int x, int y) {

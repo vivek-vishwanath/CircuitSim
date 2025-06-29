@@ -41,7 +41,7 @@ public class RAMPeer extends ComponentPeer<RAM> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Memory", "RAM"),
 		                     new Image(RAMPeer.class.getResourceAsStream("/images/RAM.png")),
-		                     new Properties(SEPARATE_LOAD_STORE_PORTS));
+		                     new Properties(SEPARATE_LOAD_STORE_PORTS), true);
 	}
 	
 	private final PortConnection clockConnection;

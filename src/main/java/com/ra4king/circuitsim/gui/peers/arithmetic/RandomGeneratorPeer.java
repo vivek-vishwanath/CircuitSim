@@ -26,7 +26,7 @@ public class RandomGeneratorPeer extends ComponentPeer<RandomGenerator> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Arithmetic", "Random Generator"),
 		                     new Image(RandomGeneratorPeer.class.getResourceAsStream("/images/RandomGenerator.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	private final PortConnection clockConnection;

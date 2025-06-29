@@ -24,7 +24,7 @@ public class ControlledBufferPeer extends ComponentPeer<ControlledBuffer> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Gates", "Buffer"),
 		                     new Image(ControlledBufferPeer.class.getResourceAsStream("/images/Buffer.png")),
-		                     new Properties());
+							 new Properties(), true);
 	}
 	
 	public ControlledBufferPeer(Properties props, int x, int y) {

@@ -25,7 +25,7 @@ public class AdderPeer extends ComponentPeer<Adder> {
 		manager.addComponent(
 			new Pair<>("Arithmetic", "Adder"),
 			new Image(AdderPeer.class.getResourceAsStream("/images/Adder.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public AdderPeer(Properties props, int x, int y) {

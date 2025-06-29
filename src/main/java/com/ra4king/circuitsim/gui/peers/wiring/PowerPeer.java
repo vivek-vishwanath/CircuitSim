@@ -23,7 +23,7 @@ public class PowerPeer extends ComponentPeer<Power> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Wiring", "Power"),
 		                     new Image(PowerPeer.class.getResourceAsStream("/images/Power.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 
 	public PowerPeer(Properties props, int x, int y) {

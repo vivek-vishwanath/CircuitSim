@@ -40,12 +40,12 @@ public class PinPeer extends ComponentPeer<Pin> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Wiring", "Input Pin"),
 		                     new Image(PinPeer.class.getResourceAsStream("/images/InputPin.png")),
-		                     new Properties(new Property<>(IS_INPUT, true)));
+		                     new Properties(new Property<>(IS_INPUT, true)), true);
 		
 		manager.addComponent(new Pair<>("Wiring", "Output Pin"),
 		                     new Image(PinPeer.class.getResourceAsStream("/images/OutputPin.png")),
 		                     new Properties(new Property<>(IS_INPUT, false),
-		                                    new Property<>(Properties.DIRECTION, Direction.WEST)));
+							 new Property<>(Properties.DIRECTION, Direction.WEST)), true);
 	}
 	
 	public PinPeer(Properties props, int x, int y) {

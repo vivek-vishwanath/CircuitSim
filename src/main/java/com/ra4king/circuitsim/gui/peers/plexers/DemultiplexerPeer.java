@@ -24,7 +24,7 @@ public class DemultiplexerPeer extends ComponentPeer<Demultiplexer> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Plexer", "Demux"),
 		                     new Image(DemultiplexerPeer.class.getResourceAsStream("/images/Demux.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	public DemultiplexerPeer(Properties props, int x, int y) {

@@ -26,7 +26,7 @@ public class ShifterPeer extends ComponentPeer<Shifter> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Arithmetic", "Shifter"),
 		                     new Image(ShifterPeer.class.getResourceAsStream("/images/Shifter.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	public ShifterPeer(Properties props, int x, int y) {

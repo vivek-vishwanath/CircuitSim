@@ -19,7 +19,7 @@ public class AndGatePeer extends GatePeer<AndGate> {
 		manager.addComponent(
 			new Pair<>("Gates", "AND"),
 			new Image(AndGatePeer.class.getResourceAsStream("/images/AndGate.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public AndGatePeer(Properties properties, int x, int y) {

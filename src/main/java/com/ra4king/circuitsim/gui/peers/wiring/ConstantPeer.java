@@ -35,7 +35,7 @@ public class ConstantPeer extends ComponentPeer<Constant> {
 		manager.addComponent(
 			new Pair<>("Wiring", "Constant"),
 			new Image(ConstantPeer.class.getResourceAsStream("/images/Constant.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	private final WireValue value;

@@ -19,7 +19,7 @@ public class NotGatePeer extends GatePeer<NotGate> {
 		manager.addComponent(
 			new Pair<>("Gates", "NOT"),
 			new Image(NotGatePeer.class.getResourceAsStream("/images/NotGate.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public NotGatePeer(Properties properties, int x, int y) {

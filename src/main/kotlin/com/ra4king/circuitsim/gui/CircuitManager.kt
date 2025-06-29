@@ -655,7 +655,7 @@ class CircuitManager(
                 }
             }
             PLACING_COMPONENT -> {
-                val newComponent = componentCreator!!.createComponent(potentialComponentProperties, potentialComponent!!.x, potentialComponent!!.y)
+                val newComponent = componentCreator!!.createComponent(potentialComponentProperties!!, potentialComponent!!.x, potentialComponent!!.y)
                 mayThrow { circuitBoard.addComponent(newComponent) }
                 if (!isCtrlDown) {
                     reset()

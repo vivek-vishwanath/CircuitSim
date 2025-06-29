@@ -33,7 +33,7 @@ public class ComparatorPeer extends ComponentPeer<Comparator> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Arithmetic", "Comparator"),
 		                     new Image(ComparatorPeer.class.getResourceAsStream("/images/Comparator.png")),
-		                     new Properties());
+							 new Properties(), true);
 	}
 	
 	public ComparatorPeer(Properties props, int x, int y) {

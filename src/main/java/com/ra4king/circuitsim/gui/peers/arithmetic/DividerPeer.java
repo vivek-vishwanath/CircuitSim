@@ -24,7 +24,7 @@ public class DividerPeer extends ComponentPeer<Divider> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Arithmetic", "Divider"),
 		                     new Image(DividerPeer.class.getResourceAsStream("/images/Divider.png")),
-		                     new Properties());
+		                     new Properties(), true);
 	}
 	
 	public DividerPeer(Properties props, int x, int y) {

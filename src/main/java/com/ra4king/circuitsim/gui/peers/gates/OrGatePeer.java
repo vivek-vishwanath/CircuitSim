@@ -19,7 +19,7 @@ public class OrGatePeer extends GatePeer<OrGate> {
 		manager.addComponent(
 			new Pair<>("Gates", "OR"),
 			new Image(OrGatePeer.class.getResourceAsStream("/images/OrGate.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public OrGatePeer(Properties properties, int x, int y) {

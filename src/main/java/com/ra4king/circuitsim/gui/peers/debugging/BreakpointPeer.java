@@ -25,7 +25,7 @@ public class BreakpointPeer extends ComponentPeer<Breakpoint> {
 		manager.addComponent(
 			new Pair<>("Debugging", "Breakpoint"),
 			new Image(BreakpointPeer.class.getResourceAsStream("/images/Breakpoint.png")),
-			new Properties());
+			new Properties(), true);
 	}
 	
 	public BreakpointPeer(Properties props, int x, int y) {

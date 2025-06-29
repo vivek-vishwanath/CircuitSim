@@ -27,7 +27,7 @@ public class BitExtenderPeer extends ComponentPeer<BitExtender> {
 	public static void installComponent(ComponentManagerInterface manager) {
 		manager.addComponent(new Pair<>("Arithmetic", "Bit Extender"),
 		                     new Image(BitExtenderPeer.class.getResourceAsStream("/images/BitExtender.png")),
-		                     new Properties());
+							 new Properties(), true);
 	}
 	
 	public BitExtenderPeer(Properties props, int x, int y) {
