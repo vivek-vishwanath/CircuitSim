@@ -21,7 +21,7 @@ public class CircuitSimRunner {
 	public static void main(String[] args) {
 		try (NativeLibraryExtractor extractor = new NativeLibraryExtractor()) {
 			extractor.extractNativeLibs();
-			CircuitSim.run(args);
+			CircuitSim.Companion.run(args);
 			Platform.exit();
 		}
 	}

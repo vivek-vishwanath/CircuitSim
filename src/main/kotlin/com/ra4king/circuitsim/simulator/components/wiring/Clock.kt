@@ -23,7 +23,7 @@ class Clock(name: String) : Component(name, intArrayOf(1)) {
     private class ClockInfo(private val simulator: Simulator) {
         val clocks = ConcurrentHashMap<Clock, Any?>()
         val clockChangeListeners =
-            ConcurrentHashMap<ClockChangeListener, Any?>()
+            ConcurrentHashMap<(WireValue?) -> Unit, Any?>()
 
         private class InternalClockInfo(val thread: Thread) {
             val enabled = AtomicBoolean(true)
@@ -41,7 +41,7 @@ class Clock(name: String) : Component(name, intArrayOf(1)) {
         var lastTickCount = 0
 
         init {
-            clockEnabled.addListener(ChangeListener { obs, oldValue, newValue ->
+            clockEnabled.addListener(ChangeListener { _, _, newValue ->
                 if (newValue.enabled) startClock(newValue.hertz)
                 else stopClock(false)
             })
@@ -67,7 +67,7 @@ class Clock(name: String) : Component(name, intArrayOf(1)) {
                     }
                 }
             }
-            clockChangeListeners.forEach { (listener, _) -> listener.valueChanged(clockValue) }
+            clockChangeListeners.forEach { (listener, _) -> listener(clockValue) }
         }
 
         @Synchronized
@@ -157,17 +157,13 @@ class Clock(name: String) : Component(name, intArrayOf(1)) {
 
     override fun valueChanged(state: CircuitState, value: WireValue, portIndex: Int) {}
 
-    interface ClockChangeListener {
-        fun valueChanged(value: WireValue?)
-    }
-
     companion object {
         private val simulatorClocks = ConcurrentHashMap<Simulator, ClockInfo>()
 
         const val PORT: Int = 0
 
         private operator fun get(simulator: Simulator) =
-            simulatorClocks.computeIfAbsent(simulator) { simulator: Simulator? -> ClockInfo(simulator!!) }
+            simulatorClocks.computeIfAbsent(simulator) { ClockInfo(it) }
 
         @JvmStatic
 		fun tick(simulator: Simulator) {
@@ -201,11 +197,11 @@ class Clock(name: String) : Component(name, intArrayOf(1)) {
         }
 
         @JvmStatic
-		fun addChangeListener(simulator: Simulator, listener: ClockChangeListener) {
+		fun addChangeListener(simulator: Simulator, listener: (WireValue?) -> Unit) {
             this[simulator].clockChangeListeners[listener] = listener
         }
 
-        fun removeChangeListener(simulator: Simulator, listener: ClockChangeListener) {
+        fun removeChangeListener(simulator: Simulator, listener: (WireValue?) -> Unit) {
             val clock: ClockInfo = get(simulator)
             clock.clockChangeListeners.remove(listener)
         }

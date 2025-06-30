@@ -26,7 +26,7 @@ class DebugUtil internal constructor(private val simulatorWindow: CircuitSim) {
         System.err.println(message)
         throwable.printStackTrace()
 
-        if (simulatorWindow.isWindowOpen) {
+        if (simulatorWindow.openWindow) {
             Platform.runLater {
                 synchronized(this@DebugUtil) {
                     if (showingError) return@runLater
