@@ -133,7 +133,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.util.Pair;
+import kotlin.Pair;
 import javafx.util.StringConverter;
 import kotlin.Unit;
 
@@ -401,7 +401,7 @@ public class CircuitSim extends Application {
 		return circuitManagers.keySet().stream().collect(Collectors.toMap(name -> name,
 		                                                                  name -> circuitManagers
 			                                                                  .get(name)
-			                                                                  .getValue()
+			                                                                  .getSecond()
 			                                                                  .getCircuitBoard(),
 		                                                                  (v1, v2) -> v1,
 		                                                                  LinkedHashMap::new));
@@ -487,12 +487,12 @@ public class CircuitSim extends Application {
 		if (pair == null) {
 			return null;
 		}
-		return pair.getValue();
+		return pair.getSecond();
 	}
 	
 	public String getCircuitName(CircuitManager manager) {
 		for (Entry<String, Pair<ComponentLauncherInfo, CircuitManager>> entry : circuitManagers.entrySet()) {
-			if (entry.getValue().getValue() == manager) {
+			if (entry.getValue().getSecond() == manager) {
 				return entry.getKey();
 			}
 		}
@@ -504,17 +504,17 @@ public class CircuitSim extends Application {
 		return circuitManagers
 			.entrySet()
 			.stream()
-			.collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().getValue()));
+			.collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().getSecond()));
 	}
 	
 	public CircuitManager getCircuitManager(String name) {
-		return circuitManagers.containsKey(name) ? circuitManagers.get(name).getValue() : null;
+		return circuitManagers.containsKey(name) ? circuitManagers.get(name).getSecond() : null;
 	}
 	
 	public CircuitManager getCircuitManager(Circuit circuit) {
 		for (Entry<String, Pair<ComponentLauncherInfo, CircuitManager>> entry : circuitManagers.entrySet()) {
-			if (entry.getValue().getValue().getCircuit() == circuit) {
-				return entry.getValue().getValue();
+			if (entry.getValue().getSecond().getCircuit() == circuit) {
+				return entry.getValue().getSecond();
 			}
 		}
 		
@@ -533,7 +533,7 @@ public class CircuitSim extends Application {
 	
 	private Tab getTabForCircuit(Circuit circuit) {
 		for (Entry<String, Pair<ComponentLauncherInfo, CircuitManager>> entry : circuitManagers.entrySet()) {
-			if (entry.getValue().getValue().getCircuit() == circuit) {
+			if (entry.getValue().getSecond().getCircuit() == circuit) {
 				for (Tab tab : canvasTabPane.getTabs()) {
 					if (tab.getText().equals(entry.getKey())) {
 						return tab;
@@ -634,8 +634,8 @@ public class CircuitSim extends Application {
 			editHistory.beginGroup();
 			
 			Pair<ComponentLauncherInfo, CircuitManager> removed = circuitManagers.remove(tab.getText());
-			circuitModified(removed.getValue().getCircuit(), null, false);
-			removed.getValue().destroy();
+			circuitModified(removed.getSecond().getCircuit(), null, false);
+			removed.getSecond().destroy();
 
 			editHistory.addAction(new EditHistory.DeleteCircuit(manager, tab, idx));
 			
@@ -661,7 +661,7 @@ public class CircuitSim extends Application {
 		} else {
             //noinspection unchecked
             ComponentLauncherInfo info = componentManager.get((Class<? extends ComponentPeer<?>>) componentPeer.getClass(), componentPeer.getProperties());
-			name = info.name.getValue();
+			name = info.name.getSecond();
 		}
 		setProperties(name, componentPeer.getProperties());
 	}
@@ -773,7 +773,7 @@ public class CircuitSim extends Application {
 	}
 	
 	private ToggleButton setupButton(ToggleGroup group, ComponentLauncherInfo componentInfo) {
-		ToggleButton button = new ToggleButton(componentInfo.name.getValue(), setupImageView(componentInfo.image));
+		ToggleButton button = new ToggleButton(componentInfo.name.getSecond(), setupImageView(componentInfo.image));
 		button.setAlignment(Pos.CENTER_LEFT);
 		button.setToggleGroup(group);
 		button.setMinHeight(30);
@@ -826,7 +826,7 @@ public class CircuitSim extends Application {
 				}
 				seen.add(name);
 				
-				ComponentPeer<?> component = circuitPair.getKey().creator.createComponent(new Properties(), 0, 0);
+				ComponentPeer<?> component = circuitPair.getFirst().creator.createComponent(new Properties(), 0, 0);
 				
 				Canvas icon = new Canvas(component.getScreenWidth() + 10, component.getScreenHeight() + 10);
 				GraphicsContext graphics = icon.getGraphicsContext2D();
@@ -834,14 +834,14 @@ public class CircuitSim extends Application {
 				component.paint(icon.getGraphicsContext2D(), null);
 				component.getConnections().forEach(connection -> connection.paint(icon.getGraphicsContext2D(), null));
 				
-				ToggleButton toggleButton = new ToggleButton(circuitPair.getKey().name.getValue(), icon);
+				ToggleButton toggleButton = new ToggleButton(circuitPair.getFirst().name.getSecond(), icon);
 				toggleButton.setAlignment(Pos.CENTER_LEFT);
 				toggleButton.setToggleGroup(buttonsToggleGroup);
 				toggleButton.setMinHeight(30);
 				toggleButton.setMaxWidth(Double.MAX_VALUE);
 				toggleButton.setOnAction(e -> {
 					if (toggleButton.isSelected()) {
-						modifiedSelection(circuitPair.getKey());
+						modifiedSelection(circuitPair.getFirst());
 					} else {
 						modifiedSelection(null);
 					}
@@ -881,7 +881,7 @@ public class CircuitSim extends Application {
 	
 	private ComponentLauncherInfo createSubcircuitLauncherInfo(String name) {
 		return new ComponentLauncherInfo(SubcircuitPeer.class,
-		                                 new Pair<>("Circuits", name),
+		                                 new Pair("Circuits", name),
 		                                 null,
 		                                 new Properties(),
 		                                 true,
@@ -908,20 +908,20 @@ public class CircuitSim extends Application {
 			
 			Pair<ComponentLauncherInfo, CircuitManager> removed = circuitManagers.remove(oldName);
 			Pair<ComponentLauncherInfo, CircuitManager> newPair =
-				new Pair<>(createSubcircuitLauncherInfo(newName), removed.getValue());
+				new Pair<>(createSubcircuitLauncherInfo(newName), removed.getSecond());
 			circuitManagers.put(newName, newPair);
 			
 			circuitManagers.values().forEach(componentPair -> {
-				for (ComponentPeer<?> componentPeer : componentPair.getValue().getCircuitBoard().getComponents()) {
+				for (ComponentPeer<?> componentPeer : componentPair.getSecond().getCircuitBoard().getComponents()) {
 					if (componentPeer.getClass() == SubcircuitPeer.class &&
-					    ((Subcircuit)componentPeer.getComponent()).getSubcircuit() == removed.getValue().getCircuit()) {
+					    ((Subcircuit)componentPeer.getComponent()).getSubcircuit() == removed.getSecond().getCircuit()) {
 						componentPeer.getProperties().parseAndSetValue(SubcircuitPeer.SUBCIRCUIT, newName);
 					}
 				}
 			});
 			
 			tab.setText(newName);
-			newPair.getValue().setName(newName);
+			newPair.getSecond().setName(newName);
 
 			editHistory.addAction(new EditHistory.RenameCircuit(getCircuitManager(newName), tab, oldName, newName));
 			
@@ -952,7 +952,7 @@ public class CircuitSim extends Application {
 				refreshCircuitsTab();
 				
 				circuitManagers.values().forEach(componentPair -> {
-					CircuitManager manager = componentPair.getValue();
+					CircuitManager manager = componentPair.getSecond();
 					for (ComponentPeer<?> componentPeer : new HashSet<>(manager.getCircuitBoard().getComponents())) {
 						if (componentPeer.getClass() == SubcircuitPeer.class) {
 							SubcircuitPeer peer = (SubcircuitPeer)componentPeer;
@@ -1092,7 +1092,7 @@ public class CircuitSim extends Application {
 			clockEnabled.setSelected(false);
 			
 			editHistory.disable();
-			circuitManagers.forEach((name, pair) -> pair.getValue().destroy());
+			circuitManagers.forEach((name, pair) -> pair.getSecond().destroy());
 			editHistory.enable();
 			
 			circuitManagers.clear();
@@ -1760,7 +1760,7 @@ public class CircuitSim extends Application {
 				canvasTabPane.getTabs().forEach(tab -> {
 					String name = tab.getText();
 					
-					CircuitManager manager = circuitManagers.get(name).getValue();
+					CircuitManager manager = circuitManagers.get(name).getSecond();
 					
 					List<ComponentInfo> components = manager
 						.getCircuitBoard()
@@ -2108,10 +2108,10 @@ public class CircuitSim extends Application {
 		canvasTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			CircuitManager oldManager = oldTab == null || !circuitManagers.containsKey(oldTab.getText()) ?
 			                            null :
-			                            circuitManagers.get(oldTab.getText()).getValue();
+			                            circuitManagers.get(oldTab.getText()).getSecond();
 			CircuitManager newManager = newTab == null || !circuitManagers.containsKey(newTab.getText()) ?
 			                            null :
-			                            circuitManagers.get(newTab.getText()).getValue();
+			                            circuitManagers.get(newTab.getText()).getSecond();
 			if (oldManager != null && newManager != null) {
 				newManager.setLastMousePosition(oldManager.getLastMousePosition());
 				modifiedSelection(selectedComponent);
@@ -2135,10 +2135,10 @@ public class CircuitSim extends Application {
 				}
 				
 				Tab tab;
-				if (buttonTabs.containsKey(componentInfo.name.getKey())) {
-					tab = buttonTabs.get(componentInfo.name.getKey());
+				if (buttonTabs.containsKey(componentInfo.name.getFirst())) {
+					tab = buttonTabs.get(componentInfo.name.getFirst());
 				} else {
-					tab = new Tab(componentInfo.name.getKey());
+					tab = new Tab(componentInfo.name.getFirst());
 					tab.setClosable(false);
 					
 					ScrollPane pane = new ScrollPane(new GridPane());
@@ -2146,7 +2146,7 @@ public class CircuitSim extends Application {
 					
 					tab.setContent(pane);
 					buttonTabPane.getTabs().add(tab);
-					buttonTabs.put(componentInfo.name.getKey(), tab);
+					buttonTabs.put(componentInfo.name.getFirst(), tab);
 				}
 				
 				GridPane buttons = (GridPane)((ScrollPane)tab.getContent()).getContent();
@@ -2243,9 +2243,9 @@ public class CircuitSim extends Application {
 					HashMap<String, RenderedImage> images = new HashMap<>();
 					runFxSync(() -> simulator.runSync(() -> {
 						circuitManagers.forEach((name, pair) -> {
-							CircuitManager manager = pair.getValue();
+							CircuitManager manager = pair.getSecond();
 							
-							Bounds circuitBounds = pair.getValue().getCircuitBounds();
+							Bounds circuitBounds = pair.getSecond().getCircuitBounds();
 							Point2D newOrigin = new Point2D(circuitBounds.getMinX(), circuitBounds.getMinY())
 								.multiply(-GuiUtils.BLOCK_SIZE);
 							manager.setTranslateOrigin(newOrigin);
@@ -2498,7 +2498,7 @@ public class CircuitSim extends Application {
 			simulator.reset();
 			
 			for (Pair<ComponentLauncherInfo, CircuitManager> pair : circuitManagers.values()) {
-				pair.getValue().getCircuitBoard().setCurrentState(pair.getValue().getCircuit().getTopLevelState());
+				pair.getSecond().getCircuitBoard().setCurrentState(pair.getSecond().getCircuit().getTopLevelState());
 			}
 			
 			runSim();
@@ -2704,7 +2704,7 @@ public class CircuitSim extends Application {
 		Function<Pair<String, String>, ToggleButton> createToolbarButton = pair -> {
 			ComponentLauncherInfo info = componentManager.get(pair);
 			ToggleButton button = new ToggleButton("", setupImageView(info.image));
-			button.setTooltip(new Tooltip(pair.getValue()));
+			button.setTooltip(new Tooltip(pair.getSecond()));
 			button.setMinWidth(50);
 			button.setMinHeight(50);
 			button.setToggleGroup(buttonsToggleGroup);

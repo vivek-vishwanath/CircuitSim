@@ -1,6 +1,5 @@
 package com.ra4king.circuitsim.simulator
 
-import javafx.util.Pair
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 
@@ -113,7 +112,7 @@ class Simulator {
     fun linkRemoved(link: Port.Link) {
         runSync {
             linksToUpdate
-                .filter { it.getValue() == link }
+                .filter { it.second == link }
                 .forEach { linksToUpdate.remove(it) }
         }
     }
@@ -139,8 +138,7 @@ class Simulator {
                 var lastException: RuntimeException? = null
 
                 for (pair in temp) {
-                    val state = pair.getKey()
-                    val link = pair.getValue()
+                    val (state, link) = pair
 
                     // The Link or CircuitState may have been removed
                     if (link.circuit == null || !state.circuit.containsState(state))
@@ -163,9 +161,9 @@ class Simulator {
                 if (!lastShortCircuitedLinks.isEmpty() && linksToUpdate.isEmpty()) {
                     for (pair in lastShortCircuitedLinks) {
                         // Check if the link is still valid and if there's a short circuit
-                        if (pair.getValue().circuit != null && pair.getKey().isShortCircuited(pair.getValue())) {
+                        if (pair.second.circuit != null && pair.first.isShortCircuited(pair.second)) {
                             // Cause a ShortCircuitException to be thrown
-                            pair.getKey().getMergedValue(pair.getValue())
+                            pair.first.getMergedValue(pair.second)
                         }
                     }
 

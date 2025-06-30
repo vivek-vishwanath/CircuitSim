@@ -364,7 +364,7 @@ class CircuitManager(
                     graphics.stroke = Color.RED
                     simulatorWindow.simulator.runSync {
                         for (linkToUpdate in simulatorWindow.simulator.linksToUpdate) {
-                            for (port in linkToUpdate.getValue().participants) {
+                            for (port in linkToUpdate.second.participants) {
                                 val connection = circuitBoard.components
                                     .flatMap { it.connections }
                                     .firstOrNull { it.port == port }

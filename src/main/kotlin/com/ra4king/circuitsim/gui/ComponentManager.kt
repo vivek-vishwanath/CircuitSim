@@ -13,7 +13,6 @@ import com.ra4king.circuitsim.gui.peers.plexers.PriorityEncoderPeer
 import com.ra4king.circuitsim.gui.peers.wiring.*
 import com.ra4king.circuitsim.simulator.SimulationException
 import javafx.scene.image.Image
-import javafx.util.Pair
 import java.lang.reflect.InvocationTargetException
 
 /**
