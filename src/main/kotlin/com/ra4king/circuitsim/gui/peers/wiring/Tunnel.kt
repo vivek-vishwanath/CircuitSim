@@ -39,73 +39,58 @@ class Tunnel(props: Properties, x: Int, y: Int) : ComponentPeer<Component>(x, y,
         bitSize = properties.getValue(Properties.BITSIZE)
 
         // Avoid recalculating the width if the previous text hasn't changed
-        val width: Int
-        if (props.containsProperty(WIDTH) &&
-            (!props.containsProperty(PREVIOUS_TEXT) || props.getValue(PREVIOUS_TEXT) == label)
-        ) {
-            width = properties.getValue(WIDTH).value
-        } else {
-            val bounds = getBounds(getFont(13), label)
-            width = max(ceil(bounds.width / GuiUtils.BLOCK_SIZE).toInt(), 1)
-            properties.setValue(WIDTH, IntegerString(width))
-        }
-        this.width = width
+        this.width =
+            if (props.containsProperty(WIDTH) && (!props.containsProperty(PREVIOUS_TEXT) || props.getValue(PREVIOUS_TEXT) == label))
+                properties.getValue(WIDTH).value
+            else {
+                val bounds = getBounds(getFont(13), label)
+                val width = max(ceil(bounds.width / GuiUtils.BLOCK_SIZE).toInt(), 1)
+                properties.setValue(WIDTH, IntegerString(width))
+                width
+            }
         properties.setValue(PREVIOUS_TEXT, label)
 
         tunnel = object : Component(label, intArrayOf(bitSize)) {
             override var circuit: Circuit? = null
-                set(circuit)  {
-                val oldCircuit = circuit
+                set(value) {
+                    val oldCircuit = circuit
+                    field = value
+                    if (label.isEmpty()) return
 
-                field = circuit
+                    if (value != null) {
+                        val tunnelSet = tunnels.computeIfAbsent(value) { HashMap() }
+                        val toNotify = tunnelSet.computeIfAbsent(label) { HashSet() }
+                        toNotify.add(this@Tunnel)
+                    } else {
+                        val tunnelSet = tunnels[oldCircuit] ?: return
+                        val toNotify = tunnelSet[label] ?: return
 
-                if (label.isEmpty()) {
-                    return
-                }
-
-                if (circuit != null) {
-                    val tunnelSet = tunnels.computeIfAbsent(circuit) { HashMap() }
-                    val toNotify = tunnelSet.computeIfAbsent(label) { HashSet() }
-                    toNotify.add(this@Tunnel)
-                } else {
-                    val tunnelSet = tunnels[oldCircuit]
-                    if (tunnelSet != null) {
-                        val toNotify = tunnelSet[label]
-                        if (toNotify != null) {
-                            toNotify.remove(this@Tunnel)
-
-                            if (toNotify.isEmpty()) {
-                                tunnelSet.remove(label)
-
-                                if (tunnelSet.isEmpty()) {
-                                    tunnels.remove(oldCircuit)
-                                }
+                        toNotify.remove(this@Tunnel)
+                        if (toNotify.isEmpty()) {
+                            tunnelSet.remove(label)
+                            if (tunnelSet.isEmpty()) {
+                                tunnels.remove(oldCircuit)
                             }
                         }
                     }
                 }
-            }
 
             override fun init(circuitState: CircuitState, lastProperty: Any?) {
-                if (label.isEmpty()) {
-                    return
-                }
+                if (label.isEmpty()) return
 
-                val tunnelSet: MutableMap<String?, MutableSet<Tunnel>>? = tunnels[circuit]
-                if (tunnelSet != null) {
-                    val toNotify: MutableSet<Tunnel> = tunnelSet[label]!!
-                    val value = WireValue(bitSize)
+                val tunnelSet = tunnels[circuit] ?: return
+                val toNotify: MutableSet<Tunnel> = tunnelSet[label]!!
+                val value = WireValue(bitSize)
 
-                    for (tunnel in toNotify) {
-                        if (tunnel !== this@Tunnel) {
-                            val port = tunnel.component.getPort(0)
-                            val portValue = circuitState.getLastReceived(port)
-                            if (portValue.bitSize == value.bitSize) {
-                                try {
-                                    value.merge(portValue)
-                                } catch (_: Exception) {
-                                    return  // nothing to push, it's a short circuit
-                                }
+                for (tunnel in toNotify) {
+                    if (tunnel !== this@Tunnel) {
+                        val port = tunnel.component.getPort(0)
+                        val portValue = circuitState.getLastReceived(port)
+                        if (portValue.bitSize == value.bitSize) {
+                            try {
+                                value.merge(portValue)
+                            } catch (_: Exception) {
+                                return  // nothing to push, it's a short circuit
                             }
                         }
                     }
@@ -115,64 +100,60 @@ class Tunnel(props: Properties, x: Int, y: Int) : ComponentPeer<Component>(x, y,
             }
 
             override fun uninit(circuitState: CircuitState) {
-                val tunnelSet = tunnels[circuit]
-                if (tunnelSet != null) {
-                    val toNotify = tunnelSet[label]
-                    if (toNotify != null) {
-                        tunnels@ for (tunnel in toNotify) {
-                            if (tunnel.bitSize == bitSize) {
-                                val combined = WireValue(bitSize)
+                val tunnelSet = tunnels[circuit] ?: return
+                val toNotify = tunnelSet[label]
+                if (toNotify != null) {
+                    tunnels@ for (tunnel in toNotify) {
+                        if (tunnel.bitSize == bitSize) {
+                            val combined = WireValue(bitSize)
 
-                                for (otherTunnel in toNotify) {
-                                    if (tunnel !== otherTunnel && otherTunnel !== this@Tunnel) {
-                                        val port = otherTunnel.component.getPort(0)
-                                        val portValue = circuitState.getLastReceived(port)
-                                        if (portValue.bitSize == combined.bitSize) {
-                                            try {
-                                                combined.merge(portValue)
-                                            } catch (_: Exception) {
-                                                continue@tunnels
-                                            }
+                            for (otherTunnel in toNotify) {
+                                if (tunnel !== otherTunnel && otherTunnel !== this@Tunnel) {
+                                    val port = otherTunnel.component.getPort(0)
+                                    val portValue = circuitState.getLastReceived(port)
+                                    if (portValue.bitSize == combined.bitSize) {
+                                        try {
+                                            combined.merge(portValue)
+                                        } catch (_: Exception) {
+                                            continue@tunnels
                                         }
                                     }
                                 }
-
-                                circuitState.pushValue(tunnel.component.getPort(0), combined)
                             }
+
+                            circuitState.pushValue(tunnel.component.getPort(0), combined)
                         }
                     }
                 }
             }
 
             override fun valueChanged(state: CircuitState, value: WireValue, portIndex: Int) {
-                val tunnelSet: MutableMap<String?, MutableSet<Tunnel>>? = tunnels[circuit]
-                if (tunnelSet != null && tunnelSet.containsKey(label)) {
-                    val toNotify: MutableSet<Tunnel> = tunnelSet[label]!!
+                val tunnelSet = tunnels[circuit] ?: return
+                val toNotify = tunnelSet[label] ?: return
 
-                    tunnels@ for (tunnel in toNotify) {
-                        if (tunnel !== this@Tunnel && tunnel.bitSize == bitSize) {
-                            var combined = value
+                tunnels@ for (tunnel in toNotify) {
+                    if (tunnel !== this@Tunnel && tunnel.bitSize == bitSize) {
+                        var combined = value
 
-                            if (toNotify.size > 2) {
-                                combined = WireValue(bitSize)
+                        if (toNotify.size > 2) {
+                            combined = WireValue(bitSize)
 
-                                for (otherTunnel in toNotify) {
-                                    if (tunnel !== otherTunnel) {
-                                        val port = otherTunnel.component.getPort(0)
-                                        val portValue = state.getLastReceived(port)
-                                        if (portValue.bitSize == combined.bitSize) {
-                                            try {
-                                                combined.merge(portValue)
-                                            } catch (_: Exception) {
-                                                continue@tunnels
-                                            }
+                            for (otherTunnel in toNotify) {
+                                if (tunnel !== otherTunnel) {
+                                    val port = otherTunnel.component.getPort(0)
+                                    val portValue = state.getLastReceived(port)
+                                    if (portValue.bitSize == combined.bitSize) {
+                                        try {
+                                            combined.merge(portValue)
+                                        } catch (_: Exception) {
+                                            continue@tunnels
                                         }
                                     }
                                 }
                             }
-
-                            state.pushValue(tunnel.component.getPort(0), combined)
                         }
+
+                        state.pushValue(tunnel.component.getPort(0), combined)
                     }
                 }
             }
@@ -184,15 +165,18 @@ class Tunnel(props: Properties, x: Int, y: Int) : ComponentPeer<Component>(x, y,
                 this.width = width + 2
                 connections.add(PortConnection(this, tunnel.getPort(0), this.width, height / 2))
             }
+
             Properties.Direction.WEST -> {
                 this.width = width + 2
                 connections.add(PortConnection(this, tunnel.getPort(0), 0, height / 2))
             }
+
             Properties.Direction.NORTH -> {
                 this.width = max(((width - 1) / 2) * 2 + 2, 2)
                 height = 3
                 connections.add(PortConnection(this, tunnel.getPort(0), this.width / 2, 0))
             }
+
             Properties.Direction.SOUTH -> {
                 this.width = max(((width - 1) / 2) * 2 + 2, 2)
                 height = 3
@@ -205,13 +189,10 @@ class Tunnel(props: Properties, x: Int, y: Int) : ComponentPeer<Component>(x, y,
 
     private val isIncompatible: Boolean
         get() {
-            val tunnelSet = tunnels[tunnel.circuit]
-            if (tunnelSet != null && tunnelSet.containsKey(label)) {
-                for (tunnel in tunnelSet[label]!!) {
-                    if (tunnel.bitSize != bitSize) {
-                        return true
-                    }
-                }
+            val tunnelMap = tunnels[tunnel.circuit] ?: return false
+            val tunnelSet = tunnelMap[label] ?: return false
+            for (tunnel in tunnelSet) {
+                if (tunnel.bitSize != bitSize) return true
             }
 
             return false
@@ -307,8 +288,7 @@ class Tunnel(props: Properties, x: Int, y: Int) : ComponentPeer<Component>(x, y,
     }
 
     companion object {
-        private val tunnels: MutableMap<Circuit?, MutableMap<String?, MutableSet<Tunnel>>> =
-            HashMap<Circuit?, MutableMap<String?, MutableSet<Tunnel>>>()
+        private val tunnels = HashMap<Circuit?, MutableMap<String?, MutableSet<Tunnel>>>()
 
         private val WIDTH = Properties.Property(
             "Width",

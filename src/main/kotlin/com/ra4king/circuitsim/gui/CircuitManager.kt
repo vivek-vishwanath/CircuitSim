@@ -895,9 +895,9 @@ class CircuitManager(
     private fun applyZoom(originX: Double, originY: Double, zoomFactor: Double) {
         // Zoom
         var zoomFactor = zoomFactor
-        val oldScale = simulatorWindow.getScaleFactor()
+        val oldScale: Double = simulatorWindow.scaleFactor
         zoomFactor = CircuitSim.clampScaleFactor(oldScale * zoomFactor)
-        simulatorWindow.setScaleFactor(zoomFactor)
+        simulatorWindow.scaleFactor = zoomFactor
 
 
         // Zoom in on point.

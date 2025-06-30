@@ -72,8 +72,8 @@ object FileFormat {
 
     @JvmStatic
     @Throws(IOException::class)
-    fun load(file: File, taDebugMode: Boolean): CircuitFile {
-        val savedFile = parse(readFile(file)) ?: throw NullPointerException("File is empty!")
+    fun load(file: File?, taDebugMode: Boolean): CircuitFile {
+        val savedFile = file?.let { parse(readFile(it)) } ?: throw NullPointerException("File is empty!")
         if (!taDebugMode && !savedFile.revisionSignaturesAreValid())
             throw NullPointerException("File is corrupted. Contact Course Staff for Assistance.")
         return savedFile
@@ -82,18 +82,16 @@ object FileFormat {
     @JvmStatic
     fun parse(contents: String?): CircuitFile? = GSON.fromJson(contents, CircuitFile::class.java)
 
-    class RevisionSignatureBlock private constructor(
-        currentHash: String?,
-        val previousHash: String,
-        val fileDataHash: String,
-        val timeStamp: String,
-        val copiedBlocks: String
+    class RevisionSignatureBlock private constructor(currentHash: String?,
+        val previousHash: String, val fileDataHash: String,
+        val timeStamp: String, val copiedBlocks: String
     ) {
 
         val currentHash = currentHash ?: hash()
 
         constructor(previousHash: String, fileDataHash: String, copiedBlocks: MutableList<String>) :
-                this(null, previousHash, fileDataHash,
+                this(
+                    null, previousHash, fileDataHash,
                     System.currentTimeMillis().toString(),
                     copiedBlocks.joinToString { "\t$it" })
 
@@ -118,26 +116,18 @@ object FileFormat {
 
         fun stringify(): String =
             // Lack of a tab between fileDataHash and copiedBlocks is intentional. copiedBlocks starts with a tab.
-            Base64.getEncoder().encodeToString(String.format("%s\t%s\t%s\t%s%s",
-                previousHash, currentHash, timeStamp, fileDataHash, copiedBlocks).toByteArray())
-
-
+            Base64.getEncoder().encodeToString(
+                String.format(
+                    "%s\t%s\t%s\t%s%s",
+                    previousHash, currentHash, timeStamp, fileDataHash, copiedBlocks
+                ).toByteArray()
+            )
     }
 
     class CircuitFile(
-        @JvmField
-        val version: String,
-        @JvmField
-        val globalBitSize: Int,
-        @JvmField
-        val clockSpeed: Int,
-        @JvmField
-        val libraryPaths: MutableSet<String>?,
-        @JvmField
-        val circuits: MutableList<CircuitInfo>,
-        @JvmField
-        val revisionSignatures: MutableList<String>,
-        var copiedBlocks: MutableList<String>?
+        val version: String, val globalBitSize: Int, val clockSpeed: Int,
+        val libraryPaths: MutableSet<String>?, val circuits: MutableList<CircuitInfo>,
+        val revisionSignatures: MutableList<String>, var copiedBlocks: MutableList<String>?
     ) {
         private fun hash() = sha256ify((GSON.toJson(libraryPaths) + GSON.toJson(circuits)))
 
@@ -178,23 +168,12 @@ object FileFormat {
         )
     }
 
-    class CircuitInfo(
-        @JvmField
-        val name: String,
-        @JvmField
-        val components: MutableList<ComponentInfo>,
-        @JvmField
-        val wires: MutableList<WireInfo>
-    )
+    class CircuitInfo(val name: String, val components: List<ComponentInfo>, val wires: List<WireInfo>)
 
     class ComponentInfo internal constructor(
-        @JvmField
         val name: String,
-        @JvmField
         val x: Int,
-        @JvmField
         val y: Int,
-        @JvmField
         val properties: MutableMap<String, String>
     ) {
         constructor(name: String, x: Int, y: Int, properties: Properties) : this(name, x, y, HashMap()) {
@@ -211,15 +190,7 @@ object FileFormat {
                 x == other.x && y == other.y && properties == other.properties
     }
 
-    class WireInfo(
-        @JvmField
-        val x: Int,
-        @JvmField
-        val y: Int,
-        @JvmField
-        val length: Int,
-        @JvmField
-        val isHorizontal: Boolean) {
+    class WireInfo(val x: Int, val y: Int, val length: Int, val isHorizontal: Boolean) {
         override fun hashCode() = Objects.hash(x, y, length, isHorizontal)
 
         override fun equals(other: Any?) = other is WireInfo && x == other.x && y == other.y &&
