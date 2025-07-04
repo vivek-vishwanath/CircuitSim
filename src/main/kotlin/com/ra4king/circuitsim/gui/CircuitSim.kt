@@ -30,6 +30,7 @@ import javafx.embed.swing.SwingFXUtils
 import javafx.event.Event
 import javafx.event.EventHandler
 import javafx.event.EventType
+import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
@@ -231,7 +232,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         circuitManagers.entries.find { (_, pair) -> pair.second == manager }?.key
 
     fun getCircuitManager(name: String) = circuitManagers[name]?.second
-    private fun getCircuitManager(circuit: Circuit) = circuitManagers.values.find { it.second.circuit == circuit }?.second
+    private fun getCircuitManager(circuit: Circuit) =
+        circuitManagers.values.find { it.second.circuit == circuit }?.second
 
     private fun getTabForCircuit(name: String) = canvasTabPane.tabs.find { it.text == name }
     private fun getTabForCircuit(circuit: Circuit) =
@@ -346,14 +348,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
 
                 GridPane.setHgrow(name, Priority.ALWAYS)
                 name.maxWidth = Double.Companion.MAX_VALUE
-                name.minHeight = 30.0
-                name.background = Background(
-                    BackgroundFill(
-                        if ((size / 2) % 2 == 0) Color.LIGHTGRAY else Color.WHITE,
-                        null,
-                        null
-                    )
-                )
+                name.styleClass.add("props-menu-label")
 
                 val node = property.validator.createGui(stage, property.value) { newValue: T? ->
                     Platform.runLater {
@@ -361,22 +356,14 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                         newProperties.setValue(property, newValue)
                         updateProperties(newProperties)
                     }
-                }
+                } ?: return
 
-                if (node != null) {
-                    val valuePane = StackPane(node)
-                    StackPane.setAlignment(node, Pos.CENTER_LEFT)
-                    valuePane.background = Background(
-                        BackgroundFill(
-                            if ((size / 2) % 2 == 0) Color.LIGHTGRAY else Color.WHITE,
-                            null,
-                            null
-                        )
-                    )
-                    GridPane.setHgrow(valuePane, Priority.ALWAYS)
-                    GridPane.setVgrow(valuePane, Priority.ALWAYS)
-                    propertiesTable.addRow(size, name, valuePane)
-                }
+                val valuePane = StackPane(node)
+                StackPane.setAlignment(node, Pos.CENTER_LEFT)
+                valuePane.styleClass.add("props-menu-value")
+                GridPane.setHgrow(valuePane, Priority.ALWAYS)
+                GridPane.setVgrow(valuePane, Priority.ALWAYS)
+                propertiesTable.addRow(size, name, valuePane)
             }
         })
     }
@@ -405,6 +392,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private fun setupImageView(image: Image): ImageView {
         val imageView = ImageView(image)
         imageView.isSmooth = true
+        imageView.maxHeight(20.0)
         return imageView
     }
 
@@ -415,6 +403,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         button.minHeight = 30.0
         button.maxWidth = Double.Companion.MAX_VALUE
         button.onAction = EventHandler { modifiedSelection(if (button.isSelected) componentInfo else null) }
+        button.styleClass.add("new-component")
         GridPane.setHgrow(button, Priority.ALWAYS)
         return button
     }
@@ -641,13 +630,16 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         val components = selected.filterIsInstance<ComponentPeer<*>>()
             .map { ComponentInfo(it.javaClass.name, it.x, it.y, it.properties) }
         val wires = selected.filterIsInstance<Wire>().map {
-            WireInfo(it.x, it.y, it.length, it.isHorizontal) }
+            WireInfo(it.x, it.y, it.length, it.isHorizontal)
+        }
         try {
             val data = stringify(
-                CircuitFile(0, 0, null,
+                CircuitFile(
+                    0, 0, null,
                     mutableListOf(CircuitInfo("Copy", components, wires)),
                     revisionSignatures, copiedBlocks
-                ))
+                )
+            )
             val clipboard = Clipboard.getSystemClipboard()
             val content = ClipboardContent()
             content[copyDataFormat] = data
@@ -1449,15 +1441,20 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             if (tab == null) {
                 tab = Tab(componentInfo.name.first)
                 tab.isClosable = false
-                val pane = ScrollPane(GridPane())
+                val pane = ScrollPane(FlowPane(Orientation.HORIZONTAL).apply {
+                    hgap = 10.0
+                    vgap = 10.0
+                    padding = Insets(10.0)
+                })
                 pane.isFitToWidth = true
                 tab.content = pane
                 buttonTabPane.tabs.add(tab)
                 buttonTabs[componentInfo.name.first] = tab
             }
-            val buttons = (tab.content as ScrollPane).content as GridPane
+            val buttons = (tab.content as ScrollPane).content as FlowPane
             val toggleButton = setupButton(buttonsToggleGroup, componentInfo)
-            buttons.addRow(buttons.children.size, toggleButton)
+            VBox.setMargin(toggleButton, Insets(20.0, 10.0, 20.0, 10.0))
+            buttons.children.add(toggleButton)
         }
         circuitButtonsTab = null
         refreshCircuitsTab()
@@ -1698,9 +1695,11 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         menuBar.isUseSystemMenuBar = true
 
 
+        propertiesTable.styleClass.add("props-table")
         val propertiesScrollPane = ScrollPane(propertiesTable)
         propertiesScrollPane.isFitToWidth = true
 
+        propertiesScrollPane.styleClass.add("props-menu")
         val propertiesBox = VBox(componentLabel, propertiesScrollPane)
         propertiesBox.alignment = Pos.TOP_CENTER
         VBox.setVgrow(propertiesScrollPane, Priority.ALWAYS)
@@ -1765,6 +1764,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         clickMode.selectedProperty().addListener(ChangeListener { _, _, newValue: Boolean ->
             scene.cursor = if (newValue) Cursor.HAND else Cursor.DEFAULT
         })
+        clickMode.styleClass.add("button")
 
         val blank = Pane()
         HBox.setHgrow(blank, Priority.ALWAYS)
@@ -1779,6 +1779,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         VBox.setVgrow(canvasPropsSplit, Priority.ALWAYS)
         scene = Scene(VBox(menuBar, toolbar, canvasPropsSplit))
         scene.cursor = Cursor.DEFAULT
+
+        scene.stylesheets.add(javaClass.getResource("/styles/style.css")!!.toExternalForm())
 
         updateTitle()
         stage.scene = scene
