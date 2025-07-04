@@ -1420,12 +1420,6 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         circuitCanvas.addEventHandler(MouseEvent.MOUSE_DRAGGED) { currentCircuit?.mouseDragged(it) }
         circuitCanvas.addEventHandler(MouseEvent.MOUSE_PRESSED) { currentCircuit?.mousePressed(it) }
         circuitCanvas.addEventHandler(ZoomEvent.ZOOM, onCurrentCircuit(CircuitManager::zoom))
-        circuitCanvas.focusedProperty().addListener { _, _, newValue ->
-            if (newValue)
-                currentCircuit?.focusGained()
-            else
-                currentCircuit?.focusLost()
-        }
         circuitCanvas.onContextMenuRequested = onCurrentCircuit(CircuitManager::contextMenuRequested)
 
         canvasScrollPane.widthProperty().addListener { _, _, _ -> updateCanvasSize() }
