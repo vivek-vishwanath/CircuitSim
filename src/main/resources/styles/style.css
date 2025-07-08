@@ -4,7 +4,8 @@
 }
 
 .button {
-    -fx-background-color: #E37;
+    -fx-background-color: #006a23;
+    -fx-background-radius: 12;
     -fx-text-fill: white;
     -fx-font-size: 14px;
 }
@@ -27,7 +28,7 @@
 }
 
 .props-table {
-    -fx-background-color: #EFE;
+    -fx-background-color: #FFF;
 }
 
 .props-menu-label {
@@ -41,7 +42,7 @@
     -fx-background-color: transparent;
     -fx-text-fill: #000;
     -fx-min-width: 250;
-    -fx-padding: 8 32 8 0;
+    -fx-padding: 8 8 8 0;
 }
 
 .property-list-validator {
@@ -70,4 +71,87 @@
 
 .property-list-validator-dropdown {
     -fx-background-color: #EEE;
+}
+
+.button-tab-pane {
+
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: transparent;
+    -fx-padding: 10;
+}
+
+.new-component-section {
+    -fx-background-color: white;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.05), 6, 0, 0, 2);
+    -fx-padding: 8;
+    -fx-spacing: 4;
+    -fx-transition: all 0.2s ease-in-out;
+
+}
+
+.new-component-section > .title {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 4;
+    -fx-text-fill: #343a40;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 14;
+}
+
+.new-component-section:expanded > .title {
+    -fx-background-color: #F4F4F4;
+}
+
+.new-component-section > *.content {
+    -fx-padding: 4 4 0 4;
+    -fx-background-color: #F4F4F4;
+    -fx-border-color: #F4F4F4;
+    -fx-background-radius: 0 0 12 12;
+}
+
+.new-component-section > .content {
+    -fx-transition: all 0.3s ease;
+}
+
+.new-component-section > .title > .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.new-component-section > .title > .arrow-button > .arrow {
+    -fx-shape: "M 0 0 L 6 6 L 12 0 Z";
+    -fx-background-color: #6c757d;
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+}
+
+.text-field {
+    -fx-background-color: #EEE;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-border-radius: 8;
+    -fx-padding: 8 12;
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+    -fx-prompt-text-fill: #888888;
+    -fx-focus-color: transparent; /* suppress default glow */
+    -fx-faint-focus-color: transparent;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.05), 2, 0, 0, 1);
+    -fx-transition: all 0.3s ease-in-out;
+    -fx-max-width: 224px;
+}
+
+.global-bit-size {
+    -fx-text-alignment: center;
+    -fx-text-fill: red;
+}
+
+.scale-factor {
+
+}
+
+.toolbar-button {
+    -fx-background-color: #DED;
+    -fx-padding: 4;
 }

@@ -34,7 +34,6 @@ import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
-import javafx.geometry.Side
 import javafx.scene.Cursor
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
@@ -95,7 +94,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private var lastSaveFile: File? = null
     private var loadingFile = false
     private var savedEditStackSize = 0
-    private var circuitButtonsTab: Tab? = null
+    private var circuitButtonsTab: TitledPane? = null
     private var currentTimer: AnimationTimer? = null
 
     var initContext: InitContext by Delegates.notNull()
@@ -404,19 +403,26 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     fun refreshCircuitsTab() {
         if (loadingFile) return
         Platform.runLater {
-            val pane = ScrollPane(GridPane())
-            pane.isFitToWidth = true
+            val flowPane = FlowPane(Orientation.HORIZONTAL).apply {
+                hgap = 10.0
+                vgap = 10.0
+                prefHeight = Region.USE_COMPUTED_SIZE
+                minHeight = Region.USE_COMPUTED_SIZE
+                maxHeight = Region.USE_COMPUTED_SIZE
+            }
+            val pane = VBox(flowPane).apply {
+                prefHeightProperty().bind(flowPane.heightProperty())
+            }
             circuitButtonsTab?.let {
-                val buttons = (it.content as ScrollPane).content as GridPane
+                val buttons = (it.content as VBox).children[0] as FlowPane
                 buttons.children.forEach { node -> (node as ToggleButton).toggleGroup = null }
                 buttons.children.clear()
                 it.content = pane
             } ?: run {
-                val circuitButtonsTab = Tab("Circuits")
-                circuitButtonsTab.isClosable = false
-                circuitButtonsTab.content = pane
+                val circuitButtonsTab = TitledPane("Circuits", pane)
+                circuitButtonsTab.styleClass.add("new-component-section")
                 this.circuitButtonsTab = circuitButtonsTab
-                buttonTabPane.tabs.add(circuitButtonsTab)
+                buttonTabPane.panes.add(circuitButtonsTab)
             }
             val seen = HashSet<String>()
             canvasTabPane.tabs.forEach { tab ->
@@ -433,6 +439,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 component.connections.forEach { it.paint(icon.getGraphicsContext2D(), null) }
 
                 val toggleButton = ToggleButton(pair.first.name.second, icon)
+                toggleButton.styleClass.add("new-component")
                 toggleButton.alignment = Pos.CENTER_LEFT
                 toggleButton.toggleGroup = buttonsToggleGroup
                 toggleButton.minHeight = 30.0
@@ -442,8 +449,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 }
                 GridPane.setHgrow(toggleButton, Priority.ALWAYS)
 
-                val buttons = pane.content as GridPane
-                buttons.addRow(buttons.children.size, toggleButton)
+                val buttons = pane.children[0] as FlowPane
+                buttons.children.add(toggleButton)
 
             }
         }
@@ -1188,9 +1195,9 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             }
 
             canvasTab.contextMenu = ContextMenu(rename, viewTopLevelState, moveLeft, moveRight)
-            canvasTab.onCloseRequest = EventHandler { event: Event? ->
+            canvasTab.onCloseRequest = EventHandler { event: Event ->
                 if (!confirmAndDeleteCircuit(circuitManager, false)) {
-                    event!!.consume()
+                    event.consume()
                 }
             }
 
@@ -1327,7 +1334,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             ToggleButton("Click Mode (Shift)"),
             TextField(),
             ComboBox(),
-            TabPane(),
+            Accordion(),
             ToggleGroup(),
             Label(),
             Label(),
@@ -1375,7 +1382,6 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         }, 1.0) { if (it.controlNewText.matches("\\d*(?:\\.\\d*)?".toRegex())) it else null }
         scaleFactorInput.textFormatter.valueProperty().addListener { _, _, _ -> needsRepaint = true }
 
-        buttonTabPane.side = Side.TOP
         componentLabel.font = getFont(16)
         canvasScrollPane.isFocusTraversable = true
         circuitCanvas.isFocusTraversable = true
@@ -1428,29 +1434,32 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             needsRepaint = true
         }
 
-        val buttonTabs = HashMap<String, Tab>()
-        buttonTabPane.tabs.clear()
+        val buttonTabs = HashMap<String, TitledPane>()
         componentManager.forEach { componentInfo ->
             if (!componentInfo.showInComponentsList) return@forEach
-            var tab = buttonTabs[componentInfo.name.first]
-            if (tab == null) {
-                tab = Tab(componentInfo.name.first)
-                tab.isClosable = false
-                val pane = ScrollPane(FlowPane(Orientation.HORIZONTAL).apply {
+            var section = buttonTabs[componentInfo.name.first]
+            if (section == null) {
+                val flowPane = FlowPane(Orientation.HORIZONTAL).apply {
                     hgap = 10.0
                     vgap = 10.0
-                    padding = Insets(10.0)
-                })
-                pane.isFitToWidth = true
-                tab.content = pane
-                buttonTabPane.tabs.add(tab)
-                buttonTabs[componentInfo.name.first] = tab
+                    prefHeight = Region.USE_COMPUTED_SIZE
+                    minHeight = Region.USE_COMPUTED_SIZE
+                    maxHeight = Region.USE_COMPUTED_SIZE
+                }
+                val pane = VBox(flowPane).apply {
+                    prefHeightProperty().bind(flowPane.heightProperty())
+                }
+                section = TitledPane(componentInfo.name.first, pane)
+                section.styleClass.add("new-component-section")
+                buttonTabPane.panes.add(section)
+                buttonTabs[componentInfo.name.first] = section
             }
-            val buttons = (tab.content as ScrollPane).content as FlowPane
+            val buttons = (section.content as VBox).children[0] as FlowPane
             val toggleButton = setupButton(buttonsToggleGroup, componentInfo)
             VBox.setMargin(toggleButton, Insets(20.0, 10.0, 20.0, 10.0))
             buttons.children.add(toggleButton)
         }
+        buttonTabPane.styleClass.add("button-tab-pane")
         circuitButtonsTab = null
         refreshCircuitsTab()
 
@@ -1699,12 +1708,16 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         propertiesBox.alignment = Pos.TOP_CENTER
         VBox.setVgrow(propertiesScrollPane, Priority.ALWAYS)
 
-        val leftPaneSplit = SplitPane(buttonTabPane, propertiesBox)
+        val newComponentPane = ScrollPane(buttonTabPane)
+        newComponentPane.isFitToWidth = true
+        buttonTabPane.maxWidth = Double.MAX_VALUE
+
+        val leftPaneSplit = SplitPane(newComponentPane, propertiesBox)
         leftPaneSplit.orientation = Orientation.VERTICAL
         leftPaneSplit.prefWidth = 500.0
         leftPaneSplit.minWidth = 150.0
 
-        SplitPane.setResizableWithParent(buttonTabPane, FALSE)
+        SplitPane.setResizableWithParent(newComponentPane, FALSE)
 
         fpsLabel.minWidth = 100.0
         fpsLabel.font = getFont(13)
@@ -1737,6 +1750,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         fun createToolbarButton(pair: Pair<String, String>): ToggleButton {
             val info = componentManager.get(pair)
             val button = ToggleButton("", setupImageView(info.image!!))
+            VBox.setMargin(button, Insets(8.0))
+            button.styleClass.add("toolbar-button")
             button.tooltip = Tooltip(pair.second)
             button.minWidth = 50.0
             button.minHeight = 50.0
