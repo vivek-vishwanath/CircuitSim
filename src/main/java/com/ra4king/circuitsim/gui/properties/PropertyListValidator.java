@@ -106,6 +106,8 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 				String selected = Integer.toString(i);
 				ToggleButton button = new ToggleButton(selected);
 				button.getStyleClass().add("property-list-validator-button");
+				if (i == 1) button.getStyleClass().add("property-list-validator-button-first");
+				else button.getStyleClass().add("property-list-validator-button-middle");
 				button.setSelected(toString(value).equals(selected));
 				final Integer finalI = i;
 				button.setOnAction(event -> {
@@ -127,7 +129,7 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 			hBox.getChildren().add(dropdown);
 			return hBox;
 		}
-		return validValues.size() > 4 ? createDropdown(value, onAction) : createHorizontalSelect(value, onAction);
+		return validValues.size() > 8 ? createDropdown(value, onAction) : createHorizontalSelect(value, onAction);
 	}
 
 	ComboBox<String> createDropdown(T value, Consumer<T> onAction) {

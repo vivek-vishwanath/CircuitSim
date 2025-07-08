@@ -20,7 +20,7 @@ data class StartContext(
     val clickMode: ToggleButton,
     val scaleFactorInput: TextField,
     val bitSizeSelect: ComboBox<Int>,
-    val buttonTabPane: TabPane,
+    val buttonTabPane: Accordion,
     val buttonsToggleGroup: ToggleGroup,
     val fpsLabel: Label,
     val clockLabel: Label,
