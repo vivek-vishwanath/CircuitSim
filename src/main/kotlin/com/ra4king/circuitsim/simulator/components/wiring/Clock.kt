@@ -83,10 +83,10 @@ class Clock(name: String) : Component(name, intArrayOf(1)) {
 
             val nanosPerTick = (1e9 / (2L * hertz)).toLong()
 
-            val clockThread = Thread(Runnable {
+            val clockThread = Thread {
                 val currentClock = this.currentClock
                 if (currentClock == null || Thread.currentThread() != currentClock.thread) {
-                    return@Runnable
+                    return@Thread
                 }
                 while (currentClock.enabled.get()) {
                     val now = System.nanoTime()
@@ -111,7 +111,7 @@ class Clock(name: String) : Component(name, intArrayOf(1)) {
                         }
                     }
                 }
-            })
+            }
 
             clockThread.setName("Clock thread")
             clockThread.setDaemon(true)

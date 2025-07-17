@@ -135,7 +135,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     val propertiesTable get() = startContext.propertiesTable
     val componentLabel get() = startContext.componentLabel
 
-    val circuitBoards get() = LinkedHashMap(circuitManagers.keys.associateWith { circuitManagers[it]!!.second.circuitBoard })
+    val circuitBoards get() = LinkedHashMap(circuitManagers.entries.associate { (k, v) -> k to v.second.circuitBoard })
     val currentCircuit: CircuitManager?
         get() {
             val tab = canvasTabPane.selectionModel?.selectedItem ?: return null
@@ -147,28 +147,23 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             val manager = currentCircuit
             if (lastException != null && System.currentTimeMillis() - lastExceptionTime!! > SHOW_ERROR_DURATION)
                 lastException = null
-            val e = (lastException ?: manager?.currentError)
+            val e = lastException ?: manager?.currentError
             return if (e is ShortCircuitException) "Short circuit detected" else e?.message ?: ""
         }
-    private val currentClockSpeed: Int
-        get() {
-            for (item in frequenciesMenu.items) {
-                if ((item as RadioMenuItem).isSelected) {
-                    val text = item.text
-                    val space = text.indexOf(' ')
-                    check(space != -1) { "What did you do..." }
-                    return text.substring(0, space).toInt()
 
-                }
-            }
-            throw IllegalStateException("No frequency selected")
-        }
+    private val currentClockSpeed
+        get() = frequenciesMenu.items
+            .map { it as RadioMenuItem }
+            .firstOrNull { it.isSelected }?.text
+            ?.substringBefore(" ")
+            ?.toIntOrNull()
+            ?: throw IllegalStateException("No frequency selected")
 
     private var lastExceptionTime: Long? = null
     private var lastException: Exception? = null
         set(value) {
-            lastExceptionTime = System.currentTimeMillis()
             field = value
+            lastExceptionTime = System.currentTimeMillis()
         }
     var needsRepaint = false
     var clickedDirectly = false
@@ -215,7 +210,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
 
     private fun runSim() {
         try {
-            if (simulationEnabled.isSelected && simulator.hasLinksToUpdate()) {
+            if (isSimulationEnabled && simulator.hasLinksToUpdate()) {
                 needsRepaint = true
                 simulator.stepAll()
             }
@@ -231,23 +226,22 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         circuitManagers.entries.find { (_, pair) -> pair.second == manager }?.key
 
     fun getCircuitManager(name: String) = circuitManagers[name]?.second
-    private fun getCircuitManager(circuit: Circuit) = circuitManagers.values.find { it.second.circuit == circuit }?.second
+    private fun getCircuitManager(circuit: Circuit) =
+        circuitManagers.values.find { it.second.circuit == circuit }?.second
 
-    private fun getTabForCircuit(name: String) = canvasTabPane.tabs.find { it.text == name }
-    private fun getTabForCircuit(circuit: Circuit) =
-        circuitManagers.entries.find { it.value.second.circuit == circuit }?.key?.let { getTabForCircuit(it) }
+    private fun getTabForCircuit(name: String): Tab? = canvasTabPane.tabs.find { it.text == name }
+    private fun getTabForCircuit(circuit: Circuit): Tab? =
+        circuitManagers.entries.find { it.value.second.circuit == circuit }?.key?.let(::getTabForCircuit)
 
     /**
      * Selects the tab of the specified circuit and changes its current state to the specified state.
      *
      * @param circuit The circuit whose tab will be selected
-     * @param state   The state to set as the current state. May be null (no change to the current state).
+     * @param state   The state to set as the current state. Might be null (no change to the current state).
      */
     fun switchToCircuit(circuit: Circuit, state: CircuitState?) = runFxSync {
         state?.let {
-            getCircuitManager(circuit)?.let { manager ->
-                manager.circuitBoard.currentState = it
-            }
+            getCircuitManager(circuit)?.circuitBoard?.currentState = it
         }
         getTabForCircuit(circuit)?.let {
             canvasTabPane.selectionModel.select(it)
@@ -492,7 +486,6 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         null, Properties(), true, getSubcircuitPeerCreator(name)
     )
 
-
     fun renameCircuit(tab: Tab, newName: String) = runFxSync {
         require(!circuitManagers.containsKey(newName)) { "Name already exists" }
         val oldName = tab.text
@@ -538,13 +531,15 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                         if (componentPeer.component.subcircuit == circuit) {
                             val node = getSubcircuitStates(componentPeer.component, manager.circuitBoard.currentState)
                             manager.selectedElements.remove(componentPeer)
-                            if (component == null)
+                            if (component == null) {
                                 manager.mayThrow { manager.circuitBoard.removeElements(hashSetOf(componentPeer)) }
-                            else {
+                                resetSubcircuitStates(node)
+                            } else {
                                 val newSubcircuit =
                                     SubcircuitPeer(componentPeer.properties, componentPeer.x, componentPeer.y)
                                 editHistory.disable()
                                 manager.mayThrow { manager.circuitBoard.updateComponent(componentPeer, newSubcircuit) }
+                                editHistory.enable()
                                 node.subcircuit = newSubcircuit.component
                                 updateSubcircuitStates(node, manager.circuitBoard.currentState)
                             }
@@ -641,13 +636,16 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         val components = selected.filterIsInstance<ComponentPeer<*>>()
             .map { ComponentInfo(it.javaClass.name, it.x, it.y, it.properties) }
         val wires = selected.filterIsInstance<Wire>().map {
-            WireInfo(it.x, it.y, it.length, it.isHorizontal) }
+            WireInfo(it.x, it.y, it.length, it.isHorizontal)
+        }
         try {
             val data = stringify(
-                CircuitFile(0, 0, null,
+                CircuitFile(
+                    0, 0, null,
                     mutableListOf(CircuitInfo("Copy", components, wires)),
                     revisionSignatures, copiedBlocks
-                ))
+                )
+            )
             val clipboard = Clipboard.getSystemClipboard()
             val content = ClipboardContent()
             content[copyDataFormat] = data
@@ -996,7 +994,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                                 }
                             }
                             if (circuitFile.globalBitSize >= 1 && circuitFile.globalBitSize <= 32)
-                                bitSizeSelect.selectionModel.select(circuitFile.globalBitSize)
+                                bitSizeSelect.selectionModel.select(circuitFile.globalBitSize - 1)
 
                             latch.countDown()
                         }
@@ -1396,6 +1394,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         fun <T : InputEvent> addHandler(eventType: EventType<T>, handler: (CircuitManager, T) -> Unit) {
             circuitCanvas.addEventHandler(eventType, onCurrentCircuit(handler))
         }
+
         val mouseHandlers = arrayOf(
             MouseEvent.MOUSE_MOVED to CircuitManager::mouseMoved,
             MouseEvent.MOUSE_RELEASED to CircuitManager::mouseReleased,
@@ -1480,7 +1479,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         val fParagraph = Font(14.0)
         val fHeader = Font(16.0)
 
-        // File Menu
+        // Menu Bar
         val menuBar = menuBar {
             menu("File") {
                 item("New", KeyCodeCombination(N, SHORTCUT_DOWN)) {

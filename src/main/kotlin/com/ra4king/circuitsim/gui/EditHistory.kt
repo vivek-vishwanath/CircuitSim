@@ -224,7 +224,7 @@ class EditHistory(private val circuitSim: CircuitSim) {
             editStack.removeLast()
         }
 
-        circuitSim.simulator.runSync(Runnable {
+        circuitSim.simulator.runSync {
             val circuitManagers = HashSet<CircuitManager>()
             try {
                 disable()
@@ -238,7 +238,7 @@ class EditHistory(private val circuitSim: CircuitSim) {
                 enable()
                 circuitManagers.forEach { it.circuitBoard.rejoinWiresEnabled = true }
             }
-        })
+        }
 
         return popped[0].manager
     }

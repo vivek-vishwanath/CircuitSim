@@ -23,11 +23,11 @@ class ComponentManager internal constructor() {
 
     class ComponentLauncherInfo internal constructor(
         val clazz: Class<out ComponentPeer<*>>,
-        @JvmField val name: Pair<String, String>,
-        @JvmField val image: Image?,
-        @JvmField val properties: Properties,
-        @JvmField val showInComponentsList: Boolean,
-        @JvmField val creator: ComponentCreator<*>
+        val name: Pair<String, String>,
+        val image: Image?,
+        val properties: Properties,
+        val showInComponentsList: Boolean,
+        val creator: ComponentCreator<*>
     ) {
         override fun hashCode() = clazz.hashCode() xor name.hashCode() xor
                 (image?.hashCode() ?: 0) xor properties.hashCode() xor creator.hashCode()

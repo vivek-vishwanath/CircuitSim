@@ -93,7 +93,7 @@ class ROMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<ROM>(x, y, 9, 5
             }
             try {
                 val simulatorWindow = circuit.simulatorWindow
-                simulatorWindow.simulator.runSync(Runnable {
+                simulatorWindow.simulator.runSync {
                     lines.addAll(memoryValidator.parse(rom.memory) { address: Int?, newValue: Int? ->
                         simulatorWindow.simulator.runSync {
                             // Component has been removed
@@ -115,7 +115,7 @@ class ROMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<ROM>(x, y, 9, 5
                         }
                     })
                     rom.addMemoryListener(listener)
-                })
+                }
 
                 memoryValidator.createAndShowMemoryWindow(simulatorWindow.stage, lines)
             } finally {

@@ -87,7 +87,7 @@ class RAMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<RAM>(x, y, 9, 5
             try {
                 // Internal state can change in between and data can get out of sync
                 val simulatorWindow = circuit.simulatorWindow
-                simulatorWindow.simulator.runSync(Runnable {
+                simulatorWindow.simulator.runSync {
                     ram.addMemoryListener(listener)
                     val currentState = circuit.circuitBoard.currentState
                     memory.addAll(
@@ -102,7 +102,7 @@ class RAMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<RAM>(x, y, 9, 5
                             }
                         }
                     )
-                })
+                }
 
                 memoryValidator.createAndShowMemoryWindow(simulatorWindow.stage, memory)
             } finally {
