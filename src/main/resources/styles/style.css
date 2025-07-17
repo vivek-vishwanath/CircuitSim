@@ -161,6 +161,84 @@
 }
 
 .toolbar-button {
-    -fx-background-color: #DED;
+    -fx-background-color: #E0E8E0;
     -fx-padding: 4;
+}
+
+/* Style the entire TabPane */
+.tab-pane {
+    -fx-background-color: #f9f9f9;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1;
+    -fx-tab-min-width: 64px;
+}
+
+/* Tab header area */
+.tab-pane > .tab-header-area {
+    -fx-background-color: #eaeaea;
+    -fx-padding: 8px 8px 0 8px;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Individual tabs */
+.tab-pane .tab {
+    -fx-background-insets: 0;
+    -fx-padding: 8 16 8 16;
+    -fx-background-color: #CCC;
+    -fx-text-fill: #333;
+    -fx-font-size: 14px;
+}
+
+/* Hovered tab */
+.tab-pane .tab:hover {
+    -fx-background-color: #D8D8D8;
+}
+
+/* Selected tab */
+.tab-pane .tab:selected {
+    -fx-background-color: #EEE;
+    -fx-text-fill: #000000;
+    -fx-border-width: 0 0 4 0;
+}
+
+.top-level-indicator {
+    -fx-border-color: transparent transparent #007acc transparent;
+}
+
+.nested-state-indicator {
+    -fx-border-color: transparent transparent #C22 transparent;
+}
+
+/* Content area */
+.tab-pane .tab-content-area {
+}
+
+.tab-pane .tab {
+    -fx-background-radius: 8 8 0 0;
+}
+.tab-pane .tab:selected {
+}
+
+
+.bit-size-label {
+    -fx-background-color: #DDD;
+    -fx-background-radius: 8 0 0 8;
+    -fx-border-width: 1 0 1 1;
+    -fx-border-color: #BBB;
+    -fx-border-radius: 8 0 0 8;
+    -fx-padding: 8;
+}
+
+.bit-size-dropdown {
+    -fx-background-color: #DDD;
+    -fx-background-radius: 0 8 8 0;
+    -fx-border-width: 1 1 1 0;
+    -fx-border-color: #BBB;
+    -fx-border-radius: 0 8 8 0;
+    -fx-padding: 4;
+}
+
+.bit-size-box {
+    -fx-alignment: center;
 }
