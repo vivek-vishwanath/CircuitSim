@@ -55,22 +55,31 @@
 
 .property-list-validator-button {
     -fx-background-color: #D0F8FF;
+    -fx-min-width: 36px;
 }
 
-.property-list-validator-button-first {;
-    -fx-background-radius: 10 0 0 10;
+.button-top-left {;
+    -fx-background-radius: 8 0 0 0;
 }
 
-.property-list-validator-button-middle {
-    -fx-background-radius: 0;
+.button-top-right {
+    -fx-background-radius: 0 8 0 0;
 }
 
-.property-list-validator-button-last {
-    -fx-background-radius: 0 10 10 0;
+.button-bottom-left {
+    -fx-background-radius: 0 0 0 8;
 }
 
-.property-list-validator-dropdown {
-    -fx-background-color: #EEE;
+.button-bottom-right {
+    -fx-background-radius: 0 0 8 0;
+}
+
+.button-left {
+    -fx-background-radius: 8 0 0 8;
+}
+
+.button-right {
+    -fx-background-radius: 0 8 8 0;
 }
 
 .button-tab-pane {

@@ -15,8 +15,8 @@ import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 /**
  * @author Roi Atalla
@@ -80,56 +80,92 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 	
 	@Override
 	public Node createGui(Stage stage, T value, Consumer<T> onAction) {
-		if (validValues.size() == 32 && value instanceof Integer) {
-			HashSet<Integer> commonValues = new HashSet<>(Arrays.asList(1, 2, 4, 8, 16, 32));
-			AtomicBoolean useEllipsis = new AtomicBoolean(true);
-			ComboBox<String> dropdown = createDropdown(value, onAction);
-			dropdown.setConverter(new StringConverter<>() {
-                @Override
-                public String toString(String value) {
-                    if (value == null) return "";
-                    int num = Integer.parseInt(value);
-                    return useEllipsis.get() && commonValues.contains(num) ? "..." : value;
-                }
+		if (validValues.size() % 16 == 0 && value instanceof Integer) {
+//			HashSet<Integer> commonValues = new HashSet<>(Arrays.asList(1, 2, 4, 8, 16, 32));
+//			AtomicBoolean useEllipsis = new AtomicBoolean(true);
+//			ComboBox<String> dropdown = createDropdown(value, onAction);
+//			dropdown.setConverter(new StringConverter<>() {
+//                @Override
+//                public String toString(String value) {
+//                    if (value == null) return "";
+//                    int num = Integer.parseInt(value);
+//                    return useEllipsis.get() && commonValues.contains(num) ? "..." : value;
+//                }
+//
+//                @Override
+//                public String fromString(String string) {
+//                    return string == null ? "1" : string;
+//                }
+//            });
+//			dropdown.setOnAction(event -> {
+//				useEllipsis.set(false);
+//			});
 
-                @Override
-                public String fromString(String string) {
-                    return string == null ? "1" : string;
-                }
-            });
-			dropdown.setOnAction(event -> {
-				useEllipsis.set(false);
-			});
-
-			HBox hBox = new HBox();
-			for (int i = 1; i <= 32; i<<=1) {
-				String selected = Integer.toString(i);
-				ToggleButton button = new ToggleButton(selected);
-				button.getStyleClass().add("property-list-validator-button");
-				if (i == 1) button.getStyleClass().add("property-list-validator-button-first");
-				else button.getStyleClass().add("property-list-validator-button-middle");
-				button.setSelected(toString(value).equals(selected));
-				final Integer finalI = i;
-				button.setOnAction(event -> {
-					useEllipsis.set(true);
-					dropdown.setConverter(dropdown.getConverter());
-					try {
-						onAction.accept((T) finalI);
-					} catch (Exception exc) {
-						exc.printStackTrace();
-					}
-					hBox.getChildren().forEach(node -> {
-						if (node instanceof ToggleButton toggleButton) {
-							toggleButton.setSelected(toggleButton == button);
+			VBox vbox = new VBox();
+			for (int i = 0; i < 4; i++) {
+				HBox hbox = new HBox();
+				for (int j = 0; j < 8; j++) {
+					final Integer n = i * 8 + j + 1;
+					if (!validValues.contains(n)) continue;
+					String selected = Integer.toString(n);
+					ToggleButton button = new ToggleButton(selected);
+					button.getStyleClass().add("property-list-validator-button");
+					if (i == 0 && j == 0) button.getStyleClass().add("button-top-left");
+					else if (i == 0 && j == 7) button.getStyleClass().add("button-top-right");
+					else if (i == validValues.size() / 8 - 1 && j == 0) button.getStyleClass().add("button-bottom-left");
+					else if (i == validValues.size() / 8 - 1 && j == 7) button.getStyleClass().add("button-bottom-right");
+					button.setSelected(toString(value).equals(selected));
+					button.setOnAction(event -> {
+						try {
+							onAction.accept((T) n);
+						} catch (Exception exc) {
+							exc.printStackTrace();
 						}
+						hbox.getChildren().forEach(node -> {
+							if (node instanceof ToggleButton toggleButton) {
+								toggleButton.setSelected(toggleButton == button);
+							}
+						});
 					});
-				});
-				hBox.getChildren().add(button);
+					hbox.getChildren().add(button);
+
+				}
+				vbox.getChildren().add(hbox);
 			}
-			hBox.getChildren().add(dropdown);
-			return hBox;
+//
+//			HBox hBox = new HBox();
+//			for (int i = 1; i <= 32; i<<=1) {
+//				String selected = Integer.toString(i);
+//				ToggleButton button = new ToggleButton(selected);
+//				button.getStyleClass().add("property-list-validator-button");
+//				if (i == 1) button.getStyleClass().add("property-list-validator-button-first");
+//				else button.getStyleClass().add("property-list-validator-button-middle");
+//				button.setSelected(toString(value).equals(selected));
+//				final Integer finalI = i;
+//				button.setOnAction(event -> {
+//					useEllipsis.set(true);
+//					dropdown.setConverter(dropdown.getConverter());
+//					try {
+//						onAction.accept((T) finalI);
+//					} catch (Exception exc) {
+//						exc.printStackTrace();
+//					}
+//					hBox.getChildren().forEach(node -> {
+//						if (node instanceof ToggleButton toggleButton) {
+//							toggleButton.setSelected(toggleButton == button);
+//						}
+//					});
+//				});
+//				hBox.getChildren().add(button);
+//			}
+//			hBox.getChildren().add(dropdown);
+			return vbox;
 		}
-		return validValues.size() > 8 ? createDropdown(value, onAction) : createHorizontalSelect(value, onAction);
+		int width = 0;
+        for (T validValue : validValues) {
+            width += validValue.toString().length() + 2;
+        }
+		return width > 36 ? createDropdown(value, onAction) : createHorizontalSelect(value, onAction);
 	}
 
 	ComboBox<String> createDropdown(T value, Consumer<T> onAction) {
@@ -177,9 +213,8 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 				});
 			});
 			button.getStyleClass().add("property-list-validator-button");
-			if (i == 0) button.getStyleClass().add("property-list-validator-button-first");
-			else if (i == validValues.size() - 1) button.getStyleClass().add("property-list-validator-button-last");
-			else button.getStyleClass().add("property-list-validator-button-middle");
+			if (i == 0) button.getStyleClass().add("button-left");
+			else if (i == validValues.size() - 1) button.getStyleClass().add("button-right");
 		}
 //		valueList.getStyleClass().add("property-list-validator");
 
