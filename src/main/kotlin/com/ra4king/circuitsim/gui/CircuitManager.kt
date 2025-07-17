@@ -8,6 +8,7 @@ import com.ra4king.circuitsim.gui.LinkWires.Wire
 import com.ra4king.circuitsim.gui.SelectingState.*
 import com.ra4king.circuitsim.gui.peers.SubcircuitPeer
 import com.ra4king.circuitsim.simulator.Circuit
+import com.ra4king.circuitsim.simulator.CircuitState
 import com.ra4king.circuitsim.simulator.SimulationException
 import com.ra4king.circuitsim.simulator.Simulator
 import javafx.beans.property.BooleanProperty
@@ -19,6 +20,7 @@ import javafx.scene.Node
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
+import javafx.scene.control.Tab
 import javafx.scene.input.ContextMenuEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCode.*
@@ -78,7 +80,8 @@ class CircuitManager(
     name: String,
     val simulatorWindow: CircuitSim,
     simulator: Simulator,
-    val showGrid: BooleanProperty
+    val showGrid: BooleanProperty,
+    val tab: Tab
 ) {
 
     val circuitBoard = CircuitBoard(name, this, simulator, simulatorWindow.editHistory)
@@ -260,6 +263,14 @@ class CircuitManager(
             it.y = getCircuitCoord(lastMousePosition.y) - it.height / 2
             simulatorWindow.setNeedsRepaint()
         }
+    }
+
+    fun switchToCircuitState(
+        state: CircuitState = circuit.topLevelState
+    ) {
+        circuitBoard.currentState = state
+        tab.styleClass.removeAll("top-level-indicator", "nested-state-indicator")
+        tab.styleClass.add(if (circuit.topLevelState == state) "top-level-indicator" else "nested-state-indicator")
     }
 
     /**
