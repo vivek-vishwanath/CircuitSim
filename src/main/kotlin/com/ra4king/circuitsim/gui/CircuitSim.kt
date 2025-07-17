@@ -240,19 +240,19 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
      * @param state   The state to set as the current state. Might be null (no change to the current state).
      */
     fun switchToCircuit(circuit: Circuit, state: CircuitState?) = runFxSync {
-        state?.let {
-            getCircuitManager(circuit)?.circuitBoard?.currentState = it
-        }
-        getTabForCircuit(circuit)?.let {
+        state ?: return@runFxSync
+
+        getCircuitManager(circuit)?.switchToCircuitState(state)
+        getTabForCircuit(circuit)?.also {
             canvasTabPane.selectionModel.select(it)
             needsRepaint = true
-        }
+        } ?: return@runFxSync
     }
 
     fun readdCircuit(manager: CircuitManager, tab: Tab, index: Int) {
         canvasTabPane.tabs.add(min(index, canvasTabPane.tabs.size), tab)
         circuitManagers[tab.text] = Pair(createSubcircuitLauncherInfo(tab.text), manager)
-        manager.circuitBoard.currentState = manager.circuit.topLevelState
+        manager.switchToCircuitState()
         canvasTabPane.selectionModel.select(tab)
         refreshCircuitsTab()
     }
@@ -433,10 +433,10 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 val component = pair.first.creator.createComponent(Properties(), 0, 0)
 
                 val icon = Canvas((component.screenWidth + 10).toDouble(), (component.screenHeight + 10).toDouble())
-                val graphics = icon.getGraphicsContext2D()
+                val graphics = icon.graphicsContext2D
                 graphics.translate(5.0, 5.0)
-                component.paint(icon.getGraphicsContext2D(), null)
-                component.connections.forEach { it.paint(icon.getGraphicsContext2D(), null) }
+                component.paint(icon.graphicsContext2D, null)
+                component.connections.forEach { it.paint(icon.graphicsContext2D, null) }
 
                 val toggleButton = ToggleButton(pair.first.name.second, icon)
                 toggleButton.styleClass.add("new-component")
@@ -564,7 +564,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         val manager = getCircuitManager(node.subcircuit.subcircuit)
         val substate = node.subcircuit.getSubcircuitState(parentState)!!
         if (manager != null && manager.circuitBoard.currentState == node.subcircuitState) {
-            manager.circuitBoard.currentState = substate
+            manager.switchToCircuitState(substate)
         }
         node.children.forEach { updateSubcircuitStates(it, substate) }
     }
@@ -572,7 +572,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private fun resetSubcircuitStates(node: CircuitNode) {
         val manager = getCircuitManager(node.subcircuit.subcircuit)
         if (manager != null && manager.circuitBoard.currentState == node.subcircuitState)
-            manager.circuitBoard.currentState = manager.circuit.topLevelState
+            manager.switchToCircuitState()
         node.children.forEach { resetSubcircuitStates(it) }
     }
 
@@ -1120,8 +1120,6 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         if (name.isEmpty()) throw NullPointerException("Name cannot be empty")
 
         runFxSync {
-            val circuitManager = CircuitManager(name, this, simulator, showGridProp)
-            circuitManager.circuit.addListener(this::circuitModified)
 
             // If the name already exists, add a number to the name until it doesn't exist.
             val originalName = name
@@ -1131,9 +1129,12 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 revisedName = "$originalName $count"
                 count++
             }
-            circuitManager.name = revisedName
 
             val canvasTab = Tab(revisedName)
+            val circuitManager = CircuitManager(revisedName, this, simulator, showGridProp, canvasTab)
+            circuitManager.circuit.addListener(this::circuitModified)
+
+            canvasTab.styleClass.add("top-level-indicator")
             val rename = MenuItem("Rename")
             rename.onAction = EventHandler {
                 var lastTyped = canvasTab.text
@@ -1165,7 +1166,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             }
             val viewTopLevelState = MenuItem("View top-level state")
             viewTopLevelState.onAction = EventHandler {
-                circuitManager.circuitBoard.currentState = circuitManager.circuit.topLevelState
+                circuitManager.switchToCircuitState()
             }
 
             val moveLeft = MenuItem("Move left")
@@ -1374,9 +1375,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             }
 
             override fun fromString(string: String?): Double {
-                return if (string?.isBlank() ?: return 1.0)
-                    clampScaleFactor(string.toDouble())
-                else 1.0
+                return if (string?.isBlank() ?: return 1.0) 1.0
+                else clampScaleFactor(string.toDouble())
             }
 
         }, 1.0) { if (it.controlNewText.matches("\\d*(?:\\.\\d*)?".toRegex())) it else null }
@@ -1578,7 +1578,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                     clockEnabled.isSelected = false
                     simulator.reset()
                     for ((_, manager) in circuitManagers.values) {
-                        manager.circuitBoard.currentState = manager.circuit.topLevelState
+                        manager.switchToCircuitState()
                     }
                     runSim()
                 }
@@ -1714,8 +1714,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
 
         val leftPaneSplit = SplitPane(newComponentPane, propertiesBox)
         leftPaneSplit.orientation = Orientation.VERTICAL
-        leftPaneSplit.prefWidth = 500.0
-        leftPaneSplit.minWidth = 150.0
+        leftPaneSplit.prefWidth = 600.0
+        leftPaneSplit.minWidth = 250.0
 
         SplitPane.setResizableWithParent(newComponentPane, FALSE)
 
@@ -1778,11 +1778,16 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
 
         val blank = Pane()
         HBox.setHgrow(blank, Priority.ALWAYS)
+        val bitSizeLabel = Label("Global bit size:")
+        bitSizeLabel.styleClass.add("bit-size-label")
+        bitSizeSelect.styleClass.add("bit-size-dropdown")
+        val bitSize = HBox(bitSizeLabel, bitSizeSelect)
+        bitSize.styleClass.add("bit-size-box")
         toolbar.items.addAll(
             clickMode, Separator(Orientation.VERTICAL),
             inputPinButton, outputPinButton, andButton, orButton,
             notButton, xorButton, tunnelButton, textButton,
-            Separator(Orientation.VERTICAL), Label("Global bit size:"), bitSizeSelect,
+            Separator(Orientation.VERTICAL), bitSize,
             blank, Label("Scale:"), scaleFactorInput
         )
 

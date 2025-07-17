@@ -85,6 +85,7 @@ class PinPeer(props: Properties, x: Int, y: Int) : ComponentPeer<Pin>(x, y, 0, 0
             val buttonType = alert.showAndWait()
             if (buttonType.isPresent && buttonType.get() == ButtonType.OK) {
                 state = manager.circuit.topLevelState
+                manager.switchToCircuitState()
                 manager.circuitBoard.currentState = state
             } else {
                 return
