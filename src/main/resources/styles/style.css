@@ -240,5 +240,19 @@
 }
 
 .bit-size-box {
-    -fx-alignment: center;
+    -fx-alignment: center-left;
+}
+
+.clock-speed-bar .track {
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-padding: 0.25em;
+    -fx-background-color: #DFC;
+    -fx-pref-height: 16px;
+}
+
+.clock-speed-bar .thumb {
+    -fx-background-color: #001a53;
+    -fx-background-radius: 50%;
+    -fx-effect: dropshadow(one-pass-box, #888888, 4, 0.5, 0, 0);
 }

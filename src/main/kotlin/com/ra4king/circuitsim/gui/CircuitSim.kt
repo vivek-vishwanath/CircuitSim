@@ -77,6 +77,7 @@ import java.util.stream.Collectors
 import javax.imageio.ImageIO
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.properties.Delegates
 
 class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Application() {
@@ -96,6 +97,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private var savedEditStackSize = 0
     private var circuitButtonsTab: TitledPane? = null
     private var currentTimer: AnimationTimer? = null
+    private var propertiesBox = VBox()
 
     var initContext: InitContext by Delegates.notNull()
     var startContext: StartContext by Delegates.notNull()
@@ -150,19 +152,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             val e = (lastException ?: manager?.currentError)
             return if (e is ShortCircuitException) "Short circuit detected" else e?.message ?: ""
         }
-    private val currentClockSpeed: Int
-        get() {
-            for (item in frequenciesMenu.items) {
-                if ((item as RadioMenuItem).isSelected) {
-                    val text = item.text
-                    val space = text.indexOf(' ')
-                    check(space != -1) { "What did you do..." }
-                    return text.substring(0, space).toInt()
 
-                }
-            }
-            throw IllegalStateException("No frequency selected")
-        }
+    private var clockSpeed = 1
 
     private var lastExceptionTime: Long? = null
     private var lastException: Exception? = null
@@ -183,6 +174,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private var taDebugMode = false
     private var exceptionThrown: Exception? = null
     private val showGridProp = SimpleBooleanProperty(true)
+    private val clockSpeedBar = Slider(0.0, 16.0, 0.0)
 
     constructor() : this(true, false)
 
@@ -308,7 +300,29 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         refreshCircuitsTab()
     }
 
-    fun clearProperties() = setProperties("", null)
+    fun clearProperties() {
+        setProperties("", null)
+        propertiesBox.children.clear()
+
+        val bitSizeLabel = Label("Global bit size:")
+        val bitSize = HBox(bitSizeLabel, bitSizeSelect)
+        val separator = Separator(Orientation.HORIZONTAL)
+
+        bitSizeLabel.styleClass.add("bit-size-label")
+        bitSizeSelect.styleClass.add("bit-size-dropdown")
+        bitSize.styleClass.add("bit-size-box")
+
+        propertiesBox.children.add(HBox(Label("Global Settings").apply { font = Font.font(20.0) }))
+        propertiesBox.children.add(bitSize)
+        propertiesBox.children.add(separator)
+        propertiesBox.children.add(HBox(Label("Clock").apply { font = Font.font(18.0) }))
+        propertiesBox.children.add(clockSpeedBar)
+
+        propertiesBox.children.forEach { VBox.setMargin(it, Insets(16.0, 16.0, 16.0, 16.0)) }
+
+        VBox.setMargin(separator, Insets(0.0, 16.0, 0.0, 16.0))
+
+    }
 
     fun setProperties(componentPeer: ComponentPeer<*>) = setProperties(
         if (componentPeer is SubcircuitPeer)
@@ -318,6 +332,12 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     )
 
     fun setProperties(componentName: String, properties: Properties?) {
+        val propertiesScrollPane = ScrollPane(propertiesTable)
+        propertiesScrollPane.isFitToWidth = true
+        propertiesScrollPane.styleClass.add("props-menu")
+        VBox.setVgrow(propertiesScrollPane, Priority.ALWAYS)
+        propertiesBox.children.clear()
+        propertiesBox.children.addAll(componentLabel, propertiesScrollPane)
         propertiesTable.children.clear()
         componentLabel.text = componentName
 
@@ -1086,7 +1106,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                     file,
                     CircuitFile(
                         bitSizeSelect.selectionModel.selectedItem,
-                        currentClockSpeed,
+                        clockSpeed,
                         null,
                         circuits,
                         revisionSignatures,
@@ -1590,10 +1610,11 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 this@CircuitSim.clockEnabled =
                     checkItem("Clock Enabled", KeyCodeCombination(K, SHORTCUT_DOWN)) { _, _, new ->
                         tickClock.isDisable = new
-                        Clock.clockEnabledProperty(simulator).set(Clock.EnabledInfo(new, currentClockSpeed))
+                        Clock.clockEnabledProperty(simulator).set(Clock.EnabledInfo(new, clockSpeed))
                     }
                 this@CircuitSim.frequenciesMenu = radioMenu("Frequency", 15, { RadioMenuItem("${1 shl it} Hz") }) {
-                    if (isRunning(simulator)) Clock.startClock(simulator, 1 shl it)
+                    clockSpeed = 1 shl it
+                    if (isRunning(simulator)) Clock.startClock(simulator, clockSpeed)
                 }
             }
             menu("Help") {
@@ -1704,13 +1725,14 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
 
 
         propertiesTable.styleClass.add("props-table")
-        val propertiesScrollPane = ScrollPane(propertiesTable)
-        propertiesScrollPane.isFitToWidth = true
-
-        propertiesScrollPane.styleClass.add("props-menu")
-        val propertiesBox = VBox(componentLabel, propertiesScrollPane)
         propertiesBox.alignment = Pos.TOP_CENTER
-        VBox.setVgrow(propertiesScrollPane, Priority.ALWAYS)
+        clearProperties()
+
+        clockSpeedBar.styleClass.add("clock-speed-bar")
+        clockSpeedBar.valueProperty().addListener { _, _, newValue ->
+            clockSpeed = 2.0.pow(newValue.toDouble()).toInt()
+            if (isRunning(simulator)) Clock.startClock(simulator, clockSpeed)
+        }
 
         val newComponentPane = ScrollPane(buttonTabPane)
         newComponentPane.isFitToWidth = true
@@ -1782,16 +1804,12 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
 
         val blank = Pane()
         HBox.setHgrow(blank, Priority.ALWAYS)
-        val bitSizeLabel = Label("Global bit size:")
-        bitSizeLabel.styleClass.add("bit-size-label")
-        bitSizeSelect.styleClass.add("bit-size-dropdown")
-        val bitSize = HBox(bitSizeLabel, bitSizeSelect)
-        bitSize.styleClass.add("bit-size-box")
+
         toolbar.items.addAll(
             clickMode, Separator(Orientation.VERTICAL),
             inputPinButton, outputPinButton, andButton, orButton,
             notButton, xorButton, tunnelButton, textButton,
-            Separator(Orientation.VERTICAL), bitSize,
+            Separator(Orientation.VERTICAL),
             blank, Label("Scale:"), scaleFactorInput
         )
 
