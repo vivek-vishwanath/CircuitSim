@@ -30,10 +30,10 @@ import javafx.embed.swing.SwingFXUtils
 import javafx.event.Event
 import javafx.event.EventHandler
 import javafx.event.EventType
+import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
-import javafx.geometry.Side
 import javafx.scene.Cursor
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
@@ -94,7 +94,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private var lastSaveFile: File? = null
     private var loadingFile = false
     private var savedEditStackSize = 0
-    private var circuitButtonsTab: Tab? = null
+    private var circuitButtonsTab: TitledPane? = null
     private var currentTimer: AnimationTimer? = null
 
     var initContext: InitContext by Delegates.notNull()
@@ -240,19 +240,19 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
      * @param state   The state to set as the current state. Might be null (no change to the current state).
      */
     fun switchToCircuit(circuit: Circuit, state: CircuitState?) = runFxSync {
-        state?.let {
-            getCircuitManager(circuit)?.circuitBoard?.currentState = it
-        }
-        getTabForCircuit(circuit)?.let {
+        state ?: return@runFxSync
+
+        getCircuitManager(circuit)?.switchToCircuitState(state)
+        getTabForCircuit(circuit)?.also {
             canvasTabPane.selectionModel.select(it)
             needsRepaint = true
-        }
+        } ?: return@runFxSync
     }
 
     fun readdCircuit(manager: CircuitManager, tab: Tab, index: Int) {
         canvasTabPane.tabs.add(min(index, canvasTabPane.tabs.size), tab)
         circuitManagers[tab.text] = Pair(createSubcircuitLauncherInfo(tab.text), manager)
-        manager.circuitBoard.currentState = manager.circuit.topLevelState
+        manager.switchToCircuitState()
         canvasTabPane.selectionModel.select(tab)
         refreshCircuitsTab()
     }
@@ -340,14 +340,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
 
                 GridPane.setHgrow(name, Priority.ALWAYS)
                 name.maxWidth = Double.Companion.MAX_VALUE
-                name.minHeight = 30.0
-                name.background = Background(
-                    BackgroundFill(
-                        if ((size / 2) % 2 == 0) Color.LIGHTGRAY else Color.WHITE,
-                        null,
-                        null
-                    )
-                )
+                name.styleClass.add("props-menu-label")
 
                 val node = property.validator.createGui(stage, property.value) { newValue: T? ->
                     Platform.runLater {
@@ -355,22 +348,14 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                         newProperties.setValue(property, newValue)
                         updateProperties(newProperties)
                     }
-                }
+                } ?: return
 
-                if (node != null) {
-                    val valuePane = StackPane(node)
-                    StackPane.setAlignment(node, Pos.CENTER_LEFT)
-                    valuePane.background = Background(
-                        BackgroundFill(
-                            if ((size / 2) % 2 == 0) Color.LIGHTGRAY else Color.WHITE,
-                            null,
-                            null
-                        )
-                    )
-                    GridPane.setHgrow(valuePane, Priority.ALWAYS)
-                    GridPane.setVgrow(valuePane, Priority.ALWAYS)
-                    propertiesTable.addRow(size, name, valuePane)
-                }
+                val valuePane = StackPane(node)
+                StackPane.setAlignment(node, Pos.CENTER_LEFT)
+                valuePane.styleClass.add("props-menu-value")
+                GridPane.setHgrow(valuePane, Priority.ALWAYS)
+                GridPane.setVgrow(valuePane, Priority.ALWAYS)
+                propertiesTable.addRow(size, name, valuePane)
             }
         })
     }
@@ -399,6 +384,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private fun setupImageView(image: Image): ImageView {
         val imageView = ImageView(image)
         imageView.isSmooth = true
+        imageView.maxHeight(20.0)
         return imageView
     }
 
@@ -409,6 +395,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         button.minHeight = 30.0
         button.maxWidth = Double.Companion.MAX_VALUE
         button.onAction = EventHandler { modifiedSelection(if (button.isSelected) componentInfo else null) }
+        button.styleClass.add("new-component")
         GridPane.setHgrow(button, Priority.ALWAYS)
         return button
     }
@@ -416,19 +403,26 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     fun refreshCircuitsTab() {
         if (loadingFile) return
         Platform.runLater {
-            val pane = ScrollPane(GridPane())
-            pane.isFitToWidth = true
+            val flowPane = FlowPane(Orientation.HORIZONTAL).apply {
+                hgap = 10.0
+                vgap = 10.0
+                prefHeight = Region.USE_COMPUTED_SIZE
+                minHeight = Region.USE_COMPUTED_SIZE
+                maxHeight = Region.USE_COMPUTED_SIZE
+            }
+            val pane = VBox(flowPane).apply {
+                prefHeightProperty().bind(flowPane.heightProperty())
+            }
             circuitButtonsTab?.let {
-                val buttons = (it.content as ScrollPane).content as GridPane
+                val buttons = (it.content as VBox).children[0] as FlowPane
                 buttons.children.forEach { node -> (node as ToggleButton).toggleGroup = null }
                 buttons.children.clear()
                 it.content = pane
             } ?: run {
-                val circuitButtonsTab = Tab("Circuits")
-                circuitButtonsTab.isClosable = false
-                circuitButtonsTab.content = pane
+                val circuitButtonsTab = TitledPane("Circuits", pane)
+                circuitButtonsTab.styleClass.add("new-component-section")
                 this.circuitButtonsTab = circuitButtonsTab
-                buttonTabPane.tabs.add(circuitButtonsTab)
+                buttonTabPane.panes.add(circuitButtonsTab)
             }
             val seen = HashSet<String>()
             canvasTabPane.tabs.forEach { tab ->
@@ -439,12 +433,13 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 val component = pair.first.creator.createComponent(Properties(), 0, 0)
 
                 val icon = Canvas((component.screenWidth + 10).toDouble(), (component.screenHeight + 10).toDouble())
-                val graphics = icon.getGraphicsContext2D()
+                val graphics = icon.graphicsContext2D
                 graphics.translate(5.0, 5.0)
-                component.paint(icon.getGraphicsContext2D(), null)
-                component.connections.forEach { it.paint(icon.getGraphicsContext2D(), null) }
+                component.paint(icon.graphicsContext2D, null)
+                component.connections.forEach { it.paint(icon.graphicsContext2D, null) }
 
                 val toggleButton = ToggleButton(pair.first.name.second, icon)
+                toggleButton.styleClass.add("new-component")
                 toggleButton.alignment = Pos.CENTER_LEFT
                 toggleButton.toggleGroup = buttonsToggleGroup
                 toggleButton.minHeight = 30.0
@@ -454,8 +449,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 }
                 GridPane.setHgrow(toggleButton, Priority.ALWAYS)
 
-                val buttons = pane.content as GridPane
-                buttons.addRow(buttons.children.size, toggleButton)
+                val buttons = pane.children[0] as FlowPane
+                buttons.children.add(toggleButton)
 
             }
         }
@@ -569,7 +564,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         val manager = getCircuitManager(node.subcircuit.subcircuit)
         val substate = node.subcircuit.getSubcircuitState(parentState)!!
         if (manager != null && manager.circuitBoard.currentState == node.subcircuitState) {
-            manager.circuitBoard.currentState = substate
+            manager.switchToCircuitState(substate)
         }
         node.children.forEach { updateSubcircuitStates(it, substate) }
     }
@@ -577,7 +572,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private fun resetSubcircuitStates(node: CircuitNode) {
         val manager = getCircuitManager(node.subcircuit.subcircuit)
         if (manager != null && manager.circuitBoard.currentState == node.subcircuitState)
-            manager.circuitBoard.currentState = manager.circuit.topLevelState
+            manager.switchToCircuitState()
         node.children.forEach { resetSubcircuitStates(it) }
     }
 
@@ -1125,8 +1120,6 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         if (name.isEmpty()) throw NullPointerException("Name cannot be empty")
 
         runFxSync {
-            val circuitManager = CircuitManager(name, this, simulator, showGridProp)
-            circuitManager.circuit.addListener(this::circuitModified)
 
             // If the name already exists, add a number to the name until it doesn't exist.
             val originalName = name
@@ -1136,9 +1129,12 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 revisedName = "$originalName $count"
                 count++
             }
-            circuitManager.name = revisedName
 
             val canvasTab = Tab(revisedName)
+            val circuitManager = CircuitManager(revisedName, this, simulator, showGridProp, canvasTab)
+            circuitManager.circuit.addListener(this::circuitModified)
+
+            canvasTab.styleClass.add("top-level-indicator")
             val rename = MenuItem("Rename")
             rename.onAction = EventHandler {
                 var lastTyped = canvasTab.text
@@ -1170,7 +1166,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             }
             val viewTopLevelState = MenuItem("View top-level state")
             viewTopLevelState.onAction = EventHandler {
-                circuitManager.circuitBoard.currentState = circuitManager.circuit.topLevelState
+                circuitManager.switchToCircuitState()
             }
 
             val moveLeft = MenuItem("Move left")
@@ -1200,9 +1196,9 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             }
 
             canvasTab.contextMenu = ContextMenu(rename, viewTopLevelState, moveLeft, moveRight)
-            canvasTab.onCloseRequest = EventHandler { event: Event? ->
+            canvasTab.onCloseRequest = EventHandler { event: Event ->
                 if (!confirmAndDeleteCircuit(circuitManager, false)) {
-                    event!!.consume()
+                    event.consume()
                 }
             }
 
@@ -1339,7 +1335,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             ToggleButton("Click Mode (Shift)"),
             TextField(),
             ComboBox(),
-            TabPane(),
+            Accordion(),
             ToggleGroup(),
             Label(),
             Label(),
@@ -1379,15 +1375,13 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             }
 
             override fun fromString(string: String?): Double {
-                return if (string?.isBlank() ?: return 1.0)
-                    clampScaleFactor(string.toDouble())
-                else 1.0
+                return if (string?.isBlank() ?: return 1.0) 1.0
+                else clampScaleFactor(string.toDouble())
             }
 
         }, 1.0) { if (it.controlNewText.matches("\\d*(?:\\.\\d*)?".toRegex())) it else null }
         scaleFactorInput.textFormatter.valueProperty().addListener { _, _, _ -> needsRepaint = true }
 
-        buttonTabPane.side = Side.TOP
         componentLabel.font = getFont(16)
         canvasScrollPane.isFocusTraversable = true
         circuitCanvas.isFocusTraversable = true
@@ -1440,24 +1434,32 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             needsRepaint = true
         }
 
-        val buttonTabs = HashMap<String, Tab>()
-        buttonTabPane.tabs.clear()
+        val buttonTabs = HashMap<String, TitledPane>()
         componentManager.forEach { componentInfo ->
             if (!componentInfo.showInComponentsList) return@forEach
-            var tab = buttonTabs[componentInfo.name.first]
-            if (tab == null) {
-                tab = Tab(componentInfo.name.first)
-                tab.isClosable = false
-                val pane = ScrollPane(GridPane())
-                pane.isFitToWidth = true
-                tab.content = pane
-                buttonTabPane.tabs.add(tab)
-                buttonTabs[componentInfo.name.first] = tab
+            var section = buttonTabs[componentInfo.name.first]
+            if (section == null) {
+                val flowPane = FlowPane(Orientation.HORIZONTAL).apply {
+                    hgap = 10.0
+                    vgap = 10.0
+                    prefHeight = Region.USE_COMPUTED_SIZE
+                    minHeight = Region.USE_COMPUTED_SIZE
+                    maxHeight = Region.USE_COMPUTED_SIZE
+                }
+                val pane = VBox(flowPane).apply {
+                    prefHeightProperty().bind(flowPane.heightProperty())
+                }
+                section = TitledPane(componentInfo.name.first, pane)
+                section.styleClass.add("new-component-section")
+                buttonTabPane.panes.add(section)
+                buttonTabs[componentInfo.name.first] = section
             }
-            val buttons = (tab.content as ScrollPane).content as GridPane
+            val buttons = (section.content as VBox).children[0] as FlowPane
             val toggleButton = setupButton(buttonsToggleGroup, componentInfo)
-            buttons.addRow(buttons.children.size, toggleButton)
+            VBox.setMargin(toggleButton, Insets(20.0, 10.0, 20.0, 10.0))
+            buttons.children.add(toggleButton)
         }
+        buttonTabPane.styleClass.add("button-tab-pane")
         circuitButtonsTab = null
         refreshCircuitsTab()
 
@@ -1576,7 +1578,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                     clockEnabled.isSelected = false
                     simulator.reset()
                     for ((_, manager) in circuitManagers.values) {
-                        manager.circuitBoard.currentState = manager.circuit.topLevelState
+                        manager.switchToCircuitState()
                     }
                     runSim()
                 }
@@ -1697,19 +1699,25 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         menuBar.isUseSystemMenuBar = true
 
 
+        propertiesTable.styleClass.add("props-table")
         val propertiesScrollPane = ScrollPane(propertiesTable)
         propertiesScrollPane.isFitToWidth = true
 
+        propertiesScrollPane.styleClass.add("props-menu")
         val propertiesBox = VBox(componentLabel, propertiesScrollPane)
         propertiesBox.alignment = Pos.TOP_CENTER
         VBox.setVgrow(propertiesScrollPane, Priority.ALWAYS)
 
-        val leftPaneSplit = SplitPane(buttonTabPane, propertiesBox)
-        leftPaneSplit.orientation = Orientation.VERTICAL
-        leftPaneSplit.prefWidth = 500.0
-        leftPaneSplit.minWidth = 150.0
+        val newComponentPane = ScrollPane(buttonTabPane)
+        newComponentPane.isFitToWidth = true
+        buttonTabPane.maxWidth = Double.MAX_VALUE
 
-        SplitPane.setResizableWithParent(buttonTabPane, FALSE)
+        val leftPaneSplit = SplitPane(newComponentPane, propertiesBox)
+        leftPaneSplit.orientation = Orientation.VERTICAL
+        leftPaneSplit.prefWidth = 600.0
+        leftPaneSplit.minWidth = 250.0
+
+        SplitPane.setResizableWithParent(newComponentPane, FALSE)
 
         fpsLabel.minWidth = 100.0
         fpsLabel.font = getFont(13)
@@ -1742,6 +1750,8 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         fun createToolbarButton(pair: Pair<String, String>): ToggleButton {
             val info = componentManager.get(pair)
             val button = ToggleButton("", setupImageView(info.image!!))
+            VBox.setMargin(button, Insets(8.0))
+            button.styleClass.add("toolbar-button")
             button.tooltip = Tooltip(pair.second)
             button.minWidth = 50.0
             button.minHeight = 50.0
@@ -1764,20 +1774,28 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         clickMode.selectedProperty().addListener(ChangeListener { _, _, newValue: Boolean ->
             scene.cursor = if (newValue) Cursor.HAND else Cursor.DEFAULT
         })
+        clickMode.styleClass.add("button")
 
         val blank = Pane()
         HBox.setHgrow(blank, Priority.ALWAYS)
+        val bitSizeLabel = Label("Global bit size:")
+        bitSizeLabel.styleClass.add("bit-size-label")
+        bitSizeSelect.styleClass.add("bit-size-dropdown")
+        val bitSize = HBox(bitSizeLabel, bitSizeSelect)
+        bitSize.styleClass.add("bit-size-box")
         toolbar.items.addAll(
             clickMode, Separator(Orientation.VERTICAL),
             inputPinButton, outputPinButton, andButton, orButton,
             notButton, xorButton, tunnelButton, textButton,
-            Separator(Orientation.VERTICAL), Label("Global bit size:"), bitSizeSelect,
+            Separator(Orientation.VERTICAL), bitSize,
             blank, Label("Scale:"), scaleFactorInput
         )
 
         VBox.setVgrow(canvasPropsSplit, Priority.ALWAYS)
         scene = Scene(VBox(menuBar, toolbar, canvasPropsSplit))
         scene.cursor = Cursor.DEFAULT
+
+        scene.stylesheets.add(javaClass.getResource("/styles/style.css")!!.toExternalForm())
 
         updateTitle()
         stage.scene = scene

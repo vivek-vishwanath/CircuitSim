@@ -1,0 +1,244 @@
+/* style.css */
+.root {
+    -fx-background-color: #f0f0f0;
+}
+
+.button {
+    -fx-background-color: #006a23;
+    -fx-background-radius: 12;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.new-component {
+    -fx-background-color: #DDD;
+    -fx-text-fill: #000;
+    -fx-min-height: 48px;
+    -fx-max-width: 200px;
+    -fx-padding: 8 8 8 8;
+    -fx-background-radius: 8;
+}
+
+.new-component:hover {
+    -fx-background-color: #CEC;
+}
+
+.props-menu {
+    -fx-background-color: #396;
+}
+
+.props-table {
+    -fx-background-color: #FFF;
+}
+
+.props-menu-label {
+    -fx-background-color: transparent;
+    -fx-text-fill: black;
+    -fx-min-width: 128;
+    -fx-padding: 8 8 8 16;
+}
+
+.props-menu-value {
+    -fx-background-color: transparent;
+    -fx-text-fill: #000;
+    -fx-min-width: 250;
+    -fx-padding: 8 8 8 0;
+}
+
+.property-list-validator {
+}
+
+.property-list-validator-button:selected {
+    -fx-background-color: #06F;
+    -fx-text-fill: white;
+}
+
+.property-list-validator-button {
+    -fx-background-color: #D0F8FF;
+    -fx-min-width: 36px;
+}
+
+.button-top-left {;
+    -fx-background-radius: 8 0 0 0;
+}
+
+.button-top-right {
+    -fx-background-radius: 0 8 0 0;
+}
+
+.button-bottom-left {
+    -fx-background-radius: 0 0 0 8;
+}
+
+.button-bottom-right {
+    -fx-background-radius: 0 0 8 0;
+}
+
+.button-left {
+    -fx-background-radius: 8 0 0 8;
+}
+
+.button-right {
+    -fx-background-radius: 0 8 8 0;
+}
+
+.button-tab-pane {
+
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: transparent;
+    -fx-padding: 10;
+}
+
+.new-component-section {
+    -fx-background-color: white;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.05), 6, 0, 0, 2);
+    -fx-padding: 8;
+    -fx-spacing: 4;
+    -fx-transition: all 0.2s ease-in-out;
+
+}
+
+.new-component-section > .title {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 4;
+    -fx-text-fill: #343a40;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 14;
+}
+
+.new-component-section:expanded > .title {
+    -fx-background-color: #F4F4F4;
+}
+
+.new-component-section > *.content {
+    -fx-padding: 4 4 0 4;
+    -fx-background-color: #F4F4F4;
+    -fx-border-color: #F4F4F4;
+    -fx-background-radius: 0 0 12 12;
+}
+
+.new-component-section > .content {
+    -fx-transition: all 0.3s ease;
+}
+
+.new-component-section > .title > .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.new-component-section > .title > .arrow-button > .arrow {
+    -fx-shape: "M 0 0 L 6 6 L 12 0 Z";
+    -fx-background-color: #6c757d;
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+}
+
+.text-field {
+    -fx-background-color: #EEE;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-border-radius: 8;
+    -fx-padding: 8 12;
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+    -fx-prompt-text-fill: #888888;
+    -fx-focus-color: transparent; /* suppress default glow */
+    -fx-faint-focus-color: transparent;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.05), 2, 0, 0, 1);
+    -fx-transition: all 0.3s ease-in-out;
+    -fx-max-width: 224px;
+}
+
+.global-bit-size {
+    -fx-text-alignment: center;
+    -fx-text-fill: red;
+}
+
+.scale-factor {
+
+}
+
+.toolbar-button {
+    -fx-background-color: #E0E8E0;
+    -fx-padding: 4;
+}
+
+/* Style the entire TabPane */
+.tab-pane {
+    -fx-background-color: #f9f9f9;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1;
+    -fx-tab-min-width: 64px;
+}
+
+/* Tab header area */
+.tab-pane > .tab-header-area {
+    -fx-background-color: #eaeaea;
+    -fx-padding: 8px 8px 0 8px;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Individual tabs */
+.tab-pane .tab {
+    -fx-background-insets: 0;
+    -fx-padding: 8 16 8 16;
+    -fx-background-color: #CCC;
+    -fx-text-fill: #333;
+    -fx-font-size: 14px;
+}
+
+/* Hovered tab */
+.tab-pane .tab:hover {
+    -fx-background-color: #D8D8D8;
+}
+
+/* Selected tab */
+.tab-pane .tab:selected {
+    -fx-background-color: #EEE;
+    -fx-text-fill: #000000;
+    -fx-border-width: 0 0 4 0;
+}
+
+.top-level-indicator {
+    -fx-border-color: transparent transparent #007acc transparent;
+}
+
+.nested-state-indicator {
+    -fx-border-color: transparent transparent #C22 transparent;
+}
+
+/* Content area */
+.tab-pane .tab-content-area {
+}
+
+.tab-pane .tab {
+    -fx-background-radius: 8 8 0 0;
+}
+.tab-pane .tab:selected {
+}
+
+
+.bit-size-label {
+    -fx-background-color: #DDD;
+    -fx-background-radius: 8 0 0 8;
+    -fx-border-width: 1 0 1 1;
+    -fx-border-color: #BBB;
+    -fx-border-radius: 8 0 0 8;
+    -fx-padding: 8;
+}
+
+.bit-size-dropdown {
+    -fx-background-color: #DDD;
+    -fx-background-radius: 0 8 8 0;
+    -fx-border-width: 1 1 1 0;
+    -fx-border-color: #BBB;
+    -fx-border-radius: 0 8 8 0;
+    -fx-padding: 4;
+}
+
+.bit-size-box {
+    -fx-alignment: center;
+}
