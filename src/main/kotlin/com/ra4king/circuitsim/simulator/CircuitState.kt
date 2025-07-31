@@ -37,6 +37,8 @@ class CircuitState private constructor(
         componentProperties[component] = property
     }
 
+    fun removeComponentProperty(component: Component) = componentProperties.remove(component)
+
     /**
      * Get the current true value on the Link, which is the merging of all pushed values.
      *
@@ -171,9 +173,9 @@ class CircuitState private constructor(
             }
         }
 
-        fun getLastPushed(port: Port): WireValue = participants[port]!!.lastPushed
+        fun getLastPushed(port: Port): WireValue = participants[port]?.lastPushed ?: WireValue(link.bitSize)
 
-        fun getLastReceived(port: Port): WireValue = participants[port]!!.lastReceived
+        fun getLastReceived(port: Port): WireValue = participants[port]?.lastReceived ?: WireValue(link.bitSize)
 
         fun getIncomingValue(port: Port?): WireValue {
             val newValue = WireValue(link.bitSize)

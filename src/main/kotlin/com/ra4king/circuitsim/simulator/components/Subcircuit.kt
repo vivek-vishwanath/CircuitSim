@@ -65,6 +65,7 @@ class Subcircuit private constructor(name: String, val subcircuit: Circuit, val 
 
     override fun uninit(circuitState: CircuitState) {
         val subcircuitState = circuitState.getComponentProperty(this) as CircuitState
+        circuitState.removeComponentProperty(this)
         subcircuit.components.forEach { component -> component.uninit(subcircuitState) }
         subcircuit.removeState(subcircuitState)
         val listeners = pinListeners[subcircuitState]

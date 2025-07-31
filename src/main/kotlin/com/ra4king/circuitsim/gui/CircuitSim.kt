@@ -163,7 +163,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
     private var lastException: Exception? = null
         set(value) {
             field = value
-            lastExceptionTime = System.currentTimeMillis()
+            lastExceptionTime = if (value == null) null else System.currentTimeMillis()
         }
     var needsRepaint = false
     var clickedDirectly = false
@@ -240,9 +240,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
      * @param state   The state to set as the current state. Might be null (no change to the current state).
      */
     fun switchToCircuit(circuit: Circuit, state: CircuitState?) = runFxSync {
-        state ?: return@runFxSync
-
-        getCircuitManager(circuit)?.switchToCircuitState(state)
+        state?.let { getCircuitManager(circuit)?.switchToCircuitState(it) }
         getTabForCircuit(circuit)?.also {
             canvasTabPane.selectionModel.select(it)
             needsRepaint = true
