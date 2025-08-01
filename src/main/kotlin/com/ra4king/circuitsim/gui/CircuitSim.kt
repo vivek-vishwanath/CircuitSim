@@ -79,7 +79,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.properties.Delegates
 
-class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Application() {
+class CircuitSim (val openWindow: Boolean, val init: Boolean = true, var debugMode: Boolean = false) : Application() {
 
     lateinit var scene: Scene
     lateinit var clockEnabled: CheckMenuItem
@@ -175,7 +175,6 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
         }
     private val revisionSignatures = LinkedList<String>()
     private val copiedBlocks = LinkedList<String>()
-    private var taDebugMode = false
     private var exceptionThrown: Exception? = null
     private val showGridProp = SimpleBooleanProperty(true)
 
@@ -881,9 +880,9 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 try {
                     loadingFile = true
                     editHistory.disable()
-                    val circuitFile = FileFormat.load(lastSaveFile, taDebugMode)
+                    val circuitFile = FileFormat.load(lastSaveFile, debugMode)
                     revisionSignatures.clear()
-                    revisionSignatures.addAll(circuitFile.revisionSignatures)
+                    revisionSignatures.addAll(circuitFile.revisionSignatures ?: emptyList())
                     clearCircuits()
                     Platform.runLater {
                         bar.progress = 0.1
@@ -1484,7 +1483,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
             menu("File") {
                 item("New", KeyCodeCombination(N, SHORTCUT_DOWN)) {
                     saveConfFile()
-                    CircuitSim(true)
+                    CircuitSim(true, debugMode = debugMode)
                 }
                 item("Clear") {
                     if (!checkUnsavedChanges()) {
@@ -1821,7 +1820,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
                 var args = parameters.raw
 
                 if (!args.isEmpty() && args[0] == "--ta-debug") {
-                    taDebugMode = true
+                    debugMode = true
                     args = args.stream().skip(1).collect(Collectors.toList())
                 }
 
@@ -1830,7 +1829,7 @@ class CircuitSim(val openWindow: Boolean, val init: Boolean = true) : Applicatio
 
                     if (args.size > 1) {
                         for (i in 1..<args.size) {
-                            CircuitSim(true).loadCircuitsInternal(File(args[i]))
+                            CircuitSim(true, debugMode = debugMode).loadCircuitsInternal(File(args[i]))
                         }
                     }
                 }
