@@ -22,6 +22,9 @@ public final class PropertyValidators {
 	public static final PropertyValidator<Boolean> YESNO_VALIDATOR = new PropertyListValidator<>(new Boolean[] {
 		true, false
 	}, bool -> bool ? "Yes" : "No");
+
+	public static final PropertyValidator<PropertyFileValidator.FileWrapper> FILE_VALIDATOR = new PropertyFileValidator();
+
 	
 	public static final PropertyListValidator<Boolean>
 		LOCATION_VALIDATOR =

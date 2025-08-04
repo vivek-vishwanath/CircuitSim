@@ -9,20 +9,24 @@ import com.ra4king.circuitsim.simulator.components.memory.ROM.Ports.*
 /**
  * @author Roi Atalla
  */
-class ROM(name: String, bitSize: Int, addressBits: Int, memory: IntArray) :
-    Component(name, intArrayOf(addressBits, 1, bitSize)) {
-    val addressBits: Int
-    val dataBits: Int
-	val memory: IntArray
+class ROM(
+    name: String, override val addressWidth: Int, override val dataWidth: Int,
+    override val addressability: Addressability
+) :
+    Component(name, intArrayOf(addressWidth, 1, dataWidth)), MemoryUnit {
+
+    val addressBits = addressWidth
+    val dataBits = dataWidth
+    val memory = IntArray(1 shl addressBits)
 
     private val listeners = ArrayList<(Int, Int) -> Unit>()
 
     init {
         require(!(addressBits > 16 || addressBits <= 0)) { "Address bits cannot be more than 16 bits." }
+    }
 
-        this.addressBits = addressBits
-        this.dataBits = bitSize
-        this.memory = memory.copyOf(1 shl addressBits)
+    fun initMemory(memory: IntArray) {
+        memory.copyInto(this.memory, 0, 0, minOf(memory.size, this.memory.size))
     }
 
     fun addMemoryListener(listener: (Int, Int) -> Unit) {
@@ -40,11 +44,12 @@ class ROM(name: String, bitSize: Int, addressBits: Int, memory: IntArray) :
     fun loadWireValue(address: Int) =
         if (address >= 0 && address < memory.size) of(load(address).toLong(), dataBits) else null
 
-    fun load(address: Int) = memory[address]
+    fun load(address: Int) = memory[effective(address)]
 
     fun store(address: Int, value: Int) {
-        memory[address] = value
-        notifyListeners(address, value)
+        val eff = effective(address)
+        memory[eff] = value
+        notifyListeners(eff, value)
     }
 
     override fun valueChanged(state: CircuitState, value: WireValue, portIndex: Int) {

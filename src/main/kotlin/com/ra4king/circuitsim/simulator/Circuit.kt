@@ -22,12 +22,12 @@ class Circuit(var name: String, val simulator: Simulator) {
         simulator.addCircuit(this)
     }
 
-    private fun <T : Component> add(newComponent: T, oldComponent: T = newComponent) {
+    private fun <T : Component> add(newComponent: T, oldComponentProps: HashMap<CircuitState, Any?> = HashMap()) {
         newComponent.circuit = this
         components.add(newComponent)
         states.forEach {
             try {
-                newComponent.init(it, it.getComponentProperty(oldComponent))
+                newComponent.init(it, oldComponentProps[it])
             } catch (e: RuntimeException) {
                 if (exception == null) exception = e
             }
@@ -35,11 +35,13 @@ class Circuit(var name: String, val simulator: Simulator) {
         listeners.forEach { it(this, newComponent, true) }
     }
 
-    private fun <T : Component> remove(component: T, removeLinks: Boolean) {
+    private fun <T : Component> remove(component: T, removeLinks: Boolean): HashMap<CircuitState, Any?> {
         states.forEach { it.ensureUnlinked(component, removeLinks) }
         components.remove(component)
+        val oldComponentProperties = HashMap<CircuitState, Any?>()
         states.forEach {
             try {
+                oldComponentProperties[it] = it.getComponentProperty(component)
                 component.uninit(it)
             } catch (exc: RuntimeException) {
                 if (exception == null)
@@ -48,6 +50,7 @@ class Circuit(var name: String, val simulator: Simulator) {
         }
         component.circuit = null
         listeners.forEach { it(this, component, false) }
+        return oldComponentProperties
     }
 
     /**
@@ -84,9 +87,9 @@ class Circuit(var name: String, val simulator: Simulator) {
      */
     fun <T : Component> updateComponent(oldComponent: T, newComponent: T, inBetween: (() -> Any?)?) {
         simulator.runSync {
-            remove(oldComponent, false)
+            val oldComponentProps = remove(oldComponent, false)
             inBetween?.invoke()
-            add(newComponent, oldComponent)
+            add(newComponent, oldComponentProps)
         }
 
         exception?.let { exception = null; throw it }

@@ -8,14 +8,17 @@ import com.ra4king.circuitsim.gui.GuiUtils.drawClockInput
 import com.ra4king.circuitsim.gui.GuiUtils.getBounds
 import com.ra4king.circuitsim.gui.GuiUtils.getFont
 import com.ra4king.circuitsim.gui.Properties
+import com.ra4king.circuitsim.gui.properties.PropertyFileValidator
+import com.ra4king.circuitsim.gui.properties.PropertyListValidator
 import com.ra4king.circuitsim.gui.properties.PropertyMemoryValidator
 import com.ra4king.circuitsim.gui.properties.PropertyMemoryValidator.MemoryLine
 import com.ra4king.circuitsim.gui.properties.PropertyValidators
 import com.ra4king.circuitsim.simulator.CircuitState
 import com.ra4king.circuitsim.simulator.WireValue
 import com.ra4king.circuitsim.simulator.WireValue.Companion.of
+import com.ra4king.circuitsim.simulator.components.memory.ADDRESSABILITY
+import com.ra4king.circuitsim.simulator.components.memory.Addressability
 import com.ra4king.circuitsim.simulator.components.memory.RAM
-import javafx.event.ActionEvent
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.MenuItem
 import javafx.scene.image.Image
@@ -35,18 +38,34 @@ class RAMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<RAM>(x, y, 9, 5
 
     init {
         val properties = Properties()
+        val srcFile = Properties.Property("Source Data", PropertyValidators.FILE_VALIDATOR, null)
         properties.ensureProperty(Properties.LABEL)
         properties.ensureProperty(Properties.LABEL_LOCATION)
         properties.ensureProperty(Properties.BITSIZE)
         properties.ensureProperty(Properties.ADDRESS_BITS)
         properties.ensureProperty(SEPARATE_LOAD_STORE_PORTS)
+        properties.ensureProperty(srcFile)
         properties.mergeIfExists(props)
 
         val addressBits = properties.getValue(Properties.ADDRESS_BITS)
         val dataBits = properties.getValue(Properties.BITSIZE)
-        val separateLoadStore: Boolean = properties.getValue(SEPARATE_LOAD_STORE_PORTS)
+        val separateLoadStore = properties.getValue(SEPARATE_LOAD_STORE_PORTS)
+        val file: PropertyFileValidator.FileWrapper? = properties.getValue(srcFile)
 
-        val ram = RAM(properties.getValue(Properties.LABEL), dataBits, addressBits, separateLoadStore)
+        properties.ensureProperty(ADDRESSABILITY[dataBits - 1])
+        if (props.containsProperty(ADDRESSABILITY[dataBits - 1])) {
+            val value = try {
+                props.getValue("Addressability")
+            } catch (_: ClassCastException) {
+                try { Addressability.valueOf(props.getValue("Addressability")) }
+                catch (_: IllegalArgumentException) { Addressability.WORD }
+            }
+            if (value in (ADDRESSABILITY[dataBits - 1].validator as PropertyListValidator).validValues)
+                properties.setValue(ADDRESSABILITY[dataBits - 1], value)
+        }
+        val addressability = properties.getValue(ADDRESSABILITY[dataBits - 1])
+
+        val ram = RAM(properties.getValue(Properties.LABEL), addressBits, dataBits, addressability, separateLoadStore, file?.file)
 
         val connections = arrayListOf(
             PortConnection(this, ram.getPort(RAM.Ports.PORT_ADDRESS), "Address", 0, 2), 
@@ -72,7 +91,7 @@ class RAMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<RAM>(x, y, 9, 5
         menuItem.setOnAction {
             val ram = component
             val memoryValidator =
-                PropertyMemoryValidator(ram.addressBits, ram.dataBits)
+                PropertyMemoryValidator(ram)
 
             val memory = ArrayList<MemoryLine>()
             val listener = { address: Int, data: Int ->
@@ -91,14 +110,14 @@ class RAMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<RAM>(x, y, 9, 5
                     ram.addMemoryListener(listener)
                     val currentState = circuit.circuitBoard.currentState
                     memory.addAll(
-                        memoryValidator.parse(ram.getMemoryContents(currentState))
+                        memoryValidator.parseLine(ram.getMemoryContents(currentState))
                         { address: Int, value: Int ->
                             simulatorWindow.simulator.runSync {
                                 // Component has been removed
                                 if (ram.circuit == null) {
                                     return@runSync
                                 }
-                                ram.store(currentState, address, value)
+                                ram.store(currentState, ram.effective(address), value)
                             }
                         }
                     )

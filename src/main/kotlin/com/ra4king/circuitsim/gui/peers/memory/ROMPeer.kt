@@ -8,18 +8,22 @@ import com.ra4king.circuitsim.gui.EditHistory
 import com.ra4king.circuitsim.gui.GuiUtils.getBounds
 import com.ra4king.circuitsim.gui.GuiUtils.getFont
 import com.ra4king.circuitsim.gui.Properties
+import com.ra4king.circuitsim.gui.properties.PropertyListValidator
 import com.ra4king.circuitsim.gui.properties.PropertyMemoryValidator
 import com.ra4king.circuitsim.gui.properties.PropertyMemoryValidator.MemoryLine
 import com.ra4king.circuitsim.simulator.CircuitState
 import com.ra4king.circuitsim.simulator.WireValue
+import com.ra4king.circuitsim.simulator.components.memory.ADDRESSABILITY
+import com.ra4king.circuitsim.simulator.components.memory.Addressability
 import com.ra4king.circuitsim.simulator.components.memory.ROM
-import javafx.beans.property.StringProperty
-import javafx.event.ActionEvent
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.MenuItem
 import javafx.scene.image.Image
 import javafx.scene.paint.Color
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.collections.flatMap
+import kotlin.collections.toIntArray
+import kotlin.text.toUInt
 
 /**
  * @author Roi Atalla
@@ -40,9 +44,24 @@ class ROMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<ROM>(x, y, 9, 5
         val addressBits = properties.getValue(Properties.ADDRESS_BITS)
         val dataBits = properties.getValue(Properties.BITSIZE)
 
+        properties.ensureProperty(ADDRESSABILITY[dataBits - 1])
+        if (props.containsProperty(ADDRESSABILITY[dataBits - 1])) {
+            val value = try {
+                props.getValue("Addressability")
+            } catch (_: ClassCastException) {
+                try { Addressability.valueOf(props.getValue("Addressability")) }
+                catch (_: IllegalArgumentException) { Addressability.WORD }
+            }
+            if (value in (ADDRESSABILITY[dataBits - 1].validator as PropertyListValidator).validValues)
+                properties.setValue(ADDRESSABILITY[dataBits - 1], value)
+        }
+        val addressability = properties.getValue(ADDRESSABILITY[dataBits - 1])
+
+        val rom = ROM(properties.getValue(Properties.LABEL), addressBits, dataBits, addressability)
+
         contentsProperty = Properties.Property(
             "Contents",
-            PropertyMemoryValidator(addressBits, dataBits),
+            PropertyMemoryValidator(rom),
             null
         )
         val oldMemory: String?
@@ -54,8 +73,9 @@ class ROMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<ROM>(x, y, 9, 5
         }
         properties.setValue(contentsProperty, contentsProperty.validator.parse(oldMemory))
 
-        val memory: IntArray = memoryToArray(properties.getValue(contentsProperty))
-        val rom = ROM(properties.getValue(Properties.LABEL), dataBits, addressBits, memory)
+        val memory: IntArray = properties.getValue(contentsProperty)?.flatMap { it.values }
+            ?.map { it.get().toUInt(16).toInt() }?.toIntArray() ?: IntArray(0)
+        rom.initMemory(memory)
 
         val connections = arrayListOf(
             PortConnection(this, rom.getPort(ROM.Ports.PORT_ADDRESS), "Address", 0, 2),
@@ -94,15 +114,15 @@ class ROMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<ROM>(x, y, 9, 5
             try {
                 val simulatorWindow = circuit.simulatorWindow
                 simulatorWindow.simulator.runSync {
-                    lines.addAll(memoryValidator.parse(rom.memory) { address: Int?, newValue: Int? ->
+                    lines.addAll(memoryValidator.parseLine(rom.memory) { address: Int, newValue: Int ->
                         simulatorWindow.simulator.runSync {
                             // Component has been removed
                             if (rom.circuit == null) {
                                 return@runSync
                             }
 
-                            val oldValue = rom.load(address!!)
-                            rom.store(address, newValue!!)
+                            val oldValue = rom.load(address)
+                            rom.store(address, newValue)
                             simulatorWindow.editHistory.addAction(object : EditHistory.Edit(circuit) {
                                 override fun undo() {
                                     rom.store(address, oldValue)
@@ -171,11 +191,5 @@ class ROMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<ROM>(x, y, 9, 5
                 Properties(), true
             )
         }
-
-        private fun memoryToArray(lines: MutableList<MemoryLine>?): IntArray = lines
-            ?.stream()
-            ?.flatMap { line: MemoryLine? -> line!!.values.stream() }
-            ?.mapToInt { prop: StringProperty? -> Integer.parseUnsignedInt(prop!!.get(), 16) }
-            ?.toArray() ?: IntArray(0)
     }
 }
