@@ -9,6 +9,10 @@ import com.ra4king.circuitsim.gui.GuiUtils.rotateElementSize
 import com.ra4king.circuitsim.gui.GuiUtils.rotateGraphics
 import com.ra4king.circuitsim.gui.GuiUtils.setBitColor
 import com.ra4king.circuitsim.gui.Properties
+import com.ra4king.circuitsim.gui.Properties.Direction.EAST
+import com.ra4king.circuitsim.gui.Properties.Direction.NORTH
+import com.ra4king.circuitsim.gui.Properties.Direction.SOUTH
+import com.ra4king.circuitsim.gui.Properties.Direction.WEST
 import com.ra4king.circuitsim.gui.properties.PropertyValidators
 import com.ra4king.circuitsim.simulator.CircuitState
 import com.ra4king.circuitsim.simulator.components.gates.Gate
@@ -53,18 +57,18 @@ abstract class GatePeer<T : Gate> @JvmOverloads constructor(
         }
 
         val gate = buildGate(properties)
-        val gateNum = gate!!.numInputs
+        val numInputs = gate!!.numInputs
 
         var hasNegatedInput = false
         if (allowNegatingInputs) {
-            for (i in 0..<max(gateNum, negationCounts)) {
+            for (i in 0..<max(numInputs, negationCounts)) {
                 val propName = "Negate $i"
 
-                if (i < gateNum) {
+                if (i < numInputs) {
                     val property = Properties.Property(propName, PropertyValidators.YESNO_VALIDATOR, false)
                     if (i == 0) {
                         property.display += " Top/Left"
-                    } else if (i == gateNum - 1) {
+                    } else if (i == numInputs - 1) {
                         property.display += " Bottom/Right"
                     }
 
@@ -87,125 +91,46 @@ abstract class GatePeer<T : Gate> @JvmOverloads constructor(
 
         // Expand the width (in the default configuration) by 1 if any inputs are negated or if there are more than
         // five inputs. This will show the additional line in for each gate to avoid confusing "floating" ports.
-        if (hasNegatedInput || (gateNum > 5 && !forceLegacyInputPlacement)) {
+        if (hasNegatedInput || (numInputs > 5 && !forceLegacyInputPlacement)) {
             hasExpandedInputs = true
             this.width = width + 1
-        } else if (gateNum > 5) {
+        } else if (numInputs > 5) {
             // Legacy behavior where the file was saved with an older version
             properties.setValue(LEGACY_GATE_INPUT_PLACEMENT, true)
         }
 
         rotateElementSize(
             this,
-            Properties.Direction.EAST,
+            EAST,
             properties.getValue(Properties.DIRECTION)
         )
 
         val connections = ArrayList<PortConnection>()
 
-        var inputOffset = 0
+        fun addConn(portIndex: Int, x: Int, y: Int) {
+            connections.add(PortConnection(this, gate.getPort(portIndex), x, y))
+        }
+
+        val inputOffset = { i: Int ->
+            val add = if (numInputs % 2 == 0 && i >= numInputs / 2) 3 else 2
+            i + add - numInputs / 2 - (if (numInputs == 1) 1 else 0)
+        }
+
+        // Add all input ports
+        val (x: (Int) -> Int, y: (Int) -> Int) = when (properties.getValue(Properties.DIRECTION)) {
+            WEST -> Pair({ _: Int -> this.width }, inputOffset)
+            NORTH -> Pair(inputOffset) { _: Int -> this.height }
+            SOUTH -> Pair(inputOffset) { _: Int -> 0 }
+            EAST -> Pair({ _: Int -> 0 }, inputOffset)
+        }
+        for (i in 0..<numInputs) addConn(i, x(i), y(i))
+
+        // Add output port
         when (properties.getValue(Properties.DIRECTION)) {
-            Properties.Direction.WEST -> {
-                inputOffset = this.width
-                var i = 0
-                while (i < gateNum) {
-                    val add = if (gateNum % 2 == 0 && i >= gateNum / 2) 3 else 2
-                    connections.add(
-                        PortConnection(
-                            this,
-                            gate.getPort(i),
-                            inputOffset,
-                            i + add - gateNum / 2 - (if (gateNum == 1) 1 else 0)
-                        )
-                    )
-                    i++
-                }
-
-                connections.add(
-                    PortConnection(
-                        this,
-                        gate.getPort(gateNum),
-                        0,
-                        height / 2
-                    )
-                )
-            }
-
-            Properties.Direction.EAST -> {
-                var i = 0
-                while (i < gateNum) {
-                    val add = if (gateNum % 2 == 0 && i >= gateNum / 2) 3 else 2
-                    connections.add(
-                        PortConnection(
-                            this,
-                            gate.getPort(i),
-                            inputOffset,
-                            i + add - gateNum / 2 - (if (gateNum == 1) 1 else 0)
-                        )
-                    )
-                    i++
-                }
-
-                connections.add(
-                    PortConnection(
-                        this,
-                        gate.getPort(gateNum),
-                        this.width,
-                        height / 2
-                    )
-                )
-            }
-
-            Properties.Direction.NORTH -> {
-                inputOffset = height
-                var i = 0
-                while (i < gateNum) {
-                    val add = if (gateNum % 2 == 0 && i >= gateNum / 2) 3 else 2
-                    connections.add(
-                        PortConnection(
-                            this,
-                            gate.getPort(i),
-                            i + add - gateNum / 2 - (if (gateNum == 1) 1 else 0),
-                            inputOffset
-                        )
-                    )
-                    i++
-                }
-
-                connections.add(
-                    PortConnection(
-                        this,
-                        gate.getPort(gateNum),
-                        this.width / 2,
-                        0
-                    )
-                )
-            }
-
-            Properties.Direction.SOUTH -> {
-                var i = 0
-                while (i < gateNum) {
-                    val add = if (gateNum % 2 == 0 && i >= gateNum / 2) 3 else 2
-                    connections.add(
-                        PortConnection(
-                            this,
-                            gate.getPort(i),
-                            i + add - gateNum / 2 - (if (gateNum == 1) 1 else 0),
-                            inputOffset
-                        )
-                    )
-                    i++
-                }
-
-                connections.add(
-                    PortConnection(
-                        this,
-                        gate.getPort(gateNum),
-                        this.width / 2,
-                        height
-                    )
-                )
-            }
+            WEST -> addConn(numInputs, 0, height / 2)
+            EAST -> addConn(numInputs, this.width, height / 2)
+            NORTH -> addConn(numInputs, this.width / 2, 0)
+            SOUTH -> addConn(numInputs, this.width / 2, this.height)
         }
 
         init(gate, properties, connections)
@@ -245,18 +170,18 @@ abstract class GatePeer<T : Gate> @JvmOverloads constructor(
                 graphics.lineWidth = 1.0
 
                 when (direction) {
-                    Properties.Direction.WEST -> {
+                    WEST -> {
                         x -= GuiUtils.BLOCK_SIZE
                         y = (y - GuiUtils.BLOCK_SIZE * 0.5).toInt()
                     }
 
-                    Properties.Direction.EAST -> y = (y - GuiUtils.BLOCK_SIZE * 0.5).toInt()
-                    Properties.Direction.NORTH -> {
+                    EAST -> y = (y - GuiUtils.BLOCK_SIZE * 0.5).toInt()
+                    NORTH -> {
                         y -= GuiUtils.BLOCK_SIZE
                         x = (x - GuiUtils.BLOCK_SIZE * 0.5).toInt()
                     }
 
-                    Properties.Direction.SOUTH -> x = (x - GuiUtils.BLOCK_SIZE * 0.5).toInt()
+                    SOUTH -> x = (x - GuiUtils.BLOCK_SIZE * 0.5).toInt()
                 }
 
                 graphics.fillOval(
@@ -277,13 +202,13 @@ abstract class GatePeer<T : Gate> @JvmOverloads constructor(
                 graphics.lineWidth = 2.0
 
                 val dx = when (direction) {
-                    Properties.Direction.WEST -> -(GuiUtils.BLOCK_SIZE - 1)
-                    Properties.Direction.EAST -> GuiUtils.BLOCK_SIZE - 1
+                    WEST -> -(GuiUtils.BLOCK_SIZE - 1)
+                    EAST -> GuiUtils.BLOCK_SIZE - 1
                     else -> 0
                 }
                 val dy = when (direction) {
-                    Properties.Direction.NORTH -> -(GuiUtils.BLOCK_SIZE - 1)
-                    Properties.Direction.SOUTH -> GuiUtils.BLOCK_SIZE - 1
+                    NORTH -> -(GuiUtils.BLOCK_SIZE - 1)
+                    SOUTH -> GuiUtils.BLOCK_SIZE - 1
                     else -> 0
                 }
 
@@ -301,23 +226,23 @@ abstract class GatePeer<T : Gate> @JvmOverloads constructor(
         // This prevents fake wires or ports from hanging off the edge of the gate, which can
         // confuse students.
         var pad: Int = if (hasExpandedInputs)
-            // Need to account for the bubbles drawn above
+        // Need to account for the bubbles drawn above
             when (direction) {
-                Properties.Direction.NORTH, Properties.Direction.WEST -> -GuiUtils.BLOCK_SIZE
-                Properties.Direction.EAST, Properties.Direction.SOUTH -> GuiUtils.BLOCK_SIZE
+                NORTH, WEST -> -GuiUtils.BLOCK_SIZE
+                EAST, SOUTH -> GuiUtils.BLOCK_SIZE
             }
         else 0
 
         pad += when (direction) {
-            Properties.Direction.WEST -> screenWidth
-            Properties.Direction.NORTH -> screenHeight
+            WEST -> screenWidth
+            NORTH -> screenHeight
             else -> 0
         }
 
         val screenX = this.screenX.toDouble()
         val screenY = this.screenY.toDouble()
         when (direction) {
-            Properties.Direction.WEST, Properties.Direction.EAST -> {
+            WEST, EAST -> {
                 if (minPortY < screenY) {
                     // The -1s and +1s here are to account for the width of fake wires drawn above
                     // (otherwise they overhang this little black line)
@@ -338,7 +263,7 @@ abstract class GatePeer<T : Gate> @JvmOverloads constructor(
                 }
             }
 
-            Properties.Direction.NORTH, Properties.Direction.SOUTH -> {
+            NORTH, SOUTH -> {
                 if (minPortX < screenX) {
                     graphics.strokeLine(
                         minPortX - 1.0,

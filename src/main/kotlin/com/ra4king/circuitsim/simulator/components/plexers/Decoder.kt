@@ -11,7 +11,7 @@ import java.util.*
  * @author Roi Atalla
  */
 class Decoder(name: String, val numSelectBits: Int) : Component(name,
-    IntArray((1 shl numSelectBits) + 1) { if (it == numSelectBits - 1) numSelectBits else 1 }) {
+    IntArray((1 shl numSelectBits) + 1) { if (it == (1 shl numSelectBits)) numSelectBits else 1 }) {
 
 	val numOutputs: Int = 1 shl numSelectBits
 
