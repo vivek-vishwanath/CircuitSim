@@ -58,6 +58,15 @@
     -fx-min-width: 36px;
 }
 
+.property-list-validator-dropdown {
+    -fx-background-color: #AEE;
+    -fx-background-radius: 8 8 8 8;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-color: #8CC;
+    -fx-border-radius: 8 8 8 8;
+
+}
+
 .button-top-left {;
     -fx-background-radius: 8 0 0 0;
 }

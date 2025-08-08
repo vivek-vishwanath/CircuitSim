@@ -62,7 +62,7 @@ class RAM(
     fun getMemoryContents(circuitState: CircuitState) = circuitState.getComponentProperty(this) as? IntArray ?: IntArray(1 shl addressBits)
 
     override fun init(circuitState: CircuitState, lastProperty: Any?) {
-        val contents = srcFile?.let { PropertyMemoryValidator.parseFile(it, addressBits, dataBits) }
+        val contents = srcFile?.let { try { PropertyMemoryValidator.parseFile(it, addressBits, dataBits) } catch (_: Exception) { null } }
         val memory = (lastProperty as? IntArray)?.let { prev -> IntArray(1 shl addressBits) { if (it < prev.size) prev[it] else 0 } }
             ?: contents?.let { IntArray(1 shl addressBits) { i -> contents[i / 16]?.values?.get(i % 16)?.value?.toUInt(16)?.toInt() ?: 0 } }
         circuitState.putComponentProperty(this, memory)

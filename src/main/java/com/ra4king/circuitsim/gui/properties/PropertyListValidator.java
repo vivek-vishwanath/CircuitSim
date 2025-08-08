@@ -1,9 +1,6 @@
 package com.ra4king.circuitsim.gui.properties;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -11,6 +8,7 @@ import java.util.stream.Collectors;
 import com.ra4king.circuitsim.gui.Properties.PropertyValidator;
 
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
@@ -80,7 +78,8 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 	
 	@Override
 	public Node createGui(Stage stage, T value, Consumer<T> onAction) {
-		if (validValues.size() > 32) return createTextField(value, onAction);
+		if (validValues.size() > 33) return createTextField(value, onAction);
+		if (validValues.size() > 9 && validValues.contains(-1)) return createDropdown(value, onAction);
 		if (validValues.size() == 16 || validValues.size() > 30 && value instanceof Integer) {
 			VBox vbox = new VBox();
 			for (int i = 0; i < 4; i++) {
@@ -119,7 +118,7 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
         for (T validValue : validValues) {
             width += validValue.toString().length() + 2;
         }
-		return width > 36 ? createDropdown(value, onAction) : createHorizontalSelect(value, onAction);
+		return width > 36 ? createTextField(value, onAction) : createHorizontalSelect(value, onAction);
 	}
 
 	TextField createTextField(T value, Consumer<T> onAction) {
@@ -163,13 +162,13 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 	}
 
 	Node createHorizontalSelect(T value, Consumer<T> onAction) {
-		HBox valueList = new HBox();
+		ArrayList<ToggleButton> buttons = new ArrayList<>();
 		String selected = toString(value);
 		for (int i = 0; i < validValues.size(); i++) {
 			T t = validValues.get(i);
 			String text = toString.apply(t);
 			ToggleButton button = new ToggleButton(text);
-			valueList.getChildren().add(button);
+			buttons.add(button);
 			button.setSelected(text.equals(selected));
 			button.setOnAction(event -> {
 				try {
@@ -177,17 +176,15 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 				} catch (Exception exc) {
 					exc.printStackTrace();
 				}
-				valueList.getChildren().forEach(node -> {
+				buttons.forEach(node -> {
 					ToggleButton toggleButton = (ToggleButton) node;
 					toggleButton.setSelected(toggleButton == button);
 				});
 			});
 			button.getStyleClass().add("property-list-validator-button");
-			if (i == 0) button.getStyleClass().add("button-left");
-			else if (i == validValues.size() - 1) button.getStyleClass().add("button-right");
+			if (i == 0 && validValues.size() > 1) button.getStyleClass().add("button-left");
+			else if (i == validValues.size() - 1 && validValues.size() > 1) button.getStyleClass().add("button-right");
 		}
-//		valueList.getStyleClass().add("property-list-validator");
-
-		return valueList;
+		return new HBox(buttons.toArray(new ToggleButton[0]));
 	}
 }
