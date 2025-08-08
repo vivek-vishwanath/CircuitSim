@@ -216,7 +216,7 @@ public class PropertyMemoryValidator implements PropertyValidator<List<MemoryLin
     }
 
     public static List<MemoryLine> parseFile(File selectedFile, int addressBits, int dataBits) {
-        if (selectedFile != null && !selectedFile.getPath().equals("null")) {
+        if (selectedFile != null && !selectedFile.getPath().equals("null") && !selectedFile.getPath().isEmpty()) {
             try {
                 String contents = new String(Files.readAllBytes(selectedFile.toPath()));
                 return parseLine(contents, addressBits, dataBits);

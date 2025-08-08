@@ -82,7 +82,8 @@ object FileFormat {
     @JvmStatic
     fun parse(contents: String?): CircuitFile? = GSON.fromJson(contents, CircuitFile::class.java)
 
-    class RevisionSignatureBlock private constructor(currentHash: String?,
+    class RevisionSignatureBlock private constructor(
+        currentHash: String?,
         val previousHash: String, val fileDataHash: String,
         val timeStamp: String, val copiedBlocks: String
     ) {
@@ -93,7 +94,7 @@ object FileFormat {
                 this(
                     null, previousHash, fileDataHash,
                     System.currentTimeMillis().toString(),
-                    copiedBlocks.joinToString { "\t$it" })
+                    copiedBlocks.joinToString("") { "\t$it" })
 
         constructor(stringifiedBlock: String) : this(new(stringifiedBlock))
 
@@ -106,7 +107,7 @@ object FileFormat {
                 val copiedBlocks = when {
                     fields.size < 4 -> throw NullPointerException("File is corrupted. Contact Course Staff for Assistance.")
                     fields.size == 4 -> ""
-                    else -> fields.copyOfRange(4, fields.size).joinToString { "\t$it" }
+                    else -> fields.copyOfRange(4, fields.size).joinToString("") { "\t$it" }
                 }
                 return arrayOf(fields[1], fields[0], fields[3], fields[2], copiedBlocks)
             }
