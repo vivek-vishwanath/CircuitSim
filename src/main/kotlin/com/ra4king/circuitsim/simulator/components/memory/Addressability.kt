@@ -12,11 +12,19 @@ interface MemoryUnit {
     val dataWidth: Int
     val addressability: Addressability
 
-    val bpw get() = when (addressability) {
-        Addressability.BYTE -> if (dataWidth == 16) 2 else 1
+    val bytesPerEntry get() = when (addressability) {
+        Addressability.BYTE -> if (dataWidth == 16) 2 else 4
         Addressability.HALF_WORD -> 2
-        Addressability.WORD -> 4
+        Addressability.WORD -> 1
     }
+
+    val addrBitsPerWord get() = when (addressability) {
+        Addressability.BYTE -> 2
+        Addressability.HALF_WORD -> 1
+        Addressability.WORD -> 0
+    }
+
+    val netAddrBits get() = addressWidth - addrBitsPerWord
 
     fun effective(address: Int) = address / when (dataWidth) {
         32 -> when (addressability) {
