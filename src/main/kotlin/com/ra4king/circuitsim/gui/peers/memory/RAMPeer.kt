@@ -17,6 +17,7 @@ import com.ra4king.circuitsim.simulator.CircuitState
 import com.ra4king.circuitsim.simulator.WireValue
 import com.ra4king.circuitsim.simulator.WireValue.Companion.of
 import com.ra4king.circuitsim.simulator.components.memory.ADDRESSABILITY
+import com.ra4king.circuitsim.simulator.components.memory.ADDRESSABILITY_PROP_NAME
 import com.ra4king.circuitsim.simulator.components.memory.Addressability
 import com.ra4king.circuitsim.simulator.components.memory.RAM
 import javafx.scene.canvas.GraphicsContext
@@ -54,10 +55,10 @@ class RAMPeer(props: Properties, x: Int, y: Int) : ComponentPeer<RAM>(x, y, 9, 5
 
         properties.ensureProperty(ADDRESSABILITY[dataBits - 1])
         if (props.containsProperty(ADDRESSABILITY[dataBits - 1])) {
-            val value = try {
-                props.getValue("Addressability")
+            val value: Addressability? = try {
+                props.getValue(ADDRESSABILITY_PROP_NAME)
             } catch (_: ClassCastException) {
-                try { Addressability.valueOf(props.getValue("Addressability")) }
+                try { Addressability.valueOf(props.getValue(ADDRESSABILITY_PROP_NAME)) }
                 catch (_: IllegalArgumentException) { Addressability.WORD }
             }
             if (value in (ADDRESSABILITY[dataBits - 1].validator as PropertyListValidator).validValues)

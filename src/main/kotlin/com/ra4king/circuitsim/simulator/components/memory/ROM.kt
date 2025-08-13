@@ -17,12 +17,12 @@ class ROM(
 
     val addressBits = addressWidth
     val dataBits = dataWidth
-    val memory = IntArray(1 shl addressBits)
+    val memory = IntArray(1 shl netAddrBits)
 
     private val listeners = ArrayList<(Int, Int) -> Unit>()
 
     init {
-        require(!(addressBits > 16 || addressBits <= 0)) { "Address bits cannot be more than 16 bits." }
+        require(!(addressBits > MAX_ADDRESS_BITS || addressBits <= 0)) { "Address bits cannot be more than $MAX_ADDRESS_BITS bits." }
     }
 
     fun initMemory(memory: IntArray) {
@@ -65,5 +65,9 @@ class ROM(
 
     enum class Ports {
         PORT_ADDRESS, PORT_ENABLE, PORT_DATA
+    }
+
+    companion object {
+        const val MAX_ADDRESS_BITS = 20
     }
 }

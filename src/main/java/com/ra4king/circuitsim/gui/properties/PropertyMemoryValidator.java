@@ -134,12 +134,12 @@ public class PropertyMemoryValidator implements PropertyValidator<List<MemoryLin
     }
 
     public List<MemoryLine> parseLine(int[] values, BiConsumer<Integer, Integer> memoryListener) {
-        return parseLine(values, memoryListener, unit.getAddressWidth(), unit.getDataWidth());
+        return parseLine(values, memoryListener, unit.getNetAddrBits(), unit.getDataWidth());
     }
 
     @Override
     public List<MemoryLine> parse(String value) {
-        return parseLine(value, unit.getAddressWidth(), unit.getDataWidth());
+        return parseLine(value, unit.getNetAddrBits(), unit.getDataWidth());
     }
 
 
@@ -244,14 +244,14 @@ public class PropertyMemoryValidator implements PropertyValidator<List<MemoryLin
         address.setSortable(false);
         address.setEditable(false);
         address.setCellValueFactory(param -> new SimpleStringProperty(String.format("%0" + (1 + (unit.getAddressWidth() - 1) / 4) + "x",
-                param.getValue().address * 4 / unit.getBpw())));
+                param.getValue().address * unit.getBytesPerEntry())));
         tableView.getColumns().add(address);
 
-        int columns = Math.min(1 << unit.getAddressWidth(), 16);
+        int columns = Math.min(1 << unit.getNetAddrBits(), 16);
         for (int i = 0; i < columns; i++) {
             int j = i;
 
-            TableColumn<MemoryLine, String> column = new TableColumn<>(String.format("+%x", i * 4 / unit.getBpw()));
+            TableColumn<MemoryLine, String> column = new TableColumn<>(String.format("+%x", i * unit.getBytesPerEntry()));
             column.setStyle("-fx-alignment: CENTER;");
             column.setSortable(false);
             column.setEditable(true);
@@ -345,7 +345,7 @@ public class PropertyMemoryValidator implements PropertyValidator<List<MemoryLin
             fileChooser.setTitle("Choose file");
             fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
             File selectedFile = fileChooser.showOpenDialog(memoryStage);
-            List<MemoryLine> src = parseFile(selectedFile, unit.getAddressWidth(), unit.getDataWidth());
+            List<MemoryLine> src = parseFile(selectedFile, unit.getNetAddrBits(), unit.getDataWidth());
             if (src != null)
                 copyMemoryValues(lines, src);
         });

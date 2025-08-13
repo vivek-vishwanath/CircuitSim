@@ -27,7 +27,7 @@ class RAM(
     private val listeners = ArrayList<(Int, Int) -> Unit>()
 
     init {
-        require(!(addressBits > 16 || addressBits <= 0)) { "Address bits cannot be more than 16 bits." }
+        require(!(addressBits > MAX_ADDRESS_BITS || addressBits <= 0)) { "Address bits cannot be more than $MAX_ADDRESS_BITS bits." }
 
         this.noValue = WireValue(dataBits)
     }
@@ -59,12 +59,12 @@ class RAM(
 
     fun load(circuitState: CircuitState, address: Int) = getMemoryContents(circuitState)[effective(address)]
 
-    fun getMemoryContents(circuitState: CircuitState) = circuitState.getComponentProperty(this) as? IntArray ?: IntArray(1 shl addressBits)
+    fun getMemoryContents(circuitState: CircuitState) = circuitState.getComponentProperty(this) as? IntArray ?: IntArray(1 shl netAddrBits)
 
     override fun init(circuitState: CircuitState, lastProperty: Any?) {
-        val contents = srcFile?.let { try { PropertyMemoryValidator.parseFile(it, addressBits, dataBits) } catch (_: Exception) { null } }
-        val memory = (lastProperty as? IntArray)?.let { prev -> IntArray(1 shl addressBits) { if (it < prev.size) prev[it] else 0 } }
-            ?: contents?.let { IntArray(1 shl addressBits) { i -> contents[i / 16]?.values?.get(i % 16)?.value?.toUInt(16)?.toInt() ?: 0 } }
+        val contents = srcFile?.let { try { PropertyMemoryValidator.parseFile(it, netAddrBits, dataBits) } catch (_: Exception) { null } }
+        val memory = (lastProperty as? IntArray)?.let { prev -> IntArray(1 shl netAddrBits) { if (it < prev.size) prev[it] else 0 } }
+            ?: contents?.let { IntArray(1 shl netAddrBits) { i -> contents[i / 16]?.values?.get(i % 16)?.value?.toUInt(16)?.toInt() ?: 0 } }
         circuitState.putComponentProperty(this, memory)
     }
 
@@ -134,6 +134,8 @@ class RAM(
     }
 
     companion object {
+
+        const val MAX_ADDRESS_BITS = 20
 
         private fun getPortBits(bitSize: Int, addressBits: Int, isSeparateLoadStore: Boolean) =
             if (isSeparateLoadStore) intArrayOf(addressBits, 1, 1, 1, 1, bitSize, bitSize, 1)

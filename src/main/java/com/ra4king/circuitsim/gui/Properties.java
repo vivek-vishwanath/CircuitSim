@@ -12,6 +12,7 @@ import com.ra4king.circuitsim.gui.properties.IntegerString.IntegerStringValidato
 import com.ra4king.circuitsim.gui.properties.PropertyListValidator;
 import com.ra4king.circuitsim.gui.properties.PropertyValidators;
 
+import com.ra4king.circuitsim.simulator.components.memory.RAM;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -265,7 +266,7 @@ public class Properties {
 		DIRECTION = new Property<>("Direction", new PropertyListValidator<>(Direction.values()), Direction.EAST);
 		
 		List<Integer> addressBits = new ArrayList<>();
-		for (int i = 1; i <= 16; i++) {
+		for (int i = 1; i <= RAM.MAX_ADDRESS_BITS; i++) {
 			addressBits.add(i);
 		}
 		ADDRESS_BITS = new Property<>("Address bits", new PropertyListValidator<>(addressBits), 8);
