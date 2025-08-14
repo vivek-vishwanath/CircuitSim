@@ -27,6 +27,13 @@ You can execute the JAR by running `java -jar CircuitSim.jar`. You must have JDK
 Changelog
 =========
 
+1.11.0 (CE)
+------
+ - Migrate codebase to Kotlin
+ - UI Redesign
+ - Customize RAM Addressability (byte, half-word, word)
+ - Specify src files for RAM data, so when you reload (CTRL+R) it restores the RAM data with the data from the src file
+
 1.10.0 (CE)
 ------
 

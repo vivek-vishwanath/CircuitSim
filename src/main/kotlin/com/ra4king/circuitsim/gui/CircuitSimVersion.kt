@@ -33,6 +33,6 @@ class CircuitSimVersion(@JvmField val version: String) : Comparable<CircuitSimVe
         private val VERSION_PATTERN: Pattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(b?)")
 
         @JvmField
-        val VERSION = CircuitSimVersion("1.10.0-CE")
+        val VERSION = CircuitSimVersion("1.11.0-CE")
     }
 }
