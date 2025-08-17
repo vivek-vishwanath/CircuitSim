@@ -23,10 +23,10 @@ class CircuitSimVersion(@JvmField val version: String) : Comparable<CircuitSimVe
 
     override fun compareTo(other: CircuitSimVersion?) =
         other?.let {
-            major.compareTo(it.major) * 8 +
-                    minor.compareTo(it.minor) * 4 +
-                    bugfix.compareTo(it.bugfix) * 2 +
-                    beta.compareTo(it.beta)
+            (major.compareTo(it.major) * 8 +
+                minor.compareTo(it.minor) * 4 +
+                bugfix.compareTo(it.bugfix) * 2 +
+                it.beta.compareTo(beta)).compareTo(0)
         } ?: 0
 
     companion object {

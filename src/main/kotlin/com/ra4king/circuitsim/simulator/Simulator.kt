@@ -35,10 +35,6 @@ class Simulator {
         }
     }
 
-    fun runSync(runnable: Runnable) {
-        runSync { runnable.run() }
-    }
-
     fun hasLinksToUpdate(): Boolean {
         val tmp = AtomicBoolean()
         runSync { tmp.set(!linksToUpdate.isEmpty()) }

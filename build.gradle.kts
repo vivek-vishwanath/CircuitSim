@@ -43,13 +43,20 @@ kotlin {
 
 val javaFxVersion = "22"
 
+val javafxModules = arrayOf("base", "controls", "graphics", "fxml", "swing")
+val systems = arrayOf("win", "mac", "linux", "mac-aarch64", "linux-aarch64")
+
 dependencies {
     implementation("com.google.code.gson:gson:2.10")
-    val javafxModules = arrayOf("base", "controls", "graphics", "fxml", "swing")
     javafxModules.forEach { module ->
-        implementation ("org.openjfx:javafx-${module}:${javaFxVersion}:${getOs()}")
+        systems.forEach { os ->
+            implementation ("org.openjfx:javafx-${module}:${javaFxVersion}:$os")
+        }
     }
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation("org.mockito:mockito-core:4.11.0")
+    testImplementation("com.google.truth:truth:1.1.3")
+
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
 
@@ -63,12 +70,4 @@ jlink {
     launcher {
         name = "app"
     }
-}
-
-fun getOs(): String {
-    val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
-    if (osName.contains("win")) return "win"
-    if (osName.contains("mac")) return "mac"
-    if (osName.contains("linux")) return "linux"
-    throw GradleException("Unsupported OS: $osName")
 }

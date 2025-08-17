@@ -11,7 +11,7 @@ class Circuit(var name: String, val simulator: Simulator) {
 	val components = HashSet<Component>()
     private val states = HashSet<CircuitState>()
 	val topLevelState = CircuitState.init(this)
-    private val listeners = ConcurrentLinkedQueue<(circuit: Circuit, component: Component?, added: Boolean) -> Unit>()
+    private val listeners = ConcurrentLinkedQueue<CircuitChangeListener>()
     private var exception: RuntimeException? = null
 
     /**
@@ -32,7 +32,7 @@ class Circuit(var name: String, val simulator: Simulator) {
                 if (exception == null) exception = e
             }
         }
-        listeners.forEach { it(this, newComponent, true) }
+        listeners.forEach { it.circuitChanged(this, newComponent, true) }
     }
 
     private fun <T : Component> remove(component: T, removeLinks: Boolean): HashMap<CircuitState, Any?> {
@@ -49,7 +49,7 @@ class Circuit(var name: String, val simulator: Simulator) {
             }
         }
         component.circuit = null
-        listeners.forEach { it(this, component, false) }
+        listeners.forEach { it.circuitChanged(this, component, false) }
         return oldComponentProperties
     }
 
@@ -133,8 +133,12 @@ class Circuit(var name: String, val simulator: Simulator) {
 
     fun forEachState(consumer: Consumer<CircuitState>) = forEachState { consumer.accept(it) }
 
-    fun addListener(listener: (circuit: Circuit, component: Component?, added: Boolean) -> Unit) {
+    fun addListener(listener: CircuitChangeListener) {
         listeners.add(listener)
+    }
+
+    fun interface CircuitChangeListener {
+        fun circuitChanged(circuit: Circuit, component: Component?, added: Boolean)
     }
 
     override fun toString() = "Circuit $name"

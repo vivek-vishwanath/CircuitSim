@@ -79,7 +79,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.properties.Delegates
 
-class CircuitSim (val openWindow: Boolean, val init: Boolean = true, var debugMode: Boolean = false) : Application() {
+class CircuitSim @JvmOverloads constructor(val openWindow: Boolean, val init: Boolean = true, var debugMode: Boolean = false) : Application() {
 
     lateinit var scene: Scene
     lateinit var clockEnabled: CheckMenuItem
@@ -269,6 +269,12 @@ class CircuitSim (val openWindow: Boolean, val init: Boolean = true, var debugMo
             deleteCircuit(circuitManager, removeTab, true)
             return true
         }
+    }
+
+    @JvmOverloads
+    fun deleteCircuit(name: String, addNewOnEmpty: Boolean = true): Boolean {
+        deleteCircuit(getCircuitManager(name) ?: return false, true, addNewOnEmpty)
+        return true
     }
 
     fun deleteCircuit(manager: CircuitManager, removeTab: Boolean = true, addNewOnEmpty: Boolean = true) = runFxSync {
@@ -1129,7 +1135,7 @@ class CircuitSim (val openWindow: Boolean, val init: Boolean = true, var debugMo
 
             val canvasTab = Tab(revisedName)
             val circuitManager = CircuitManager(revisedName, this, simulator, showGridProp, canvasTab)
-            circuitManager.circuit.addListener(this::circuitModified)
+            circuitManager.circuit.addListener(Circuit.CircuitChangeListener(this::circuitModified))
 
             canvasTab.styleClass.add("top-level-indicator")
             val rename = MenuItem("Rename")

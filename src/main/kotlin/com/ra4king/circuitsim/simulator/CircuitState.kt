@@ -14,7 +14,7 @@ class CircuitState private constructor(
      *
      * @param circuit The Circuit which this CircuitState represents.
      */
-    private constructor(circuit: Circuit) : this(circuit, HashMap(), HashMap(), false) {
+    constructor(circuit: Circuit) : this(circuit, HashMap(), HashMap(), false) {
         circuit.addState(this)
     }
 
