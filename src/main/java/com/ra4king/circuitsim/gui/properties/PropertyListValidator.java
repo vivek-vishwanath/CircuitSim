@@ -136,7 +136,7 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
         for (T validValue : validValues) {
             width += validValue.toString().length() + 2;
         }
-		return width > 36 ? createTextField(value, onAction) : createHorizontalSelect(value, onAction);
+		return width > 36 ? createDropdown(value, onAction) : createHorizontalSelect(value, onAction);
 	}
 
 	TextField createTextField(T value, Consumer<T> onAction) {

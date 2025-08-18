@@ -5,7 +5,7 @@
 
 .button {
     -fx-background-color: #006a23;
-    -fx-background-radius: 12;
+    -fx-background-radius: 8;
     -fx-text-fill: white;
     -fx-font-size: 14px;
 }
@@ -100,8 +100,6 @@
 
 .new-component-section {
     -fx-background-color: white;
-    -fx-border-radius: 4;
-    -fx-background-radius: 4;
     -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.05), 6, 0, 0, 2);
     -fx-padding: 8;
     -fx-spacing: 4;
@@ -111,7 +109,6 @@
 
 .new-component-section > .title {
     -fx-background-color: #ffffff;
-    -fx-background-radius: 4;
     -fx-text-fill: #343a40;
     -fx-font-size: 15px;
     -fx-font-weight: 600;
@@ -126,7 +123,6 @@
     -fx-padding: 4 4 0 4;
     -fx-background-color: #F4F4F4;
     -fx-border-color: #F4F4F4;
-    -fx-background-radius: 0 0 12 12;
 }
 
 .new-component-section > .content {
@@ -208,15 +204,15 @@
 .tab-pane .tab:selected {
     -fx-background-color: #EEE;
     -fx-text-fill: #000000;
-    -fx-border-width: 0 0 4 0;
+    -fx-border-width: 1 1 5 1;
 }
 
 .top-level-indicator {
-    -fx-border-color: transparent transparent #007acc transparent;
+    -fx-border-color: #AAA #AAA #07C #AAA;
 }
 
 .nested-state-indicator {
-    -fx-border-color: transparent transparent #C22 transparent;
+    -fx-border-color: #AAA #AAA #C22 #AAA;
 }
 
 /* Content area */
@@ -225,6 +221,7 @@
 
 .tab-pane .tab {
     -fx-background-radius: 8 8 0 0;
+    -fx-border-radius: 8 8 0 0;;
 }
 .tab-pane .tab:selected {
 }
@@ -250,4 +247,57 @@
 
 .bit-size-box {
     -fx-alignment: center;
+}
+
+.accordion {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-spacing: 8px; /* space between panes */
+}
+
+/* TitledPane base */
+.titled-pane {
+    -fx-background-color: #f2f2f2; /* light gray bg */
+    -fx-border-color: #f2f2f2;     /* soft border */
+    -fx-padding: 0;
+}
+
+
+/* Header / Control area */
+.titled-pane > .title {
+    -fx-background-color: white;
+    -fx-padding: 12px 16px;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-border-color: #DDD;
+    -fx-border-width: 0 0 2 0;
+}
+
+/* Hover effect */
+.titled-pane > .title:hover {
+    -fx-background-color: #EEE; /* Tailwind gray-100 */
+}
+
+/* Open panel */
+.titled-pane:expanded > .content {
+    -fx-background-color: #f9fafb;
+    -fx-padding: 12px 16px;
+}
+
+.titled-pane-first > .title {
+    -fx-background-radius: 16px 16px 0 0;
+    -fx-border-radius: 16px 16px 0 0;
+}
+
+.titled-pane-last > .title {
+    -fx-background-radius: 0 0 16px 16px;
+}
+
+.color-picker {
+    -fx-background-color: #AEE;
+    -fx-background-radius: 8 8 8 8;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-color: #8CC;
+    -fx-border-radius: 8 8 8 8;
+
 }

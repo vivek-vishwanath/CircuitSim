@@ -424,6 +424,7 @@ class CircuitSim @JvmOverloads constructor(val openWindow: Boolean, val init: Bo
             } ?: run {
                 val circuitButtonsTab = TitledPane("Circuits", pane)
                 circuitButtonsTab.styleClass.add("new-component-section")
+                circuitButtonsTab.styleClass.add("titled-pane-last")
                 this.circuitButtonsTab = circuitButtonsTab
                 buttonTabPane.panes.add(circuitButtonsTab)
             }
@@ -1454,6 +1455,9 @@ class CircuitSim @JvmOverloads constructor(val openWindow: Boolean, val init: Bo
                 }
                 section = TitledPane(componentInfo.name.first, pane)
                 section.styleClass.add("new-component-section")
+                if (buttonTabPane.panes.isEmpty()) {
+                    section.styleClass.add("titled-pane-first")
+                }
                 buttonTabPane.panes.add(section)
                 buttonTabs[componentInfo.name.first] = section
             }
