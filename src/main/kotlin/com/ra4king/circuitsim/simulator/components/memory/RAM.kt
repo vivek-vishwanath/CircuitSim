@@ -45,7 +45,9 @@ class RAM(
     }
 
     fun store(state: CircuitState, address: Int, data: Int) {
-        getMemoryContents(state)[effective(address)] = data
+        val array = getMemoryContents(state)
+        array[effective(address)] = data
+        state.putComponentProperty(this, array)
 
         val enabled = state.getLastReceived(getPort(PORT_ENABLE)).getBit(0) != WireValue.State.ZERO
         val load = state.getLastReceived(getPort(PORT_LOAD)).getBit(0) != WireValue.State.ZERO

@@ -30,7 +30,7 @@ class WireValue(vararg bitList: State) {
             throw IllegalArgumentException("Different size wires detected: wanted ${this.bitSize}, found ${value.bitSize}")
         for (i in 0 until bitSize) {
             if (bits[i] == State.Z) bits[i] = value.bits[i]
-            else if (value.bits[i] == State.Z) value.bits[i] = bits[i]
+            else if (value.bits[i] == State.Z) bits[i] = bits[i]
             else if (bits[i] != value.bits[i])
                 throw ShortCircuitException(this, value)
         }
