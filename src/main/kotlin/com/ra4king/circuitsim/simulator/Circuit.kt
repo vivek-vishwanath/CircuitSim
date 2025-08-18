@@ -6,7 +6,7 @@ import java.util.function.Consumer
 /**
  * @author Roi Atalla
  */
-class Circuit(var name: String, val simulator: Simulator) {
+open class Circuit(var name: String, open val simulator: Simulator) {
 
 	val components = HashSet<Component>()
     private val states = HashSet<CircuitState>()

@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock
 /**
  * @author Roi Atalla
  */
-class Simulator {
+open class Simulator {
 
     val circuits = HashSet<Circuit>()
     var linksToUpdate = LinkedHashSet<Pair<CircuitState, Port.Link>>()

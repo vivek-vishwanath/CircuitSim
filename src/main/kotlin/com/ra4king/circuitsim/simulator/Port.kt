@@ -3,7 +3,7 @@ package com.ra4king.circuitsim.simulator
 /**
  * @author Roi Atalla
  */
-class Port(val component: Component, val portIndex: Int, bitSize: Int) {
+open class Port(val component: Component, val portIndex: Int, bitSize: Int) {
 
     var link = Link(bitSize)
         private set
@@ -19,9 +19,9 @@ class Port(val component: Component, val portIndex: Int, bitSize: Int) {
 
     override fun toString() = "Port($component[$portIndex])"
 
-    class Link(val bitSize: Int) {
+    open class Link(open val bitSize: Int) {
 
-		val participants = HashSet<Port>()
+		open val participants = HashSet<Port>()
 
         val circuit: Circuit?
             get() = participants

@@ -2,8 +2,8 @@ package com.ra4king.circuitsim.simulator
 
 import com.ra4king.circuitsim.simulator.CircuitState.LinkState.PortStateInfo
 
-class CircuitState private constructor(
-    val circuit: Circuit,
+open class CircuitState private constructor(
+    open val circuit: Circuit,
     private val componentProperties: HashMap<Component, Any?>,
     private val linkStates: HashMap<Port.Link, LinkState>,
     private val readOnly: Boolean
