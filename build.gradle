@@ -1,0 +1,137 @@
+plugins {
+	id 'java'
+
+	// Apply the application plugin to add support for building a Java application
+	id 'application'
+
+	id 'org.jetbrains.kotlin.jvm' version '2.0.0'
+}
+
+application {
+	// Define the main class for the application
+	mainClass = 'com.ra4king.circuitsim.EntrypointKt'
+}
+group = 'CircuitSim'
+
+ext.moduleName = 'Project.com.ra4king.circuitsim.gui'
+
+kotlin {
+	jvmToolchain( 17 )
+}
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+	// Use mavenCentral for resolving dependencies
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'com.google.code.gson:gson:2.10'
+
+	// All of these are included due to the CircuitSimRunner hack.
+	// Refer to that module for more details.
+	implementation "org.openjfx:javafx-base:22:win"
+	implementation "org.openjfx:javafx-base:22:linux-aarch64"
+	implementation "org.openjfx:javafx-base:22:linux"
+	implementation "org.openjfx:javafx-base:22:mac-aarch64"
+	implementation "org.openjfx:javafx-base:22:mac"
+	implementation "org.openjfx:javafx-controls:22:win"
+	implementation "org.openjfx:javafx-controls:22:linux-aarch64"
+	implementation "org.openjfx:javafx-controls:22:linux"
+	implementation "org.openjfx:javafx-controls:22:mac-aarch64"
+	implementation "org.openjfx:javafx-controls:22:mac"
+	implementation "org.openjfx:javafx-graphics:22:win"
+	implementation "org.openjfx:javafx-graphics:22:linux-aarch64"
+	implementation "org.openjfx:javafx-graphics:22:linux"
+	implementation "org.openjfx:javafx-graphics:22:mac-aarch64"
+	implementation "org.openjfx:javafx-graphics:22:mac"
+	implementation "org.openjfx:javafx-swing:22:win"
+	implementation "org.openjfx:javafx-swing:22:linux-aarch64"
+	implementation "org.openjfx:javafx-swing:22:linux"
+	implementation "org.openjfx:javafx-swing:22:mac-aarch64"
+	implementation "org.openjfx:javafx-swing:22:mac"
+
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+	testImplementation 'org.mockito:mockito-core:4.11.0'
+	testImplementation 'com.google.truth:truth:1.1.3'
+
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+}
+
+// This jar section moves the two architectures (amd64 and aarch64) into their own folder,
+// so that CircuitSimRunner can rely on it for its multi-platform hack.
+// Again, refer to that module for more details.
+jar {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	into 'resources', {
+		from 'resources'
+	}
+	inputs.property("moduleName", moduleName)
+	manifest {
+		attributes(
+				'Automatic-Module-Name': moduleName,
+				'Main-Class': application.mainClass
+		)
+	}
+
+	// Skip native libraries for aarch64-supported platforms initially.
+	// Why let Windows .dlls slip by? The naive answer is that there aren't
+	// even aarch64 builds for JavaFX, so the architecture is not a concern
+	// since we can always assume amd64. The truthful answer is that our
+	// strategy for dealing with amd64/aarch64 dlls is to put them in
+	// different subdirectories in the jar, and then extract them to a
+	// temporary directory at runtime based on the running architecture.
+	// Unfortunately, on Windows, we can't delete the native .dlls from the
+	// temporary directory while the JVM is still running, since it hasn't
+	// closed the .dlls, meaning Windows keeps all those .dlls locked.
+	// So the solution we take here is to use this cross-architecture hack
+	// for macOS/Linux native libraries and leave the Windows native
+	// libraries alone.
+	from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it).matching {
+		exclude '*.dylib'
+		exclude '*.so'
+	}}
+
+	// Okay, now put native libraries for macOS/Linux in their own
+	// architecture-specific directories inside the fat jar. We can tell ARM
+	// from x86 libraries by checking the filename of their containing jar
+	// (strangely, x86 is never mentioned in the jar names explicitly —
+	// instead, it's the absence of aarch64). At runtime, we will extract
+	// the libraries for the current architecture so that JavaFX can load them.
+	into 'amd64', {
+		from configurations.runtimeClasspath.filter { it.isFile()
+		                                              && it.getName().contains('javafx')
+		                                              && !it.getName().contains("aarch64") }
+		                                    .collectMany { zipTree(it).matching {
+		                                        include '*.dylib'
+		                                        include '*.so'
+		                                    }.getFiles() }
+	}
+
+	into 'aarch64', {
+		from configurations.runtimeClasspath.filter { it.isFile()
+		                                              && it.getName().contains('javafx')
+		                                              && it.getName().contains("aarch64") }
+		                                    .collectMany { zipTree(it).matching {
+		                                        include '*.dylib'
+		                                        include '*.so'
+		                                    }.getFiles() }
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+// Displays unchecked and deprecation warnings for Java compilations.
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+}
+
+tasks.register('createJar', Copy) {
+	dependsOn 'jar'
+	into "${layout.buildDirectory}/libs"
+	from configurations.runtimeClasspath
+}
