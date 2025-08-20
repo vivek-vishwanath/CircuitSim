@@ -9,18 +9,30 @@
     -fx-text-fill: white;
     -fx-font-size: 14px;
 }
+.button:hover {
+    -fx-background-color: #003a00;
+}
+
+.toggle-button {
+    -fx-background-color: #DDDDDD;
+    -fx-text-fill: black;
+}
+.toggle-button:hover {
+    -fx-background-color: #CCF0CC;
+}
+.toggle-button:selected {
+    -fx-background-color: #AAAAAA;
+}
+.toggle-button:hover:selected {
+    -fx-background-color: #99C099;
+}
 
 .new-component {
-    -fx-background-color: #DDD;
     -fx-text-fill: #000;
     -fx-min-height: 48px;
     -fx-max-width: 200px;
     -fx-padding: 8 8 8 8;
     -fx-background-radius: 8;
-}
-
-.new-component:hover {
-    -fx-background-color: #CEC;
 }
 
 .props-menu {
@@ -48,14 +60,20 @@
 .property-list-validator {
 }
 
+.property-list-validator-button {
+    -fx-background-color: #D0F8FF;
+    -fx-min-width: 36px;
+}
+.property-list-validator-button:hover {
+    -fx-background-color: #75b1ff;
+}
 .property-list-validator-button:selected {
     -fx-background-color: #06F;
     -fx-text-fill: white;
 }
-
-.property-list-validator-button {
-    -fx-background-color: #D0F8FF;
-    -fx-min-width: 36px;
+.property-list-validator-button:hover:selected {
+    -fx-background-color: #06F;
+    -fx-text-fill: white;
 }
 
 .property-list-validator-dropdown {
@@ -67,7 +85,7 @@
 
 }
 
-.button-top-left {;
+.button-top-left {
     -fx-background-radius: 8 0 0 0;
 }
 
@@ -166,7 +184,6 @@
 }
 
 .toolbar-button {
-    -fx-background-color: #E0E8E0;
     -fx-padding: 4;
 }
 
@@ -202,7 +219,7 @@
 
 /* Selected tab */
 .tab-pane .tab:selected {
-    -fx-background-color: #EEE;
+    -fx-background-color: #DDD;
     -fx-text-fill: #000000;
     -fx-border-width: 1 1 5 1;
 }
@@ -275,7 +292,7 @@
 
 /* Hover effect */
 .titled-pane > .title:hover {
-    -fx-background-color: #EEE; /* Tailwind gray-100 */
+    -fx-background-color: #DDD; /* Tailwind gray-100 */
 }
 
 /* Open panel */
