@@ -76,6 +76,7 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 		return value == null ? "" : toString.apply(value);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Node createGui(Stage stage, T value, Consumer<T> onAction) {
 		int size = validValues.size();
@@ -115,6 +116,9 @@ public class PropertyListValidator<T> implements PropertyValidator<T> {
 					button.setSelected(toString(value).equals(s));
 					button.setOnAction(event -> {
 						try {
+							// Type warning suppressed here.
+							// value is known to be an Integer at this point 
+							// (due to instanceof check above)
 							onAction.accept((T) (Integer) n);
 						} catch (Exception e) {
 							e.printStackTrace();
