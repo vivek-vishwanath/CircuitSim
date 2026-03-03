@@ -1062,7 +1062,7 @@ class CircuitSim @JvmOverloads constructor(val openWindow: Boolean, val init: Bo
             if (file == null) {
                 val chooser = FileChooser()
                 chooser.title = "Choose sim file"
-                chooser.initialDirectory = lastSaveFile?.parentFile ?: File(System.getProperty("user.dir"))
+                chooser.initialDirectory = lastSaveFile?.parentFile ?: File(System.getProperty("user.home"))
                 chooser.initialFileName = "My circuit.sim"
                 chooser.extensionFilters.add(FileChooser.ExtensionFilter("Circuit Sim file", "*.sim"))
                 file = chooser.showSaveDialog(stage) ?: return@runFxSync
